@@ -1,0 +1,28 @@
+//
+//  Storage.cpp
+//  HomeControl
+//
+//  Created by Bartłomiej on 08/12/16.
+//  Copyright © 2016 Imagination Systems. All rights reserved.
+//
+
+#include "Storage.hpp"
+#include "Entity.hpp"
+#include "EntitySerializer.hpp"
+
+void Storage::registerSereializer(Entity* entityType, EntitySerializer* serializer) {
+  map<int, EntitySerializer*>::iterator it = serializers.find(entityType->getSerializerId());
+  if(it == serializers.end()) {
+    serializers[entityType->getSerializerId()] = serializer;
+  }
+}
+
+void Storage::add(Entity* data) {
+  EntitySerializer* serializer = serializers[data->getSerializerId()];
+  serializer->store(data);
+}
+
+void Storage::addOrUpdate(Entity* data) {
+  EntitySerializer* serializer = serializers[data->getSerializerId()];
+  serializer->storeOrUpdate(data);
+}
