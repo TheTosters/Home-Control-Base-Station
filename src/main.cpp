@@ -7,16 +7,13 @@
 //
 
 #include <iostream>
-#include "Room.hpp"
-#include "Sensor.hpp"
+#include "mongoose.h"
+#include "HttpServer.hpp"
+
+HttpServer* httpServer;
 
 int main(int argc, const char * argv[]) {
-  std::auto_ptr<Room> r(new Room(1, "dsf"));
-  vector<Point>* shape = r->getShape();
-  
-  shape->push_back( Point(1, 2, 3) );
-  
-  Point pp = r->getShape()->at(0);
-  
+  httpServer = new HttpServer();
+  httpServer->start();
   return 0;
 }

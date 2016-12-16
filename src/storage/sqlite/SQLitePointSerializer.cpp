@@ -15,7 +15,7 @@ void SQLitePointSerializer::store(Entity* data) {
   SQLiteFillableStatement statement(db, "INSERT INTO Points (NULL, ?, ?)");
   statement.bindNext(p->getX());
   statement.bindNext(p->getY());
-  p->setId( statement.executeInsert() );
+  p->setId( (int)statement.executeInsert() );
 }
 
 void SQLitePointSerializer::storeOrUpdate(Entity* data) {
