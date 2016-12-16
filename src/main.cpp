@@ -9,11 +9,13 @@
 #include <iostream>
 #include "mongoose.h"
 #include "HttpServer.hpp"
+#include "HomePlanRestApiHandler.hpp"
 
 HttpServer* httpServer;
 
 int main(int argc, const char * argv[]) {
   httpServer = new HttpServer();
+//  httpServer->registerHandler(shared_ptr<HomePlanRestApiHandler>(new HomePlanRestApiHandler));
   httpServer->start();
   return 0;
 }
