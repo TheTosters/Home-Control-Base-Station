@@ -15,7 +15,7 @@ HttpServer* httpServer;
 
 int main(int argc, const char * argv[]) {
   httpServer = new HttpServer();
-//  httpServer->registerHandler(shared_ptr<HomePlanRestApiHandler>(new HomePlanRestApiHandler));
+  httpServer->registerHandler(std::make_shared<HomePlanRestApiHandler>());
   httpServer->start();
   return 0;
 }

@@ -37,7 +37,7 @@ void restApiHanlder(struct mg_connection *c, int event, void *data) {
 }
 
 HttpServer::HttpServer(int port) : httpPort(port), stopLoop(false) {
-  manager.user_data = this;
+  
 }
 
 void HttpServer::stop() {
@@ -71,6 +71,7 @@ void HttpServer::start() {
     struct mg_connection *c;
     
     mg_mgr_init(&manager, NULL);
+    manager.user_data = this;
     char address[255];
     sprintf(address, "%d", httpPort);
     c = mg_bind(&manager, address, restApiHanlder);
@@ -94,7 +95,16 @@ void HttpServer::start() {
 }
 
 void HttpServer::onGetRequest(struct mg_connection *c, void *data) {
+  struct http_message *hm = (struct http_message *) data;
+  string uriStr(hm->uri.p, hm->uri.len);
+  shared_ptr<RestApiHandler> handler = handlers[uriStr];
   
+  if (handler) {
+    handler->onGetRequest(c, data);
+    
+  } else {
+    printf("No handler for request: %s", uriStr.c_str());
+  }
 }
 
 void HttpServer::onPostRequest(struct mg_connection *c, void *data) {
@@ -105,6 +115,11 @@ void HttpServer::onDeleteRequest(struct mg_connection *c, void *data) {
   
 }
 
-void HttpServer::registerHandler(shared_ptr<RestApiHandler> handler) {
-  handlers.push_back(handler);
+void HttpServer::registerHandler(shared_ptr<RestApiHandler> const& handler) {
+  if (handlers.find( handler->getEndpoint() ) != handlers.end()) {
+    //todo: add logging
+    printf("Endpoint '%s' already registered!", handler->getEndpoint().c_str());
+    return;
+  }
+  handlers[handler->getEndpoint()] = handler;
 }

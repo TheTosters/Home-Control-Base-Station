@@ -27,7 +27,7 @@ class RestApiHandler {
     void  setServer(HttpServer* serv) { server = serv;}
     HttpServer* getServer() { return server;}
   
-    string getEndpoint() {return endpoint; }
+    string getEndpoint() const {return endpoint; }
   protected:
     HttpServer* server;
     string      endpoint;

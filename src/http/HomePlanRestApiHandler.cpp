@@ -8,11 +8,12 @@
 
 #include "HomePlanRestApiHandler.hpp"
 
-HomePlanRestApiHandler::HomePlanRestApiHandler() : RestApiHandler("plan") {
+HomePlanRestApiHandler::HomePlanRestApiHandler() : RestApiHandler("/plan") {
   
 }
+
 void HomePlanRestApiHandler::onGetRequest(struct mg_connection *c, void *data) {
-  
+  printf("GET\n");
 }
 
 void HomePlanRestApiHandler::onPostRequest(struct mg_connection *c, void *data) {

@@ -12,9 +12,10 @@
 #include <stdio.h>
 #include "RestApiHandler.hpp"
 
-class HomePlanRestApiHandler : protected RestApiHandler {
+class HomePlanRestApiHandler : public RestApiHandler {
   public:
     HomePlanRestApiHandler();
+
     virtual void onGetRequest(struct mg_connection *c, void *data) override;
     virtual void onPostRequest(struct mg_connection *c, void *data) override;
     virtual void onDeleteRequest(struct mg_connection *c, void *data) override;
