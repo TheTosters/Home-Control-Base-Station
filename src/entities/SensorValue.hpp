@@ -13,11 +13,10 @@
 #include <time.h>
 #include "Entity.hpp"
 
-class SensorValue : Entity {
+class SensorValue : public Entity {
   public:
     SensorValue(int id, double value, time_t timestamp);
     SensorValue(double value, time_t timestamp);
-  
   
     double getValue();
     time_t getTimestamp();

@@ -7,9 +7,11 @@
 //
 
 #include "SQLiteEntitySerializer.hpp"
+#include "Storage.hpp"
 
-void SQLiteEntitySerializer::useDatabase(sqlite3 *db) {
+void SQLiteEntitySerializer::useDatabase(sqlite3 *db, Storage* storage) {
   this->db = db;
+  this->storage = storage;
 }
 
 bool SQLiteEntitySerializer::executeUpdateQuery(string creationSql) {

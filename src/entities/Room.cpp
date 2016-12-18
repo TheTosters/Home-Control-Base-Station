@@ -32,3 +32,11 @@ void Room::setName(string name) {
 vector<Point>* Room::getShape() {
   return &shape;
 }
+
+int Room::getFloor() {
+  return floor;
+}
+
+void Room::setFloor(int _floor) {
+  floor = _floor;
+}

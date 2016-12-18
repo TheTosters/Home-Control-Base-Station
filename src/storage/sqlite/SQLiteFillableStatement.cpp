@@ -23,6 +23,11 @@ SQLiteFillableStatement::~SQLiteFillableStatement() {
   statement = NULL;
 }
 
+bool SQLiteFillableStatement::bindNext(const long value) {
+  int res = sqlite3_bind_int64(statement, nextIndex, value);
+  nextIndex ++;
+  return res ==  SQLITE_OK;
+}
 
 bool SQLiteFillableStatement::bindNext(const std::string& value) {
   int res = sqlite3_bind_text(statement, nextIndex, value.c_str(), -1, SQLITE_TRANSIENT);

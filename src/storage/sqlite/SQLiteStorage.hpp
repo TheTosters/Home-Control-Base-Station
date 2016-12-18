@@ -20,7 +20,7 @@ class SQLiteStorage : protected Storage {
     virtual void close() override;
 
   protected:
-    sqlite3 *db;
+    sqlite3*  db;
 };
 
 #endif /* SQLiteStorage_hpp */

@@ -18,8 +18,8 @@ Sensor::Sensor(int _id, string _name, Point* pos)
 : Entity(_id, SERIALIZER_SENSOR_ID), name(_name), position(pos), lastValue(SensorValue(-1, 0, 0)) {
 }
 
-Point Sensor::getPosition() {
-  return position;
+Point* Sensor::getPosition() {
+  return &position;
 }
 
 string Sensor::getName() {
@@ -40,4 +40,12 @@ SensorValue Sensor::getLastValue(){
 
 void Sensor::addValue(SensorValue val){
   //todo:
+}
+
+long Sensor::getRoomId() {
+  return roomId;
+}
+
+void Sensor::setRoomId(long _roomId) {
+  roomId = _roomId;
 }

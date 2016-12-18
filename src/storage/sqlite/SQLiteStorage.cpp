@@ -22,7 +22,7 @@ bool SQLiteStorage::open() {
   map<int, EntitySerializer*>::iterator iter = serializers.begin();
   while(iter != serializers.end()) {
     SQLiteEntitySerializer* sqlSer = static_cast<SQLiteEntitySerializer*>(iter->second);
-    sqlSer->useDatabase(db);
+    sqlSer->useDatabase(db, this);
   }
   return true;
 }
@@ -36,7 +36,7 @@ void SQLiteStorage::close() {
     map<int, EntitySerializer*>::iterator iter = serializers.begin();
     while(iter != serializers.end()) {
       SQLiteEntitySerializer* sqlSer = static_cast<SQLiteEntitySerializer*>(iter->second);
-      sqlSer->useDatabase(NULL);
+      sqlSer->useDatabase(NULL, NULL);
     }
   }
 }

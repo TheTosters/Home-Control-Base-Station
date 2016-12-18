@@ -16,16 +16,18 @@
 
 using namespace std;
 
-class Sensor : Entity {
+class Sensor : public Entity {
   public:
     Sensor(int id, string name, Point* pos = NULL);
     Sensor(string name, Point* pos = NULL);
   
-    Point       getPosition();
+    Point*      getPosition();
     string      getName();
     time_t      getTimestamp();
     void        setPosition(Point p);
     void        setName(string name);
+    long        getRoomId();
+    void        setRoomId(long roomId);
   
     SensorValue getLastValue();
     void        addValue(SensorValue val);
@@ -33,6 +35,7 @@ class Sensor : Entity {
     Point         position;
     string        name;
     SensorValue   lastValue;
+    long          roomId;
 };
 
 #endif /* Sensor_hpp */

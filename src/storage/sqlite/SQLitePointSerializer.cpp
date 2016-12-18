@@ -27,8 +27,8 @@ void SQLitePointSerializer::storeOrUpdate(Entity* data) {
   statement.executeUpdate();
 }
 
-void SQLitePointSerializer::useDatabase(sqlite3 *db) {
-  SQLiteEntitySerializer::useDatabase(db);
+void SQLitePointSerializer::useDatabase(sqlite3 *db, Storage* storage) {
+  SQLiteEntitySerializer::useDatabase(db, storage);
   
   //create table if needed
   string creationSql = "CREATE TABLE IF NOT EXISTS Points (\

@@ -22,6 +22,7 @@ class SQLiteFillableStatement {
   
     bool bindNext(const std::string& value);
     bool bindNext(const int value);
+    bool bindNext(const long value);
     bool bindNext(const double value);
     bool executeUpdate();
     long executeInsert();

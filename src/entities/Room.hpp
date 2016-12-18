@@ -19,16 +19,19 @@ using namespace std;
 
 class Sensor;
 
-class Room : Entity {
+class Room : public Entity {
   public:
     Room(int id, string name);
     Room(string name);
   
     string getName();
     void   setName(string name);
+    int    getFloor();
+    void   setFloor(int floor);
     vector<Point>* getShape();
   private:
     string            name;
+    int               floor;
     vector<Sensor>    sensors;
     vector<Point>     shape;
 };

@@ -16,11 +16,15 @@
 
 using namespace std;
 
+class Storage;
+
 class SQLiteEntitySerializer : public EntitySerializer {
   public:
-    virtual void useDatabase(sqlite3 *db);
+  virtual void useDatabase(sqlite3 *db, Storage* storage);
   protected:
-    sqlite3 *db;
+    sqlite3*  db;
+    Storage*  storage;
+
   
     bool executeUpdateQuery(string creationSql);
 };

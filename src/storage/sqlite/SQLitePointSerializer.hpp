@@ -22,7 +22,7 @@ class SQLitePointSerializer : protected SQLiteEntitySerializer {
   public:
     virtual void store(Entity* data) override;
     virtual void storeOrUpdate(Entity* data) override;
-    virtual void useDatabase(sqlite3 *db) override;
+    virtual void useDatabase(sqlite3 *db, Storage* storage) override;
 };
 
 #endif /* SQLitePointSerializer_hpp */

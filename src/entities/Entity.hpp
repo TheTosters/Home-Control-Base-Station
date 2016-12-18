@@ -11,14 +11,14 @@
 
 class Entity {
   public:
-    Entity(int _id, int _serializerId) : id(_id), serializerId(_serializerId) {};
+    Entity(long _id, int _serializerId) : id(_id), serializerId(_serializerId) {};
     Entity(int _serializerId) : id(-1), serializerId(_serializerId) {};
   
-    int getId() {return id;}
-    void setId(int _id) {id = _id;}
+    long getId() {return id;}
+    void setId(long _id) {id = _id;}
     int getSerializerId() {return serializerId;}
   protected:
-    int   id;
+    long  id;
     int   serializerId;
 };
 
