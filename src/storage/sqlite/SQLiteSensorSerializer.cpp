@@ -13,7 +13,9 @@
 
 void SQLiteSensorSerializer::store(Entity* data) {
   Sensor* p = static_cast<Sensor*>(data);
-  storage->add(p->getPosition());
+  
+  storage->addOrUpdate(p->getPosition());
+  
   SQLiteFillableStatement statement(db, "INSERT INTO Sensors (NULL, ?, ?, ?)");
   statement.bindNext(p->getPosition()->getId());
   statement.bindNext(p->getName());
@@ -22,6 +24,10 @@ void SQLiteSensorSerializer::store(Entity* data) {
 }
 
 void SQLiteSensorSerializer::storeOrUpdate(Entity* data) {
+  if (data->getId() < 0) {
+    store(data);
+    return;
+  }
   Sensor* p = static_cast<Sensor*>(data);
   storage->addOrUpdate(p->getPosition());
   SQLiteFillableStatement statement(db, "INSERT OR REPLACE INTO Sensors (id, positionId, name, roomId) VALUES (?, ?, ?, ?)");

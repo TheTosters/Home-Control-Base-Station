@@ -29,6 +29,7 @@ class Room : public Entity {
     int    getFloor();
     void   setFloor(int floor);
     vector<Point>* getShape();
+    vector<Sensor>* getSensors();
   private:
     string            name;
     int               floor;

@@ -33,6 +33,10 @@ vector<Point>* Room::getShape() {
   return &shape;
 }
 
+vector<Sensor>* Room::getSensors() {
+  return &sensors;
+}
+
 int Room::getFloor() {
   return floor;
 }

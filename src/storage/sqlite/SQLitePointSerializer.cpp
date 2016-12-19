@@ -19,6 +19,10 @@ void SQLitePointSerializer::store(Entity* data) {
 }
 
 void SQLitePointSerializer::storeOrUpdate(Entity* data) {
+  if (data->getId() < 0) {
+    store(data);
+    return;
+  }
   Point* p = static_cast<Point*>(data);
   SQLiteFillableStatement statement(db, "INSERT OR REPLACE INTO Points (id, x, y) VALUES (?, ?, ?)");
   statement.bindNext(p->getId());
