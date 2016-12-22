@@ -25,15 +25,18 @@ class Sensor : public Entity {
     string      getName();
     time_t      getTimestamp();
     void        setPosition(Point p);
-    void        setName(string name);
+    void        setName(string& name);
     long        getRoomId();
     void        setRoomId(long roomId);
+    void        setAddress(string& address);
+    string      getAddress();
   
     SensorValue getLastValue();
     void        addValue(SensorValue val);
   private:
     Point         position;
     string        name;
+    string        address;    //it can be MAC, Bluetooth address, or other protocol dependent
     SensorValue   lastValue;
     long          roomId;
 };

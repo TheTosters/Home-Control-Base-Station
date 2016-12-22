@@ -30,8 +30,16 @@ void Sensor::setPosition(Point p) {
   position = p;
 }
 
-void Sensor::setName(string name) {
+void Sensor::setName(string& name) {
   this->name = name;
+}
+
+void Sensor::setAddress(string& address) {
+  this->address = address;
+}
+
+string Sensor::getAddress() {
+  return address;
 }
 
 SensorValue Sensor::getLastValue(){

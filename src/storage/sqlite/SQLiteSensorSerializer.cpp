@@ -16,10 +16,11 @@ void SQLiteSensorSerializer::store(Entity* data) {
   
   storage->addOrUpdate(p->getPosition());
   
-  SQLiteFillableStatement statement(db, "INSERT INTO Sensors (NULL, ?, ?, ?)");
+  SQLiteFillableStatement statement(db, "INSERT INTO Sensors (NULL, ?, ?, ?, ?)");
   statement.bindNext(p->getPosition()->getId());
   statement.bindNext(p->getName());
   statement.bindNext(p->getRoomId());
+  statement.bindNext(p->getAddress());
   p->setId( statement.executeInsert() );
 }
 
@@ -30,11 +31,12 @@ void SQLiteSensorSerializer::storeOrUpdate(Entity* data) {
   }
   Sensor* p = static_cast<Sensor*>(data);
   storage->addOrUpdate(p->getPosition());
-  SQLiteFillableStatement statement(db, "INSERT OR REPLACE INTO Sensors (id, positionId, name, roomId) VALUES (?, ?, ?, ?)");
+  SQLiteFillableStatement statement(db, "INSERT OR REPLACE INTO Sensors (id, positionId, name, roomId, address) VALUES (?, ?, ?, ?, ?)");
   statement.bindNext(p->getId());
   statement.bindNext(p->getPosition()->getId());
   statement.bindNext(p->getName());
   statement.bindNext(p->getRoomId());
+  statement.bindNext(p->getAddress());
   statement.executeUpdate();
 }
 
@@ -47,6 +49,7 @@ void SQLiteSensorSerializer::useDatabase(sqlite3 *db, Storage* storage) {
     positionId INT NOT NULL,      \
     name TEXT NOT NULL,           \
     roomId INT NOT NULL           \
+    address TEXT                  \
   )";
   executeUpdateQuery(creationSql);
 }
