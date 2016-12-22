@@ -20,7 +20,7 @@ class Storage;
 
 class SQLiteEntitySerializer : public EntitySerializer {
   public:
-  virtual void useDatabase(sqlite3 *db, Storage* storage);
+    virtual void useDatabase(sqlite3 *db, Storage* storage);
   protected:
     sqlite3*  db;
     Storage*  storage;

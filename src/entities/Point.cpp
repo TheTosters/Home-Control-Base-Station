@@ -35,10 +35,6 @@ int Point::getY() {
   return y;
 }
 
-int Point::getId() {
-  return id;
-}
-
 void Point::setX(int x) {
   this->x = x;
 }

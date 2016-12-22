@@ -23,6 +23,9 @@ class SQLitePointSerializer : protected SQLiteEntitySerializer {
     virtual void store(Entity* data) override;
     virtual void storeOrUpdate(Entity* data) override;
     virtual void useDatabase(sqlite3 *db, Storage* storage) override;
+    virtual void loadAll(shared_ptr<vector<shared_ptr<Entity>>> result) override;
+    virtual void loadMatching(SimpleCriteria criteria, shared_ptr<vector<shared_ptr<Entity>>> result) override;
+    virtual shared_ptr<Entity> load(long id) override;
 };
 
 #endif /* SQLitePointSerializer_hpp */

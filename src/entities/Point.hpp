@@ -20,11 +20,10 @@ class Point : public Entity {
   
     int     getX();
     int     getY();
-    int     getId();
     void    setX(int x);
     void    setY(int y);
   private:
-    int id, x, y;
+    int   x, y;
 };
 
 #endif /* Point_hpp */

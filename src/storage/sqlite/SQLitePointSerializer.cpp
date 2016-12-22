@@ -42,3 +42,26 @@ void SQLitePointSerializer::useDatabase(sqlite3 *db, Storage* storage) {
     )";
   executeUpdateQuery(creationSql);
 }
+
+void SQLitePointSerializer::loadAll(shared_ptr<vector<shared_ptr<Entity>>> result) {
+  //TODO:
+}
+
+void SQLitePointSerializer::loadMatching(SimpleCriteria criteria, shared_ptr<vector<shared_ptr<Entity>>> result) {
+  //TODO:
+}
+
+shared_ptr<Entity> SQLitePointSerializer::load(long id) {
+  SQLiteFillableStatement statement(db, "SELECT * FROM Points WHERE id=?");
+  statement.bindNext(id);
+  if (statement.executeSelectNext() > 0) {
+    long id;
+    int x,y;
+    
+    statement.getColumns( &id, &x, &y);
+    return make_shared<Point>(id, x, y);
+    
+  } else {
+    return nullptr;
+  }
+}
