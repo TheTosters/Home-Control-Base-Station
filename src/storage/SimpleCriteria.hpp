@@ -22,6 +22,10 @@ public:
   long                helperId; //additional id, Serializer dependent
   time_t              from;
   time_t              to;
+  long                offset; //for pagination
+  long                count;  //for pagination
+  
+  SimpleCriteria() : id(-1), helperId(-1), from(0), to(0), offset(0), count(0) {}
 };
 
 #endif /* SimpleCriteria_hpp */

@@ -44,11 +44,18 @@ void SQLitePointSerializer::useDatabase(sqlite3 *db, Storage* storage) {
 }
 
 void SQLitePointSerializer::loadAll(shared_ptr<vector<shared_ptr<Entity>>> result) {
-  //TODO:
+  //implement if needed, probably never will be used
+  fprintf(stderr, "%s: Not implemented! \n", __PRETTY_FUNCTION__);
 }
 
 void SQLitePointSerializer::loadMatching(SimpleCriteria criteria, shared_ptr<vector<shared_ptr<Entity>>> result) {
-  //TODO:
+  if (criteria.id >= 0) {
+    result->push_back( load(criteria.id) );
+  
+  } else {
+    //implement if needed, probably never will be used
+    fprintf(stderr, "%s: Not implemented! \n", __PRETTY_FUNCTION__);
+  }
 }
 
 shared_ptr<Entity> SQLitePointSerializer::load(long id) {
