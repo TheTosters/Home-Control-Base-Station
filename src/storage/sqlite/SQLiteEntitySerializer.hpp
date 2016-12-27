@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <sqlite3.h>
 #include <string>
+
 #include "EntitySerializer.hpp"
 
 using namespace std;

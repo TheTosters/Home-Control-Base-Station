@@ -16,8 +16,8 @@
 
 class SQLiteSensorSerializer : public SQLiteEntitySerializer {
   public:
-    void store(Entity* data);
-    void storeOrUpdate(Entity* data);
+    void store(Sensor* data);
+    void storeOrUpdate(Sensor* data);
     void useDatabase(sqlite3 *db, Storage* storage);
   
     shared_ptr<vector<shared_ptr<Sensor>>> loadAll();

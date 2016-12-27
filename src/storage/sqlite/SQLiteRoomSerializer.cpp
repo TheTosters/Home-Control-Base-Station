@@ -15,7 +15,7 @@
 #include "SQLiteSensorSerializer.hpp"
 #include "SQLitePointSerializer.hpp"
 
-void SQLiteRoomSerializer::store(Entity* data) {
+void SQLiteRoomSerializer::store(Room* data) {
   Room* p = static_cast<Room*>(data);
   SQLiteFillableStatement statement(db, "INSERT INTO Rooms (NULL, ?, ?)");
   statement.bindNext(p->getName());
@@ -37,7 +37,7 @@ void SQLiteRoomSerializer::store(Entity* data) {
   }
 }
 
-void SQLiteRoomSerializer::storeOrUpdate(Entity* data) {
+void SQLiteRoomSerializer::storeOrUpdate(Room* data) {
   if (data->getId() < 0) {
     store(data);
     return;

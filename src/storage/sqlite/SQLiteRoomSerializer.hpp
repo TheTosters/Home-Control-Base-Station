@@ -20,8 +20,8 @@ class  SQLiteRoomSerializer : public SQLiteEntitySerializer {
   public:
     void useDatabase(sqlite3 *db, Storage* storage);
   
-    void store(Entity* data);
-    void storeOrUpdate(Entity* data);
+    void store(Room* data);
+    void storeOrUpdate(Room* data);
   
     shared_ptr<vector<shared_ptr<Room>>> loadAll();
     shared_ptr<vector<shared_ptr<Room>>> loadMatching(SimpleCriteria criteria);

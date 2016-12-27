@@ -22,8 +22,8 @@ class Entity;
 
 class SQLitePointSerializer : public SQLiteEntitySerializer {
   public:
-    void store(Entity* data);
-    void storeOrUpdate(Entity* data);
+    void store(Point* data);
+    void storeOrUpdate(Point* data);
     void useDatabase(sqlite3 *db, Storage* storage);
     shared_ptr<vector<shared_ptr<Point>>> loadAll();
     shared_ptr<vector<shared_ptr<Point>>> loadMatching(SimpleCriteria criteria);

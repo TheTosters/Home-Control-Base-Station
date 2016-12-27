@@ -12,7 +12,7 @@
 #include "Storage.hpp"
 #include "SQLitePointSerializer.hpp"
 
-void SQLiteSensorSerializer::store(Entity* data) {
+void SQLiteSensorSerializer::store(Sensor* data) {
   Sensor* p = static_cast<Sensor*>(data);
   
   SQLitePointSerializer* pointSerializer = storage->requestSerializer<SQLitePointSerializer>(Point());
@@ -26,7 +26,7 @@ void SQLiteSensorSerializer::store(Entity* data) {
   p->setId( statement.executeInsert() );
 }
 
-void SQLiteSensorSerializer::storeOrUpdate(Entity* data) {
+void SQLiteSensorSerializer::storeOrUpdate(Sensor* data) {
   if (data->getId() < 0) {
     store(data);
     return;

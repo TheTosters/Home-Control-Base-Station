@@ -10,14 +10,9 @@
 #define EntitySerializer_hpp
 
 #include <stdio.h>
-#include <vector>
-#include "SimpleCriteria.hpp"
-#include "Entity.hpp"
-
-using namespace std;
 
 class EntitySerializer {
-  public:
+  
 };
 
 #endif /* EntitySerializer_hpp */

@@ -10,7 +10,7 @@
 #include "Point.hpp"
 #include "SQLiteFillableStatement.hpp"
 
-void SQLitePointSerializer::store(Entity* data) {
+void SQLitePointSerializer::store(Point* data) {
   Point* p = static_cast<Point*>(data);
   SQLiteFillableStatement statement(db, "INSERT INTO Points (NULL, ?, ?)");
   statement.bindNext(p->getX());
@@ -18,7 +18,7 @@ void SQLitePointSerializer::store(Entity* data) {
   p->setId( statement.executeInsert() );
 }
 
-void SQLitePointSerializer::storeOrUpdate(Entity* data) {
+void SQLitePointSerializer::storeOrUpdate(Point* data) {
   if (data->getId() < 0) {
     store(data);
     return;
