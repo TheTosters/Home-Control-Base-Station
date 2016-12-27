@@ -18,7 +18,7 @@ Sensor::Sensor(string _name, Point* pos)
 : Entity(SERIALIZER_SENSOR_ID), position(pos), name(_name), lastValue(SensorValue(-1, 0, 0)) {
 }
 
-Sensor::Sensor(int _id, string _name, Point* pos)
+Sensor::Sensor(long _id, string _name, Point* pos)
 : Entity(_id, SERIALIZER_SENSOR_ID), position(pos), name(_name), lastValue(SensorValue(-1, 0, 0)) {
 }
 

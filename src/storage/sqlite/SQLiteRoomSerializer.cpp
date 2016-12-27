@@ -63,9 +63,42 @@ void SQLiteRoomSerializer::useDatabase(sqlite3 *db, Storage* storage) {
 }
 
 shared_ptr<vector<shared_ptr<Room>>> SQLiteRoomSerializer::loadAll() {
-  //implement if needed, probably never will be used
-  fprintf(stderr, "%s: Not implemented! \n", __PRETTY_FUNCTION__);
-  return make_shared<vector<shared_ptr<Room>>>();
+  shared_ptr<vector<shared_ptr<Room>>> result = make_shared<vector<shared_ptr<Room>>>();
+  
+  SQLiteFillableStatement statement(db, "SELECT * FROM Rooms");
+  while(statement.executeSelectNext() > 0) {
+    long id;
+    int floor;
+    string name;
+    
+    statement.getColumns( &id, &name, &floor);
+    shared_ptr<Room> room = make_shared<Room>(id, name);
+    room->setFloor(floor);
+    
+    SimpleCriteria criteria;
+    criteria.helperId = id;
+    
+    SQLitePointSerializer* pointSerializer = storage->requestSerializer<SQLitePointSerializer>(Point());
+    shared_ptr<vector<shared_ptr<Point>>> shape = pointSerializer->loadMatching(criteria);
+    if (shape != nullptr) {
+      vector<Point>* destShape = room->getShape();
+      for(vector<shared_ptr<Point>>::iterator iter = shape->begin(); iter != shape->end(); iter++) {
+        destShape->push_back( iter->get() );
+      }
+    }
+    
+    SQLiteSensorSerializer* sensorSerializer = storage->requestSerializer<SQLiteSensorSerializer>( Sensor() );
+    shared_ptr<vector<shared_ptr<Sensor>>> sensors = sensorSerializer->loadMatching(criteria);
+    if (sensors != nullptr) {
+      vector<Sensor>* destSensors = room->getSensors();
+      for(vector<shared_ptr<Sensor>>::iterator iter = sensors->begin(); iter != sensors->end(); iter++) {
+        destSensors->push_back( *iter->get() );
+      }
+    }
+    
+    result->push_back(room);
+  }
+  return result;
 }
 
 shared_ptr<vector<shared_ptr<Room>>> SQLiteRoomSerializer::loadMatching(SimpleCriteria criteria) {

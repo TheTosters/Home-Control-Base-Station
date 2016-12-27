@@ -59,16 +59,34 @@ void SQLiteSensorSerializer::useDatabase(sqlite3 *db, Storage* storage) {
 }
 
 shared_ptr<vector<shared_ptr<Sensor>>> SQLiteSensorSerializer::loadAll() {
-  //todo:implement
+  //todo:implement when needed
   return nullptr;
 }
 
 shared_ptr<vector<shared_ptr<Sensor>>> SQLiteSensorSerializer::loadMatching(SimpleCriteria criteria) {
-  //todo:implement
+  //todo:implement when needed
   return nullptr;
 }
 
 shared_ptr<Sensor> SQLiteSensorSerializer::load(long id) {
-  //todo:implement
-  return nullptr;
+  SQLiteFillableStatement statement(db, "SELECT * FROM Sensors WHERE id=?");
+  statement.bindNext(id);
+  if (statement.executeSelectNext() > 0) {
+    long id, positionId, roomId;
+    string name, address;
+    
+    statement.getColumns( &id, &positionId, &name, &roomId, &address);
+
+    SQLitePointSerializer* pointSerializer = storage->requestSerializer<SQLitePointSerializer>(Point());
+    shared_ptr<Point> pos = pointSerializer->load(positionId);
+    
+    shared_ptr<Sensor> result = make_shared<Sensor>(id, name, pos.get());
+    result->setRoomId(roomId);
+    result->setAddress(address);
+    
+    return result;
+    
+  } else {
+    return nullptr;
+  }
 }
