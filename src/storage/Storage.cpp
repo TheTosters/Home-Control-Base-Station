@@ -10,9 +10,9 @@
 #include "Entity.hpp"
 #include "EntitySerializer.hpp"
 
-void Storage::registerSerializer(Entity* entityType, EntitySerializer* serializer) {
-  map<int, EntitySerializer*>::iterator it = serializers.find(entityType->getSerializerId());
+void Storage::registerSerializer(Entity entityType, EntitySerializer* serializer) {
+  map<int, EntitySerializer*>::iterator it = serializers.find(entityType.getSerializerId());
   if(it == serializers.end()) {
-    serializers[entityType->getSerializerId()] = serializer;
+    serializers[entityType.getSerializerId()] = serializer;
   }
 }

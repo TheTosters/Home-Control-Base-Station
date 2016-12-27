@@ -20,8 +20,9 @@ using namespace std;
 
 class Room : public Entity {
   public:
-    Room(int id, string name);
+    Room();
     Room(string name);
+    Room(int id, string name);
   
     string getName();
     void   setName(string name);

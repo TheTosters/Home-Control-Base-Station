@@ -31,5 +31,7 @@ class RestApiHandler {
   protected:
     HttpServer* server;
     string      endpoint;
+  
+    void  notImplemented(struct mg_connection* conn);
 };
 #endif /* RestApiHandler_hpp */

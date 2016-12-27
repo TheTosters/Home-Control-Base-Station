@@ -10,12 +10,32 @@
 #include "mongoose.h"
 #include "HttpServer.hpp"
 #include "HomePlanRestApiHandler.hpp"
+#include "SQLiteStorage.hpp"
+#include "Entities.hpp"
+#include "SQLiteSerializers.hpp"
 
 HttpServer* httpServer;
+Storage* storage;
+
+void prepareStorage() {
+  storage = new SQLiteStorage();
+  storage->registerSerializer(Point(), new SQLitePointSerializer());
+  storage->registerSerializer(Room(), new SQLiteRoomSerializer());
+  storage->registerSerializer(Sensor(), new SQLiteSensorSerializer());
+  storage->registerSerializer(SensorValue(), new SQLiteSensorValueSerializer());
+}
+
+void prepareHttpServer() {
+  httpServer = new HttpServer(storage);
+  httpServer->registerHandler(std::make_shared<HomePlanRestApiHandler>());
+}
 
 int main(int argc, const char * argv[]) {
-  httpServer = new HttpServer();
-  httpServer->registerHandler(std::make_shared<HomePlanRestApiHandler>());
+  
+  prepareStorage();
+  prepareHttpServer();
+  
+  
   httpServer->start();
   return 0;
 }

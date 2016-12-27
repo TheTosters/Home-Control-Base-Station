@@ -7,3 +7,9 @@
 //
 
 #include "RestApiHandler.hpp"
+
+void RestApiHandler::notImplemented(struct mg_connection* conn) {
+  mg_printf(conn, "%s",
+          "HTTP/1.0 501 Not Implemented\r\n"
+          "Content-Length: 0\r\n\r\n");
+}

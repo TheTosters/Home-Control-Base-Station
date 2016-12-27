@@ -23,7 +23,7 @@ class Storage {
     virtual bool open() = 0;
     virtual void close() = 0;
     
-    virtual void registerSerializer(Entity* entityType, EntitySerializer* serializer);
+    virtual void registerSerializer(Entity entityType, EntitySerializer* serializer);
     template<class T> T* requestSerializer(Entity marker) {
       return static_cast<T*>(serializers[marker.getSerializerId()]);
     }

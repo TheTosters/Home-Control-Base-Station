@@ -10,6 +10,11 @@
 
 #define SERIALIZER_SENSOR_VALUE_ID  3
 
+SensorValue::SensorValue()
+: Entity(SERIALIZER_SENSOR_VALUE_ID), value(0), timestamp(0) {
+  
+}
+
 SensorValue::SensorValue(double _value, time_t _timestamp)
 : Entity(SERIALIZER_SENSOR_VALUE_ID), value(_value), timestamp(_timestamp) {
   

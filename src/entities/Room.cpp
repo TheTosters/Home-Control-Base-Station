@@ -11,6 +11,11 @@
 
 #define SERIALIZER_ROOM_ID  1
 
+Room::Room()
+:Entity(SERIALIZER_ROOM_ID), name(nullptr){
+  
+}
+
 Room::Room(string _name)
 :Entity(SERIALIZER_ROOM_ID), name(_name){
   
