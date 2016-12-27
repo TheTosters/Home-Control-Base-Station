@@ -25,6 +25,9 @@ class SQLiteSensorValueSerializer : public SQLiteEntitySerializer {
     shared_ptr<vector<shared_ptr<SensorValue>>> loadAll();
     shared_ptr<vector<shared_ptr<SensorValue>>> loadMatching(SimpleCriteria criteria);
     shared_ptr<SensorValue> load(long id);
+  private:
+    void append(string& sql, bool condition, const string& toAppend, bool &andMarker);
+
 };
 
 #endif /* SQLiteSensorValueSerializer_hpp */
