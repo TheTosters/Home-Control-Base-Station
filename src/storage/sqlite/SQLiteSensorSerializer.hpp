@@ -11,12 +11,18 @@
 
 #include <stdio.h>
 #include "SQLiteEntitySerializer.hpp"
+#include "Sensor.hpp"
+#include "SimpleCriteria.hpp"
 
-class SQLiteSensorSerializer : protected SQLiteEntitySerializer {
+class SQLiteSensorSerializer : public SQLiteEntitySerializer {
   public:
-    virtual void store(Entity* data) override;
-    virtual void storeOrUpdate(Entity* data) override;
-    virtual void useDatabase(sqlite3 *db, Storage* storage) override;
+    void store(Entity* data);
+    void storeOrUpdate(Entity* data);
+    void useDatabase(sqlite3 *db, Storage* storage);
+  
+    shared_ptr<vector<shared_ptr<Sensor>>> loadAll();
+    shared_ptr<vector<shared_ptr<Sensor>>> loadMatching(SimpleCriteria criteria);
+    shared_ptr<Sensor> load(long id);
 };
 
 #endif /* SQLiteSensorSerializer_hpp */

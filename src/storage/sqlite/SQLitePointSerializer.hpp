@@ -9,23 +9,25 @@
 #ifndef SQLitePointSerializer_hpp
 #define SQLitePointSerializer_hpp
 
-#include "SQLiteEntitySerializer.hpp"
-
 #include <stdio.h>
 #include <string>
+
+#include "SQLiteEntitySerializer.hpp"
+#include "Point.hpp"
+#include "SimpleCriteria.hpp"
 
 using namespace std;
 
 class Entity;
 
-class SQLitePointSerializer : protected SQLiteEntitySerializer {
+class SQLitePointSerializer : public SQLiteEntitySerializer {
   public:
-    virtual void store(Entity* data) override;
-    virtual void storeOrUpdate(Entity* data) override;
-    virtual void useDatabase(sqlite3 *db, Storage* storage) override;
-    virtual void loadAll(shared_ptr<vector<shared_ptr<Entity>>> result) override;
-    virtual void loadMatching(SimpleCriteria criteria, shared_ptr<vector<shared_ptr<Entity>>> result) override;
-    virtual shared_ptr<Entity> load(long id) override;
+    void store(Entity* data);
+    void storeOrUpdate(Entity* data);
+    void useDatabase(sqlite3 *db, Storage* storage);
+    shared_ptr<vector<shared_ptr<Point>>> loadAll();
+    shared_ptr<vector<shared_ptr<Point>>> loadMatching(SimpleCriteria criteria);
+    shared_ptr<Point> load(long id);
 };
 
 #endif /* SQLitePointSerializer_hpp */

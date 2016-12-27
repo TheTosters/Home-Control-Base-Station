@@ -13,7 +13,7 @@
 #include <sqlite3.h>
 #include "Storage.hpp"
 
-class SQLiteStorage : protected Storage {
+class SQLiteStorage : public Storage {
   public:
     SQLiteStorage() : db(NULL) {};
     virtual bool open() override;

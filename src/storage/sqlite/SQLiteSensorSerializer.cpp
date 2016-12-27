@@ -10,11 +10,13 @@
 #include "Sensor.hpp"
 #include "SQLiteFillableStatement.hpp"
 #include "Storage.hpp"
+#include "SQLitePointSerializer.hpp"
 
 void SQLiteSensorSerializer::store(Entity* data) {
   Sensor* p = static_cast<Sensor*>(data);
   
-  storage->addOrUpdate(p->getPosition());
+  SQLitePointSerializer* pointSerializer = storage->requestSerializer<SQLitePointSerializer>(Point());
+  pointSerializer->store(p->getPosition());
   
   SQLiteFillableStatement statement(db, "INSERT INTO Sensors (NULL, ?, ?, ?, ?)");
   statement.bindNext(p->getPosition()->getId());
@@ -30,7 +32,9 @@ void SQLiteSensorSerializer::storeOrUpdate(Entity* data) {
     return;
   }
   Sensor* p = static_cast<Sensor*>(data);
-  storage->addOrUpdate(p->getPosition());
+  SQLitePointSerializer* pointSerializer = storage->requestSerializer<SQLitePointSerializer>(Point());
+  pointSerializer->storeOrUpdate(p->getPosition());
+  
   SQLiteFillableStatement statement(db, "INSERT OR REPLACE INTO Sensors (id, positionId, name, roomId, address) VALUES (?, ?, ?, ?, ?)");
   statement.bindNext(p->getId());
   statement.bindNext(p->getPosition()->getId());
@@ -52,4 +56,19 @@ void SQLiteSensorSerializer::useDatabase(sqlite3 *db, Storage* storage) {
     address TEXT                  \
   )";
   executeUpdateQuery(creationSql);
+}
+
+shared_ptr<vector<shared_ptr<Sensor>>> SQLiteSensorSerializer::loadAll() {
+  //todo:implement
+  return nullptr;
+}
+
+shared_ptr<vector<shared_ptr<Sensor>>> SQLiteSensorSerializer::loadMatching(SimpleCriteria criteria) {
+  //todo:implement
+  return nullptr;
+}
+
+shared_ptr<Sensor> SQLiteSensorSerializer::load(long id) {
+  //todo:implement
+  return nullptr;
 }

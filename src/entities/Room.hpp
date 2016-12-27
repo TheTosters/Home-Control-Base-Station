@@ -14,10 +14,9 @@
 #include <vector>
 #include "Point.hpp"
 #include "Entity.hpp"
+#include "Sensor.hpp"
 
 using namespace std;
-
-class Sensor;
 
 class Room : public Entity {
   public:

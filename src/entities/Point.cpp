@@ -10,6 +10,11 @@
 
 #define SERIALIZER_POINT_ID  4
 
+Point::Point()
+: Entity(SERIALIZER_POINT_ID), x(0), y(0) {
+  
+}
+
 Point::Point(int _x, int _y)
 : Entity(SERIALIZER_POINT_ID), x(_x), y(_y) {
 

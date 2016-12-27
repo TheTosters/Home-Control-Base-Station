@@ -43,12 +43,14 @@ void SQLitePointSerializer::useDatabase(sqlite3 *db, Storage* storage) {
   executeUpdateQuery(creationSql);
 }
 
-void SQLitePointSerializer::loadAll(shared_ptr<vector<shared_ptr<Entity>>> result) {
+shared_ptr<vector<shared_ptr<Point>>> SQLitePointSerializer::loadAll() {
   //implement if needed, probably never will be used
   fprintf(stderr, "%s: Not implemented! \n", __PRETTY_FUNCTION__);
+  return make_shared<vector<shared_ptr<Point>>>();
 }
 
-void SQLitePointSerializer::loadMatching(SimpleCriteria criteria, shared_ptr<vector<shared_ptr<Entity>>> result) {
+shared_ptr<vector<shared_ptr<Point>>> SQLitePointSerializer::loadMatching(SimpleCriteria criteria) {
+  shared_ptr<vector<shared_ptr<Point>>> result = make_shared<vector<shared_ptr<Point>>>();
   if (criteria.id >= 0) {
     result->push_back( load(criteria.id) );
   
@@ -56,9 +58,11 @@ void SQLitePointSerializer::loadMatching(SimpleCriteria criteria, shared_ptr<vec
     //implement if needed, probably never will be used
     fprintf(stderr, "%s: Not implemented! \n", __PRETTY_FUNCTION__);
   }
+  
+  return result;
 }
 
-shared_ptr<Entity> SQLitePointSerializer::load(long id) {
+shared_ptr<Point> SQLitePointSerializer::load(long id) {
   SQLiteFillableStatement statement(db, "SELECT * FROM Points WHERE id=?");
   statement.bindNext(id);
   if (statement.executeSelectNext() > 0) {

@@ -10,6 +10,10 @@
 
 #define SERIALIZER_SENSOR_ID  2
 
+Sensor::Sensor()
+: Entity(SERIALIZER_SENSOR_ID), position(nullptr), name(nullptr), lastValue(SensorValue(-1, 0, 0)) {
+}
+
 Sensor::Sensor(string _name, Point* pos)
 : Entity(SERIALIZER_SENSOR_ID), position(pos), name(_name), lastValue(SensorValue(-1, 0, 0)) {
 }

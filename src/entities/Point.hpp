@@ -14,6 +14,7 @@
 
 class Point : public Entity {
   public:
+    Point();
     Point(Point* source);
     Point(int id, int x, int y);
     Point(int x, int y);

@@ -18,6 +18,7 @@ using namespace std;
 
 class Sensor : public Entity {
   public:
+    Sensor();
     Sensor(int id, string name, Point* pos = NULL);
     Sensor(string name, Point* pos = NULL);
   

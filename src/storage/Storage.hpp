@@ -14,10 +14,9 @@
 #include <vector>
 #include "Entity.hpp"
 #include "SimpleCriteria.hpp"
+#include "EntitySerializer.hpp"
 
 using namespace std;
-
-class EntitySerializer;
 
 class Storage {
   public:
@@ -25,13 +24,9 @@ class Storage {
     virtual void close() = 0;
     
     virtual void registerSereializer(Entity* entityType, EntitySerializer* serializer);
-    
-    virtual void add(Entity* data) = 0;
-    virtual void addOrUpdate(Entity* data) = 0;
-  
-    template<class T> shared_ptr<vector<shared_ptr<T>>> loadAll();
-    template<class T> shared_ptr<vector<shared_ptr<T>>> loadMatching(SimpleCriteria criteria);
-    template<class T> shared_ptr<T> load(long id);
+    template<class T> T* requestSerializer(Entity marker) {
+      return static_cast<T*>(serializers[marker.getSerializerId()]);
+    }
   protected:
     map<int, EntitySerializer*>  serializers;
 };

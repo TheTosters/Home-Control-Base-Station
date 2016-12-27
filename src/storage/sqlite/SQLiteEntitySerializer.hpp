@@ -25,7 +25,6 @@ class SQLiteEntitySerializer : public EntitySerializer {
     sqlite3*  db;
     Storage*  storage;
 
-  
     bool executeUpdateQuery(string creationSql);
 };
 

@@ -10,12 +10,21 @@
 #define SQLiteRoomSerializer_hpp
 
 #include <stdio.h>
-#include "SQLiteEntitySerializer.hpp"
+#include <vector>
 
-class  SQLiteRoomSerializer : protected SQLiteEntitySerializer {
+#include "SQLiteEntitySerializer.hpp"
+#include "Room.hpp"
+#include "SimpleCriteria.hpp"
+
+class  SQLiteRoomSerializer : public SQLiteEntitySerializer {
   public:
-    virtual void store(Entity* data) override;
-    virtual void storeOrUpdate(Entity* data) override;
-    virtual void useDatabase(sqlite3 *db, Storage* storage) override;
+    void useDatabase(sqlite3 *db, Storage* storage);
+  
+    void store(Entity* data);
+    void storeOrUpdate(Entity* data);
+  
+    shared_ptr<vector<shared_ptr<Room>>> loadAll();
+    shared_ptr<vector<shared_ptr<Room>>> loadMatching(SimpleCriteria criteria);
+    shared_ptr<Room> load(long id);
 };
 #endif /* SQLiteRoomSerializer_hpp */
