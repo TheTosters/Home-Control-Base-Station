@@ -7,16 +7,15 @@
 //
 
 #include <iostream>
-#include "Room.hpp"
-#include "Sensor.hpp"
+#include "mongoose.h"
+#include "HttpServer.hpp"
+#include "HomePlanRestApiHandler.hpp"
+
+HttpServer* httpServer;
 
 int main(int argc, const char * argv[]) {
-  std::auto_ptr<Room> r(new Room(1, "dsf"));
-  vector<Point>* shape = r->getShape();
-  
-  shape->push_back( Point(1, 2, 3) );
-  
-  Point pp = r->getShape()->at(0);
-  
+  httpServer = new HttpServer();
+  httpServer->registerHandler(std::make_shared<HomePlanRestApiHandler>());
+  httpServer->start();
   return 0;
 }
