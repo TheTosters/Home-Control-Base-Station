@@ -11,15 +11,15 @@
 #define SERIALIZER_SENSOR_ID  2
 
 Sensor::Sensor()
-: Entity(SERIALIZER_SENSOR_ID), position(nullptr), name(nullptr), lastValue(SensorValue(-1, 0, 0)) {
+: Entity(SERIALIZER_SENSOR_ID), position(nullptr), name(""), type(""), lastValue(SensorValue(-1, 0, 0)) {
 }
 
 Sensor::Sensor(string _name, Point* pos)
-: Entity(SERIALIZER_SENSOR_ID), position(pos), name(_name), lastValue(SensorValue(-1, 0, 0)) {
+: Entity(SERIALIZER_SENSOR_ID), position(pos), name(_name), type(""), lastValue(SensorValue(-1, 0, 0)) {
 }
 
 Sensor::Sensor(long _id, string _name, Point* pos)
-: Entity(_id, SERIALIZER_SENSOR_ID), position(pos), name(_name), lastValue(SensorValue(-1, 0, 0)) {
+: Entity(_id, SERIALIZER_SENSOR_ID), position(pos), name(_name), type(""), lastValue(SensorValue(-1, 0, 0)) {
 }
 
 Point* Sensor::getPosition() {
@@ -34,16 +34,24 @@ void Sensor::setPosition(Point p) {
   position = p;
 }
 
-void Sensor::setName(string& name) {
+void Sensor::setName(string const& name) {
   this->name = name;
 }
 
-void Sensor::setAddress(string& address) {
+void Sensor::setAddress(string const& address) {
   this->address = address;
 }
 
 string Sensor::getAddress() {
   return address;
+}
+
+void Sensor::setType(string const& type) {
+  this->type = type;
+}
+
+string Sensor::getType() {
+  return type;
 }
 
 SensorValue Sensor::getLastValue(){

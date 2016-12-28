@@ -18,11 +18,12 @@ void SQLiteSensorSerializer::store(Sensor* data) {
   SQLitePointSerializer* pointSerializer = storage->requestSerializer<SQLitePointSerializer>(Point());
   pointSerializer->store(p->getPosition());
   
-  SQLiteFillableStatement statement(db, "INSERT INTO Sensors (NULL, ?, ?, ?, ?)");
+  SQLiteFillableStatement statement(db, "INSERT INTO Sensors (NULL, ?, ?, ?, ?, ?)");
   statement.bindNext(p->getPosition()->getId());
   statement.bindNext(p->getName());
   statement.bindNext(p->getRoomId());
   statement.bindNext(p->getAddress());
+  statement.bindNext(p->getType());
   p->setId( statement.executeInsert() );
 }
 
@@ -35,12 +36,13 @@ void SQLiteSensorSerializer::storeOrUpdate(Sensor* data) {
   SQLitePointSerializer* pointSerializer = storage->requestSerializer<SQLitePointSerializer>(Point());
   pointSerializer->storeOrUpdate(p->getPosition());
   
-  SQLiteFillableStatement statement(db, "INSERT OR REPLACE INTO Sensors (id, positionId, name, roomId, address) VALUES (?, ?, ?, ?, ?)");
+  SQLiteFillableStatement statement(db, "INSERT OR REPLACE INTO Sensors (id, positionId, name, roomId, address, type) VALUES (?, ?, ?, ?, ?, ?)");
   statement.bindNext(p->getId());
   statement.bindNext(p->getPosition()->getId());
   statement.bindNext(p->getName());
   statement.bindNext(p->getRoomId());
   statement.bindNext(p->getAddress());
+  statement.bindNext(p->getType());
   statement.executeUpdate();
 }
 
@@ -52,8 +54,9 @@ void SQLiteSensorSerializer::useDatabase(sqlite3 *db, Storage* storage) {
     id INT PRIMARY KEY NOT NULL,  \
     positionId INT NOT NULL,      \
     name TEXT NOT NULL,           \
-    roomId INT NOT NULL           \
-    address TEXT                  \
+    roomId INT NOT NULL,          \
+    address TEXT,                 \
+    type TEXT                     \
   )";
   executeUpdateQuery(creationSql);
 }
@@ -73,9 +76,9 @@ shared_ptr<Sensor> SQLiteSensorSerializer::load(long id) {
   statement.bindNext(id);
   if (statement.executeSelectNext() > 0) {
     long id, positionId, roomId;
-    string name, address;
+    string name, address, type;
     
-    statement.getColumns( &id, &positionId, &name, &roomId, &address);
+    statement.getColumns( &id, &positionId, &name, &roomId, &address, &type);
 
     SQLitePointSerializer* pointSerializer = storage->requestSerializer<SQLitePointSerializer>(Point());
     shared_ptr<Point> pos = pointSerializer->load(positionId);
@@ -83,6 +86,7 @@ shared_ptr<Sensor> SQLiteSensorSerializer::load(long id) {
     shared_ptr<Sensor> result = make_shared<Sensor>(id, name, pos.get());
     result->setRoomId(roomId);
     result->setAddress(address);
+    result->setType(type);
     
     return result;
     
