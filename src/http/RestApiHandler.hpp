@@ -32,6 +32,15 @@ class RestApiHandler {
     HttpServer* server;
     string      endpoint;
   
+    //those methods returns various errors to connection
     void  notImplemented(struct mg_connection* conn);
+    void  methodNotSupported(struct mg_connection* conn, string const& supports);
+    void  missingQueryVariable(struct mg_connection* conn, string const& varName);
+    void  notFound(struct mg_connection* conn);
+    void  bodyExpected(struct mg_connection* conn);
+  
+    //helper methods
+    bool  getOrDieQueryVariable(struct mg_connection* conn, void* rawData, string const& varName, long* result);
+    shared_ptr<string> getBodyOrDie(struct mg_connection* conn, void* rawData);
 };
 #endif /* RestApiHandler_hpp */

@@ -13,6 +13,7 @@
 #include "SQLiteStorage.hpp"
 #include "Entities.hpp"
 #include "SQLiteSerializers.hpp"
+#include "RoomsRestApiHandler.hpp"
 
 HttpServer* httpServer;
 Storage* storage;
@@ -28,10 +29,10 @@ void prepareStorage() {
 void prepareHttpServer() {
   httpServer = new HttpServer(storage);
   httpServer->registerHandler(std::make_shared<HomePlanRestApiHandler>());
+  httpServer->registerHandler(std::make_shared<RoomsRestApiHandler>());
 }
 
 int main(int argc, const char * argv[]) {
-  
   prepareStorage();
   prepareHttpServer();
   

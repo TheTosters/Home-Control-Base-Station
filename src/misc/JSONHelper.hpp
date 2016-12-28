@@ -21,4 +21,8 @@ json toJSON(shared_ptr<Room> room);
 json toJSON(shared_ptr<Sensor> sensor);
 json toJSON(shared_ptr<SensorValue> sensor);
 
+shared_ptr<Point> pointFromJSON(string const& data);
+shared_ptr<Sensor> sensorFromJSON(string const& data);
+shared_ptr<Room> roomFromJSON(string const& data);
+
 #endif /* JSONHelper_hpp */

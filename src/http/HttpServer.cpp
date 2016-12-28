@@ -108,11 +108,29 @@ void HttpServer::onGetRequest(struct mg_connection *c, void *data) {
 }
 
 void HttpServer::onPostRequest(struct mg_connection *c, void *data) {
+  struct http_message *hm = (struct http_message *) data;
+  string uriStr(hm->uri.p, hm->uri.len);
+  shared_ptr<RestApiHandler> handler = handlers[uriStr];
   
+  if (handler) {
+    handler->onPostRequest(c, data);
+    
+  } else {
+    printf("No handler for request: %s", uriStr.c_str());
+  }
 }
 
 void HttpServer::onDeleteRequest(struct mg_connection *c, void *data) {
+  struct http_message *hm = (struct http_message *) data;
+  string uriStr(hm->uri.p, hm->uri.len);
+  shared_ptr<RestApiHandler> handler = handlers[uriStr];
   
+  if (handler) {
+    handler->onDeleteRequest(c, data);
+    
+  } else {
+    printf("No handler for request: %s", uriStr.c_str());
+  }
 }
 
 void HttpServer::registerHandler(shared_ptr<RestApiHandler> const& handler) {
@@ -122,4 +140,5 @@ void HttpServer::registerHandler(shared_ptr<RestApiHandler> const& handler) {
     return;
   }
   handlers[handler->getEndpoint()] = handler;
+  handler->setServer(this);
 }

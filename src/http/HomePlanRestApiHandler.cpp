@@ -43,9 +43,9 @@ void HomePlanRestApiHandler::onGetRequest(struct mg_connection *c, void *data) {
 }
 
 void HomePlanRestApiHandler::onPostRequest(struct mg_connection *c, void *data) {
-  notImplemented(c);
+  methodNotSupported(c, "GET");
 }
 
 void HomePlanRestApiHandler::onDeleteRequest(struct mg_connection *c, void *data) {
-  notImplemented(c);
+  methodNotSupported(c, "GET");
 }

@@ -12,7 +12,7 @@
 #define SERIALIZER_ROOM_ID  1
 
 Room::Room()
-:Entity(SERIALIZER_ROOM_ID), name(nullptr){
+:Entity(SERIALIZER_ROOM_ID), name(""){
   
 }
 
