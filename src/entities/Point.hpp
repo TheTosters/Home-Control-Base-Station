@@ -23,8 +23,11 @@ class Point : public Entity {
     int     getY();
     void    setX(int x);
     void    setY(int y);
+    long    getOwnerId();
+    void    setOwnerId(long ownerId);
   private:
     int   x, y;
+    long  ownerId;
 };
 
 #endif /* Point_hpp */

@@ -16,19 +16,20 @@ Point::Point()
 }
 
 Point::Point(int _x, int _y)
-: Entity(SERIALIZER_POINT_ID), x(_x), y(_y) {
+: Entity(SERIALIZER_POINT_ID), x(_x), y(_y), ownerId(-1) {
 
 }
 
 Point::Point(int _id, int _x, int _y)
-: Entity(_id, SERIALIZER_POINT_ID), x(_x), y(_y) {
+: Entity(_id, SERIALIZER_POINT_ID), x(_x), y(_y), ownerId(-1) {
   
 }
 
 Point::Point(Point* source)
-:Entity(source != NULL ? source->id : 0, SERIALIZER_POINT_ID),
+:Entity(source != NULL ? source->id : -1, SERIALIZER_POINT_ID),
  x(source != NULL ? source->x : 0),
- y(source != NULL ? source->y : 0) {
+ y(source != NULL ? source->y : 0),
+ ownerId(source != NULL ? source->ownerId : -1){
 
 }
 
@@ -46,4 +47,12 @@ void Point::setX(int x) {
 
 void Point::setY(int y) {
   this->y = y;
+}
+
+long Point::getOwnerId() {
+  return ownerId;
+}
+
+void Point::setOwnerId(long ownerId) {
+  this->ownerId = ownerId;
 }

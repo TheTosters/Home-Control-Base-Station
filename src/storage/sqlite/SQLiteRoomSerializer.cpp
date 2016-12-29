@@ -62,6 +62,22 @@ void SQLiteRoomSerializer::useDatabase(sqlite3 *db, Storage* storage) {
   executeUpdateQuery(creationSql);
 }
 
+void SQLiteRoomSerializer::remove(long id, bool dropSensors) {
+  SQLiteFillableStatement statement(db, "DELETE FROM Rooms WHERE id=?");
+  statement.bindNext(id);
+  statement.executeUpdate();
+  
+  if (dropSensors == true) {
+    SimpleCriteria criteria;
+    criteria.helperId = id;
+    
+    SQLiteSensorSerializer* sensorSerializer = storage->requestSerializer<SQLiteSensorSerializer>( Sensor() );
+    sensorSerializer->remove(criteria);
+  }
+  
+  //drop points!
+}
+
 shared_ptr<vector<shared_ptr<Room>>> SQLiteRoomSerializer::loadAll() {
   shared_ptr<vector<shared_ptr<Room>>> result = make_shared<vector<shared_ptr<Room>>>();
   
