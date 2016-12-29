@@ -42,17 +42,19 @@ http://server/plans
     "sensors" : [
       {
         "id" : 33,
-        "position" : { "x" : 10, "y" : 10},
+        "x" : 10, 
+        "y" : 10,
         "name" : "sensor name",
-        "address" : "address",
+        "address" : "physical sensor address",
         "type" : "sensor_type"
       },
       ....
       {
         "id" : 34,
-        "position" : { "x" : 12, "y" : 12},
+        "x" : 12, 
+        "y" : 12,
         "name" : "sensor name",
-        "address" : "address",
+        "address" : "physical sensor address",
         "type" : "sensor_type"
       }
     ]
@@ -93,17 +95,19 @@ http://server/rooms?id=12
   "sensors" : [
     {
       "id" : 33,
-      "position" : { "x" : 10, "y" : 10},
+      "x" : 12, 
+      "y" : 12,
       "name" : "sensor name",
-      "address" : "address",
+      "address" : "physical sensor address",
       "type" : "sensor_type"
     },
     ....
     {
       "id" : 34,
-      "position" : { "x" : 12, "y" : 12},
+      "x" : 10, 
+      "y" : 10,
       "name" : "sensor name",
-      "address" : "address",
+      "address" : "physical sensor address",
       "type" : "sensor_type"
     }
   ]
