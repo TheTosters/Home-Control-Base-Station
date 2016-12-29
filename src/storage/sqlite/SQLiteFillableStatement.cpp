@@ -47,11 +47,14 @@ bool SQLiteFillableStatement::bindNext(const double value) {
   return res ==  SQLITE_OK;
 }
 
-bool SQLiteFillableStatement::executeUpdate() {
+bool SQLiteFillableStatement::executeUpdate(int* count) {
   int rc = sqlite3_step(statement);
   if(SQLITE_DONE != rc) {
     //todo: logs
-    fprintf(stderr, "insert statement didn't return DONE (%i): %s\n", rc, sqlite3_errmsg(db));
+    fprintf(stderr, "update statement didn't return DONE (%i): %s\n", rc, sqlite3_errmsg(db));
+  }
+  if (count != nullptr) {
+    *count = sqlite3_changes(db);
   }
   return rc == SQLITE_DONE;
 }

@@ -25,7 +25,7 @@ class SQLiteFillableStatement {
     bool bindNext(const int value);
     bool bindNext(const long value);
     bool bindNext(const double value);
-    bool executeUpdate();
+    bool executeUpdate(int* count = nullptr);
     long executeInsert();
     // <0 error, 0 - no more data, >0 row loaded
     int executeSelectNext();
