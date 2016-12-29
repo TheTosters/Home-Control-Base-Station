@@ -46,8 +46,29 @@ void RoomsRestApiHandler::onPostRequest(struct mg_connection *c, void *data) {
   }
   
   shared_ptr<Room> room = roomFromJSON(*body);
+  SQLiteRoomSerializer* serializer = server->getStorage()->requestSerializer<SQLiteRoomSerializer>(Room());
+  serializer->storeOrUpdate( room.get() );
+  sendHttpOk(c);
 }
 
 void RoomsRestApiHandler::onDeleteRequest(struct mg_connection *c, void *data) {
+  long roomId;
+  if (getOrDieQueryVariable(c, data, "id", &roomId) == false) {
+    return;
+  }
+  
+  long dropSensorsLong = 0;
+  bool hasDropSensors = getQueryVariable(data, "dropSensors", &dropSensorsLong);
+  bool dropSensors = hasDropSensors && (dropSensorsLong == 1);
+  
+  SQLiteRoomSerializer* serializer = server->getStorage()->requestSerializer<SQLiteRoomSerializer>(Room());
+  bool found = serializer->remove(roomId, dropSensors);
+  
+  if (found) {
+    sendHttpOk(c);
+    
+  } else {
+    notFound(c);
+  }
   
 }

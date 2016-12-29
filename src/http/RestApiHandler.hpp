@@ -40,6 +40,8 @@ class RestApiHandler {
     void  notFound(struct mg_connection* conn);
     void  bodyExpected(struct mg_connection* conn);
   
+    void  sendHttpOk(struct mg_connection* conn);
+  
     //helper methods
     bool getQueryVariable(void* rawData, string const& varName, long* result);
     bool getOrDieQueryVariable(struct mg_connection* conn, void* rawData, string const& varName, long* result);

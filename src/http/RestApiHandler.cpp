@@ -25,6 +25,12 @@ void RestApiHandler::notImplemented(struct mg_connection* conn) {
           "Content-Length: 0\r\n\r\n");
 }
 
+void RestApiHandler::sendHttpOk(struct mg_connection* conn) {
+  mg_printf(conn, "%s",
+            "HTTP/1.0 200 OK\r\n"
+            "Content-Length: 0\r\n\r\n");
+}
+
 void RestApiHandler::missingQueryVariable(struct mg_connection* conn, string const& varName) {
   string msg("Expected query variable:");
   msg.append(varName);
