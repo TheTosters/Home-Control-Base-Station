@@ -17,23 +17,27 @@
 
 void SQLiteRoomSerializer::store(Room* data) {
   Room* p = static_cast<Room*>(data);
-  SQLiteFillableStatement statement(db, "INSERT INTO Rooms (NULL, ?, ?)");
+  SQLiteFillableStatement statement(db, "INSERT INTO Rooms VALUES (NULL, ?, ?)");
   statement.bindNext(p->getName());
   statement.bindNext(p->getFloor());
   p->setId( statement.executeInsert() );
   
   //store sensors
   vector<Sensor>* tmp = p->getSensors();
+  SQLiteSensorSerializer* sensorSerializer = storage->requestSerializer<SQLiteSensorSerializer>(Sensor());
   for(vector<Sensor>::iterator it = tmp->begin(); it != tmp->end(); it ++) {
-    SQLiteSensorSerializer* helper = storage->requestSerializer<SQLiteSensorSerializer>(*it);
-    helper->storeOrUpdate( &(*it) );
+    Sensor* sensor = &(*it);
+    sensor->setRoomId(p->getId());
+    sensorSerializer->storeOrUpdate( sensor );
   }
   
   //store shape
   vector<Point>* tmp2 = p->getShape();
+  SQLitePointSerializer* pointSerializer = storage->requestSerializer<SQLitePointSerializer>(Point());
   for(vector<Point>::iterator it = tmp2->begin(); it != tmp2->end(); it ++) {
-    SQLitePointSerializer* helper = storage->requestSerializer<SQLitePointSerializer>(*it);
-    helper->storeOrUpdate( &(*it) );
+    Point* point = &(*it);
+    point->setOwnerId(p->getId());
+    pointSerializer->storeOrUpdate( point );
   }
 }
 
@@ -48,6 +52,9 @@ void SQLiteRoomSerializer::storeOrUpdate(Room* data) {
   statement.bindNext(p->getName());
   statement.bindNext(p->getFloor());
   statement.executeUpdate();
+  
+  //TODO: How to update/store sensors/points?
+  //NOTE: this need to cover situation with removing points/sensors which was in past but are no longer valid.
 }
 
 void SQLiteRoomSerializer::useDatabase(sqlite3 *db, Storage* storage) {
@@ -55,9 +62,9 @@ void SQLiteRoomSerializer::useDatabase(sqlite3 *db, Storage* storage) {
   
   //create table if needed
   string creationSql = "CREATE TABLE IF NOT EXISTS Rooms (\
-    id INT PRIMARY KEY NOT NULL,  \
-    name TEXT NOT NULL,           \
-    floor INT NOT NULL,           \
+    id INTEGER PRIMARY KEY, \
+    name TEXT NOT NULL, \
+    floor INT NOT NULL \
   )";
   executeUpdateQuery(creationSql);
 }
@@ -138,7 +145,7 @@ shared_ptr<vector<shared_ptr<Room>>> SQLiteRoomSerializer::loadMatching(SimpleCr
 }
 
 shared_ptr<Room> SQLiteRoomSerializer::load(long id) {
-  SQLiteFillableStatement statement(db, "SELECT * FROM Points WHERE id=?");
+  SQLiteFillableStatement statement(db, "SELECT * FROM Rooms WHERE id=?");
   statement.bindNext(id);
   if (statement.executeSelectNext() > 0) {
     long id;

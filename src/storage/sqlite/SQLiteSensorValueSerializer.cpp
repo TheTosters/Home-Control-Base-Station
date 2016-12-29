@@ -10,7 +10,7 @@
 #include "SQLiteFillableStatement.hpp"
 
 void SQLiteSensorValueSerializer::store(SensorValue* data) {
-  SQLiteFillableStatement statement(db, "INSERT INTO SensorValues (NULL, ?, ?)");
+  SQLiteFillableStatement statement(db, "INSERT INTO SensorValues VALUES (NULL, ?, ?)");
   statement.bindNext(data->getValue());
   statement.bindNext(static_cast<long>( data->getTimestamp() ));
   data->setId( statement.executeInsert() );
@@ -34,9 +34,9 @@ void SQLiteSensorValueSerializer::useDatabase(sqlite3 *db, Storage* storage) {
   
   //create table if needed
   string creationSql = "CREATE TABLE IF NOT EXISTS SensorValues (\
-    id INT PRIMARY KEY NOT NULL,  \
-    value REAL NOT NULL,          \
-    timestamp INT NOT NULL,       \
+    id INTEGER PRIMARY KEY, \
+    value REAL NOT NULL, \
+    timestamp INT NOT NULL \
   )";
   executeUpdateQuery(creationSql);
 }

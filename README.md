@@ -22,7 +22,7 @@ http://server/plans
 
 ```json
 [
-  "room" : {
+  {
     "id" : 8,
     "name" : "room name",
     "floor" : 1,
@@ -58,7 +58,8 @@ http://server/plans
         "type" : "sensor_type"
       }
     ]
-  }
+  },
+  ...
 ]
 
 ```

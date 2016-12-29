@@ -24,6 +24,7 @@ void prepareStorage() {
   storage->registerSerializer(Room(), new SQLiteRoomSerializer());
   storage->registerSerializer(Sensor(), new SQLiteSensorSerializer());
   storage->registerSerializer(SensorValue(), new SQLiteSensorValueSerializer());
+  storage->open();
 }
 
 void prepareHttpServer() {

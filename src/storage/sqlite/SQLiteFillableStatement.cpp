@@ -13,7 +13,7 @@ SQLiteFillableStatement::SQLiteFillableStatement(sqlite3* _db, const string sql)
   int res = sqlite3_prepare_v2(db, sql.c_str(), -1, &statement, NULL);
   if (res != SQLITE_OK) {
     //todo: logs
-    fprintf(stderr, "SQL error, can't create statement: %s", sql.c_str());
+    fprintf(stderr, "SQL error, can't create statement: %s [%s]", sql.c_str(), sqlite3_errmsg(db));
   }
 }
 

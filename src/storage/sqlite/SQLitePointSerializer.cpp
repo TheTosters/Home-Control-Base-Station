@@ -12,7 +12,7 @@
 
 void SQLitePointSerializer::store(Point* data) {
   Point* p = static_cast<Point*>(data);
-  SQLiteFillableStatement statement(db, "INSERT INTO Points (NULL, ?, ?, ?)");
+  SQLiteFillableStatement statement(db, "INSERT INTO Points VALUES (NULL, ?, ?, ?)");
   statement.bindNext(p->getOwnerId());
   statement.bindNext(p->getX());
   statement.bindNext(p->getY());
@@ -38,10 +38,10 @@ void SQLitePointSerializer::useDatabase(sqlite3 *db, Storage* storage) {
   
   //create table if needed
   string creationSql = "CREATE TABLE IF NOT EXISTS Points (\
-      id INT PRIMARY KEY NOT NULL,  \
-      ownerId INT NOT NULL,         \
-      x INT NOT NULL,               \
-      y INT NOT NULL,               \
+      id INTEGER PRIMARY KEY, \
+      ownerId INT NOT NULL, \
+      x INT NOT NULL, \
+      y INT NOT NULL \
     )";
   executeUpdateQuery(creationSql);
 }

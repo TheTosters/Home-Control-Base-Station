@@ -14,7 +14,7 @@
 void SQLiteSensorSerializer::store(Sensor* data) {
   Sensor* p = static_cast<Sensor*>(data);
   
-  SQLiteFillableStatement statement(db, "INSERT INTO Sensors (NULL, ?, ?, ?, ?, ?, ?)");
+  SQLiteFillableStatement statement(db, "INSERT INTO Sensors VALUES (NULL, ?, ?, ?, ?, ?, ?)");
   statement.bindNext(p->getX());
   statement.bindNext(p->getY());
   statement.bindNext(p->getName());
@@ -47,13 +47,13 @@ void SQLiteSensorSerializer::useDatabase(sqlite3 *db, Storage* storage) {
   
   //create table if needed
   string creationSql = "CREATE TABLE IF NOT EXISTS Sensors (\
-    id INT PRIMARY KEY NOT NULL,  \
-    x INT NOT NULL,               \
-    y INT NOT NULL,               \
-    name TEXT NOT NULL,           \
-    roomId INT NOT NULL,          \
-    address TEXT,                 \
-    type TEXT                     \
+    id INTEGER PRIMARY KEY, \
+    x INT NOT NULL, \
+    y INT NOT NULL, \
+    name TEXT NOT NULL, \
+    roomId INT NOT NULL, \
+    address TEXT, \
+    type TEXT \
   )";
   executeUpdateQuery(creationSql);
 }

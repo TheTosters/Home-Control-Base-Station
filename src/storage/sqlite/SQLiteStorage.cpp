@@ -23,6 +23,7 @@ bool SQLiteStorage::open() {
   while(iter != serializers.end()) {
     SQLiteEntitySerializer* sqlSer = static_cast<SQLiteEntitySerializer*>(iter->second);
     sqlSer->useDatabase(db, this);
+    iter++;
   }
   return true;
 }
