@@ -28,6 +28,7 @@ class RestApiHandler {
     HttpServer* getServer() { return server;}
   
     string getEndpoint() const {return endpoint; }
+
   protected:
     HttpServer* server;
     string      endpoint;
@@ -40,7 +41,8 @@ class RestApiHandler {
     void  bodyExpected(struct mg_connection* conn);
   
     //helper methods
-    bool  getOrDieQueryVariable(struct mg_connection* conn, void* rawData, string const& varName, long* result);
+    bool getQueryVariable(void* rawData, string const& varName, long* result);
+    bool getOrDieQueryVariable(struct mg_connection* conn, void* rawData, string const& varName, long* result);
     shared_ptr<string> getBodyOrDie(struct mg_connection* conn, void* rawData);
 };
 #endif /* RestApiHandler_hpp */

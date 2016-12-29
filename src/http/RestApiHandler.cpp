@@ -59,16 +59,14 @@ shared_ptr<string> RestApiHandler::getBodyOrDie(struct mg_connection* conn, void
   return make_shared<string>(message->body.p, message->body.len);
 }
 
-bool RestApiHandler::getOrDieQueryVariable(struct mg_connection* conn, void* rawData, string const& varName, long* result) {
+bool RestApiHandler::getQueryVariable(void* rawData, string const& varName, long* result) {
   struct http_message *message = (struct http_message *) rawData;
   if (message->query_string.len == 0) {
-    missingQueryVariable(conn, varName);
     return false;
   }
   
   char idStr[25];
   if (mg_get_http_var(&message->query_string, varName.c_str(), idStr, sizeof(idStr)) < 0) {
-    missingQueryVariable(conn, varName);
     return false;
   }
   
@@ -76,6 +74,16 @@ bool RestApiHandler::getOrDieQueryVariable(struct mg_connection* conn, void* raw
   errno = 0;
   *result = strtol(idStr, &endptr, 0);
   if (errno == ERANGE || *endptr != '\0' || idStr == endptr) {
+    return false;
+  }
+  
+  return true;
+}
+
+bool RestApiHandler::getOrDieQueryVariable(struct mg_connection* conn, void* rawData, string const& varName, long* result) {
+  bool queryResult = getQueryVariable(rawData, varName, result);
+
+  if (queryResult == false) {
     missingQueryVariable(conn, varName);
     return false;
   }
