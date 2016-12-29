@@ -26,5 +26,7 @@ class  SQLiteRoomSerializer : public SQLiteEntitySerializer {
     shared_ptr<vector<shared_ptr<Room>>> loadAll();
     shared_ptr<vector<shared_ptr<Room>>> loadMatching(SimpleCriteria criteria);
     shared_ptr<Room> load(long id);
+  
+    void remove(long id, bool dropSensors);
 };
 #endif /* SQLiteRoomSerializer_hpp */

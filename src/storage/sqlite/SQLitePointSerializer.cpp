@@ -52,6 +52,17 @@ shared_ptr<vector<shared_ptr<Point>>> SQLitePointSerializer::loadAll() {
   return make_shared<vector<shared_ptr<Point>>>();
 }
 
+shared_ptr<Point> SQLitePointSerializer::deserializeRow(SQLiteFillableStatement& statement) {
+  long id, ownerId;
+  int x, y;
+  
+  statement.getColumns( &id, &ownerId, &x, &y);
+  auto point = make_shared<Point>(id, x, y);
+  point->setOwnerId(ownerId);
+  
+  return point;
+}
+
 shared_ptr<vector<shared_ptr<Point>>> SQLitePointSerializer::loadMatching(SimpleCriteria criteria) {
   shared_ptr<vector<shared_ptr<Point>>> result = make_shared<vector<shared_ptr<Point>>>();
   if (criteria.id >= 0) {
@@ -61,13 +72,7 @@ shared_ptr<vector<shared_ptr<Point>>> SQLitePointSerializer::loadMatching(Simple
     SQLiteFillableStatement statement(db, "SELECT * FROM Points WHERE ownerId=?");
     statement.bindNext(criteria.helperId);
     while(statement.executeSelectNext() > 0) {
-      long id, ownerId;
-      int x, y;
-      
-      statement.getColumns( &id, &ownerId, &x, &y);
-      auto point = make_shared<Point>(id, x, y);
-      point->setOwnerId(ownerId);
-      result->push_back( point );
+      result->push_back( deserializeRow(statement) );
     }
 
   } else {
@@ -82,15 +87,30 @@ shared_ptr<Point> SQLitePointSerializer::load(long id) {
   SQLiteFillableStatement statement(db, "SELECT * FROM Points WHERE id=?");
   statement.bindNext(id);
   if (statement.executeSelectNext() > 0) {
-    long id, ownerId;
-    int x, y;
-    
-    statement.getColumns( &id, &ownerId, &x, &y);
-    auto result = make_shared<Point>(id, x, y);
-    result->setOwnerId(ownerId);
-    return result;
+    return deserializeRow(statement);
     
   } else {
     return nullptr;
+  }
+}
+
+void SQLitePointSerializer::remove(long id) {
+  SQLiteFillableStatement statement(db, "DELETE FROM Points WHERE id=?");
+  statement.bindNext(id);
+  statement.executeUpdate();
+}
+
+void SQLitePointSerializer::remove(SimpleCriteria criteria) {
+  if (criteria.id >= 0) {
+    remove(criteria.id);
+    
+  } else if (criteria.helperId >= 0) {
+    SQLiteFillableStatement statement(db, "DELETE FROM Points WHERE ownerId=?");
+    statement.bindNext(criteria.helperId);
+    statement.executeUpdate();
+    
+  } else {
+    //implement if needed, probably never will be used
+    fprintf(stderr, "%s: Not implemented! \n", __PRETTY_FUNCTION__);
   }
 }

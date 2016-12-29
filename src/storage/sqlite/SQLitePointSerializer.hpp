@@ -18,16 +18,23 @@
 
 using namespace std;
 
-class Entity;
+class SQLiteFillableStatement;
 
 class SQLitePointSerializer : public SQLiteEntitySerializer {
   public:
     void store(Point* data);
     void storeOrUpdate(Point* data);
+  
     void useDatabase(sqlite3 *db, Storage* storage);
+  
     shared_ptr<vector<shared_ptr<Point>>> loadAll();
     shared_ptr<vector<shared_ptr<Point>>> loadMatching(SimpleCriteria criteria);
     shared_ptr<Point> load(long id);
+  
+    void remove(long id);
+    void remove(SimpleCriteria criteria);
+  private:
+    shared_ptr<Point> deserializeRow(SQLiteFillableStatement& statement);
 };
 
 #endif /* SQLitePointSerializer_hpp */

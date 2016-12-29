@@ -14,6 +14,8 @@
 #include "Sensor.hpp"
 #include "SimpleCriteria.hpp"
 
+class SQLiteFillableStatement;
+
 class SQLiteSensorSerializer : public SQLiteEntitySerializer {
   public:
     void store(Sensor* data);
@@ -23,6 +25,11 @@ class SQLiteSensorSerializer : public SQLiteEntitySerializer {
     shared_ptr<vector<shared_ptr<Sensor>>> loadAll();
     shared_ptr<vector<shared_ptr<Sensor>>> loadMatching(SimpleCriteria criteria);
     shared_ptr<Sensor> load(long id);
+  
+    void remove(long id);
+    void remove(SimpleCriteria criteria);
+  private:
+    shared_ptr<Sensor> deserializeRow(SQLiteFillableStatement& statement);
 };
 
 #endif /* SQLiteSensorSerializer_hpp */

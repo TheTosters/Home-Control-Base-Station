@@ -22,15 +22,14 @@ json toJSON(shared_ptr<Point> point) {
 }
 
 json toJSON(Sensor* sensor) {
-  Point* posPtr = sensor->getPosition();
-  json pos = toJSON(posPtr);
-  
+
   json jsonSensor = {
     {"id", sensor->getId()},
+    {"x", sensor->getX()},
+    {"y", sensor->getY()},
     {"name", sensor->getName()},
-    {"position", pos},
     {"address", sensor->getAddress()},
-    //{"type", sensor->getType()}     //TODO: add type to sensor class
+    {"type", sensor->getType()}
   };
   
   return jsonSensor;
@@ -112,23 +111,20 @@ shared_ptr<Point> pointFromJSON(string const& data) {
 
 shared_ptr<Sensor> sensorFromJSON(string const& data) {
   json json = json::parse(data);
-  if (checkIfKeysExists(json, {"position", "name", "address", "type"}) == false) {
+  if (checkIfKeysExists(json, {"position", "name", "address", "type", "x", "y"}) == false) {
     return nullptr;
   }
   long id = getOptionalJSONLong(json, "id");
   
   shared_ptr<Point> position = pointFromJSON(json["position"]);
   
-  shared_ptr<Sensor> result;
-  if (id >= 0) {
-    result = make_shared<Sensor>(id, json["name"], position.get() );
-    
-  } else {
-    result = make_shared<Sensor>(json["name"], position.get() );
-  }
+  shared_ptr<Sensor> result = (id >= 0) ? make_shared<Sensor>(id) : make_shared<Sensor>();
   
   result->setAddress( json["address"] );
-  //result->setType( json["type"] );
+  result->setType( json["type"] );
+  result->setName( json["name"] );
+  result->setX( json["x"] );
+  result->setY( json["y"] );
   
   long roomId = getOptionalJSONLong(json, "roomId");
   if (roomId >= 0) {

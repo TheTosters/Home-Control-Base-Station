@@ -11,27 +11,15 @@
 #define SERIALIZER_SENSOR_ID  2
 
 Sensor::Sensor()
-: Entity(SERIALIZER_SENSOR_ID), position(nullptr), name(""), type(""), lastValue(SensorValue(-1, 0, 0)) {
+: Entity(SERIALIZER_SENSOR_ID), posX(0), posY(0), name(""), type(""), lastValue(SensorValue(-1, 0, 0)) {
 }
 
-Sensor::Sensor(string _name, Point* pos)
-: Entity(SERIALIZER_SENSOR_ID), position(pos), name(_name), type(""), lastValue(SensorValue(-1, 0, 0)) {
-}
-
-Sensor::Sensor(long _id, string _name, Point* pos)
-: Entity(_id, SERIALIZER_SENSOR_ID), position(pos), name(_name), type(""), lastValue(SensorValue(-1, 0, 0)) {
-}
-
-Point* Sensor::getPosition() {
-  return &position;
+Sensor::Sensor(long _id)
+: Entity(_id, SERIALIZER_SENSOR_ID), posX(0), posY(0), name(""), type(""), lastValue(SensorValue(-1, 0, 0)) {
 }
 
 string Sensor::getName() {
   return name;
-}
-
-void Sensor::setPosition(Point p) {
-  position = p;
 }
 
 void Sensor::setName(string const& name) {
@@ -68,4 +56,20 @@ long Sensor::getRoomId() {
 
 void Sensor::setRoomId(long _roomId) {
   roomId = _roomId;
+}
+
+void Sensor::setX(int x) {
+  posX = x;
+}
+
+int Sensor::getX() {
+  return posX;
+}
+
+void Sensor::setY(int y) {
+  posY = y;
+}
+
+int Sensor::getY() {
+  return posY;
 }

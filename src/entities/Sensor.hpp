@@ -19,8 +19,7 @@ using namespace std;
 class Sensor : public Entity {
   public:
     Sensor();
-    Sensor(long id, string name, Point* pos = NULL);
-    Sensor(string name, Point* pos = NULL);
+    Sensor(long id);
   
     Point*      getPosition();
     string      getName();
@@ -33,11 +32,16 @@ class Sensor : public Entity {
     string      getAddress();
     void        setType(string const& type);
     string      getType();
+    void        setX(int x);
+    int         getX();
+    void        setY(int y);
+    int         getY();
   
     SensorValue getLastValue();
     void        addValue(SensorValue val);
   private:
-    Point         position;
+    int           posX;
+    int           posY;
     string        name;
     string        address;    //it can be MAC, Bluetooth address, or other protocol dependent
     string        type;

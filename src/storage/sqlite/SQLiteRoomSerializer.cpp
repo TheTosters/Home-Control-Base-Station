@@ -67,15 +67,16 @@ void SQLiteRoomSerializer::remove(long id, bool dropSensors) {
   statement.bindNext(id);
   statement.executeUpdate();
   
+  SimpleCriteria criteria;
+  criteria.helperId = id;
+  
   if (dropSensors == true) {
-    SimpleCriteria criteria;
-    criteria.helperId = id;
-    
     SQLiteSensorSerializer* sensorSerializer = storage->requestSerializer<SQLiteSensorSerializer>( Sensor() );
     sensorSerializer->remove(criteria);
   }
   
-  //drop points!
+  SQLitePointSerializer* pointSerializer = storage->requestSerializer<SQLitePointSerializer>( Point() );
+  pointSerializer->remove(criteria);
 }
 
 shared_ptr<vector<shared_ptr<Room>>> SQLiteRoomSerializer::loadAll() {
