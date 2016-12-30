@@ -39,6 +39,7 @@ class RestApiHandler {
     void  missingQueryVariable(struct mg_connection* conn, string const& varName);
     void  notFound(struct mg_connection* conn);
     void  bodyExpected(struct mg_connection* conn);
+    void  internalError(struct mg_connection* conn);
   
     void  sendHttpOk(struct mg_connection* conn);
   

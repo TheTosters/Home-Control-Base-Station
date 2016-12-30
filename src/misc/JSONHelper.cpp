@@ -134,8 +134,7 @@ shared_ptr<Sensor> sensorFromJSON(string const& data) {
   return result;
 }
 
-shared_ptr<Room> roomFromJSON(string const& data) {
-  json inJson = json::parse(data);
+shared_ptr<Room> roomFromJSON(json const& inJson) {
   if (checkIfKeysExists(inJson, {"name", "floor", "shape"}) == false) {
     return nullptr;
   }
@@ -175,7 +174,38 @@ shared_ptr<Room> roomFromJSON(string const& data) {
   return result;
 }
 
+shared_ptr<Room> roomFromJSON(string const& data) {
+  json json = json::parse(data);
+  return roomFromJSON(json);
+}
+
 json toJSON(shared_ptr<SensorValue> sensor) {
   //todo: implement
   return nullptr;
+}
+
+shared_ptr<vector<shared_ptr<Room>>> roomListFromJSON(string const& data) {
+  json inJson = json::parse(data);
+  auto result = make_shared<vector<shared_ptr<Room>>>();
+  
+  if (inJson.is_array()) {
+    for(auto iter = inJson.begin(); iter != inJson.end(); iter++) {
+      shared_ptr<Room> room = roomFromJSON(*iter);
+      result->push_back(room);
+    }
+  }
+  
+  return result;
+}
+
+json toJSON(shared_ptr<vector<shared_ptr<Room>>> roomsList) {
+  json result = json::array();
+  
+  for(vector<shared_ptr<Room>>::iterator iter = roomsList->begin(); iter != roomsList->end(); iter ++) {
+    shared_ptr<Room> roomPtr = *iter;
+    json room = toJSON(roomPtr);
+    result += room;
+  }
+  
+  return result;
 }

@@ -20,9 +20,10 @@ json toJSON(shared_ptr<Point> point);
 json toJSON(shared_ptr<Room> room);
 json toJSON(shared_ptr<Sensor> sensor);
 json toJSON(shared_ptr<SensorValue> sensor);
+json toJSON(shared_ptr<vector<shared_ptr<Room>>> roomsList);
 
 shared_ptr<Point> pointFromJSON(string const& data);
 shared_ptr<Sensor> sensorFromJSON(string const& data);
 shared_ptr<Room> roomFromJSON(string const& data);
-
+shared_ptr<vector<shared_ptr<Room>>> roomListFromJSON(string const& data);
 #endif /* JSONHelper_hpp */

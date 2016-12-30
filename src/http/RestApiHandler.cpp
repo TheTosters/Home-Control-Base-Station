@@ -25,6 +25,12 @@ void RestApiHandler::notImplemented(struct mg_connection* conn) {
           "Content-Length: 0\r\n\r\n");
 }
 
+void RestApiHandler::internalError(struct mg_connection* conn) {
+  mg_printf(conn, "%s",
+            "HTTP/1.0 500 Internal Server Error\r\n"
+            "Content-Length: 0\r\n\r\n");
+}
+
 void RestApiHandler::sendHttpOk(struct mg_connection* conn) {
   mg_printf(conn, "%s",
             "HTTP/1.0 200 OK\r\n"

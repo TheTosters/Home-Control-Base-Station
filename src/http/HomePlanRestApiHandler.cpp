@@ -15,6 +15,7 @@
 #include "SQLiteSerializers.hpp"
 #include "HttpServer.hpp"
 #include "JSONHelper.hpp"
+#include "FileRoomsSerializer.hpp"
 
 using namespace std;
 using namespace nlohmann;
@@ -24,16 +25,18 @@ HomePlanRestApiHandler::HomePlanRestApiHandler() : RestApiHandler("/plans") {
 }
 
 void HomePlanRestApiHandler::onGetRequest(struct mg_connection *c, void *data) {
-  json result = json::array();
-  SQLiteRoomSerializer* serializer = server->getStorage()->requestSerializer<SQLiteRoomSerializer>(Room());
-  auto rooms = serializer->loadAll();
-  
-  for(vector<shared_ptr<Room>>::iterator iter = rooms->begin(); iter != rooms->end(); iter ++) {
-    shared_ptr<Room> roomPtr = *iter;
-    json room = toJSON(roomPtr);
-    result += room;
-  }
-  
+//  json result = json::array();
+//  SQLiteRoomSerializer* serializer = server->getStorage()->requestSerializer<SQLiteRoomSerializer>(Room());
+//  auto rooms = serializer->loadAll();
+//  
+//  for(vector<shared_ptr<Room>>::iterator iter = rooms->begin(); iter != rooms->end(); iter ++) {
+//    shared_ptr<Room> roomPtr = *iter;
+//    json room = toJSON(roomPtr);
+//    result += room;
+//  }
+  FileRoomsSerializer serializer;
+  auto loadedData = serializer.loadAll();
+  json result = toJSON(loadedData);
   string response = result.dump().c_str();
   mg_printf(c,
             "HTTP/1.1 200 OK\r\n"
@@ -43,9 +46,22 @@ void HomePlanRestApiHandler::onGetRequest(struct mg_connection *c, void *data) {
 }
 
 void HomePlanRestApiHandler::onPostRequest(struct mg_connection *c, void *data) {
-  methodNotSupported(c, "GET");
+  shared_ptr<string> str = getBodyOrDie(c, data);
+  if (str == nullptr) {
+    return;
+  }
+  
+  auto tmp = roomListFromJSON(*str);
+  FileRoomsSerializer serializer;
+  bool succ = serializer.store(tmp);
+  if (succ) {
+    sendHttpOk(c);
+    
+  } else {
+    internalError(c);
+  }
 }
 
 void HomePlanRestApiHandler::onDeleteRequest(struct mg_connection *c, void *data) {
-  methodNotSupported(c, "GET");
+  methodNotSupported(c, "GET, POST");
 }
