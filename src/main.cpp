@@ -13,9 +13,11 @@
 #include "SQLiteStorage.hpp"
 #include "Entities.hpp"
 #include "SQLiteSerializers.hpp"
+#include "SensorNetManager.hpp"
 
 HttpServer* httpServer;
 Storage* storage;
+SensorNetManager* sensorNetManager;
 
 void prepareStorage() {
   storage = new SQLiteStorage();
@@ -28,7 +30,12 @@ void prepareHttpServer() {
   httpServer->registerHandler(std::make_shared<HomePlanRestApiHandler>());
 }
 
+void prepareSensors() {
+  sensorNetManager = new SensorNetManager();
+}
+
 int main(int argc, const char * argv[]) {
+  prepareSensors();
   prepareStorage();
   prepareHttpServer();
   

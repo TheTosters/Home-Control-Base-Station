@@ -75,6 +75,19 @@ bool checkIfKeysExists(json json, vector<string> const& keys) {
   return true;
 }
 
+shared_ptr<string> getOptionalJSONString(json json, string const& key) {
+  if (json.find(key) == json.end()) {
+    return nullptr;
+  }
+  
+  auto value = json[key];
+  if (value.is_string() == false) {
+    return nullptr;
+  }
+  string s = value;
+  return make_shared<string>(s);
+}
+
 long getOptionalJSONLong(json json, string const& key) {
   if (json.find(key) == json.end()) {
     return -1;
