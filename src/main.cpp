@@ -13,16 +13,12 @@
 #include "SQLiteStorage.hpp"
 #include "Entities.hpp"
 #include "SQLiteSerializers.hpp"
-#include "RoomsRestApiHandler.hpp"
 
 HttpServer* httpServer;
 Storage* storage;
 
 void prepareStorage() {
   storage = new SQLiteStorage();
-  storage->registerSerializer(Point(), new SQLitePointSerializer());
-  storage->registerSerializer(Room(), new SQLiteRoomSerializer());
-  storage->registerSerializer(Sensor(), new SQLiteSensorSerializer());
   storage->registerSerializer(SensorValue(), new SQLiteSensorValueSerializer());
   storage->open();
 }
@@ -30,7 +26,6 @@ void prepareStorage() {
 void prepareHttpServer() {
   httpServer = new HttpServer(storage);
   httpServer->registerHandler(std::make_shared<HomePlanRestApiHandler>());
-  httpServer->registerHandler(std::make_shared<RoomsRestApiHandler>());
 }
 
 int main(int argc, const char * argv[]) {

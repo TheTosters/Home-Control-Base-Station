@@ -27,13 +27,13 @@ http://server/plans
     "name" : "room name",
     "floor" : 1,
     "shape" : [
-      { 
+      {
         "id" : 1,
         "x" : 10,
         "y" : 10
-      }, 
+      },
         ...
-      { 
+      {
         "id" : 12,
         "x" : 20,
         "y" : 20
@@ -42,7 +42,7 @@ http://server/plans
     "sensors" : [
       {
         "id" : 33,
-        "x" : 10, 
+        "x" : 10,
         "y" : 10,
         "name" : "sensor name",
         "address" : "physical sensor address",
@@ -51,7 +51,7 @@ http://server/plans
       ....
       {
         "id" : 34,
-        "x" : 12, 
+        "x" : 12,
         "y" : 12,
         "name" : "sensor name",
         "address" : "physical sensor address",
@@ -64,56 +64,9 @@ http://server/plans
 
 ```
 
-### Rooms management (path /rooms)
-
-Allows to add, remove and update single room instance.
-
-**Method: GET**
-**Params: id**
-Returns room with given id, to obtain all rooms use /plans endpoint.
-
-Example:
-http://server/rooms?id=12
-
-```json
-{
-  "id" : 12,
-  "name" : "room name",
-  "floor" : 1,
-  "shape" : [
-    { 
-      "id" : 1,
-      "x" : 10,
-      "y" : 10
-    }, 
-    ...
-    { 
-      "id" : 12,
-      "x" : 20,
-      "y" : 20
-    }
-  ],
-  "sensors" : [
-    {
-      "id" : 33,
-      "x" : 12, 
-      "y" : 12,
-      "name" : "sensor name",
-      "address" : "physical sensor address",
-      "type" : "sensor_type"
-    },
-    ....
-    {
-      "id" : 34,
-      "x" : 10, 
-      "y" : 10,
-      "name" : "sensor name",
-      "address" : "physical sensor address",
-      "type" : "sensor_type"
-    }
-  ]
-}
-```
+**Method: POST**
+**Params: NONE**
+Send to server new rooms arrangement. Structure of data is exact as in GET example above. Server doesn't care about id fields, it can be set any way you want. However sensor id is bound with physical address of sensor, so it's recommended that one physical address have only one id, or measurements which you can get from server might be messed.
 
 ## 3rd Party libraries and frameworks
 
