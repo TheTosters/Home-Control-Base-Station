@@ -31,12 +31,12 @@ void prepareHttpServer() {
 }
 
 void prepareSensors() {
-  sensorNetManager = new SensorNetManager();
+  sensorNetManager = new SensorNetManager(storage);
 }
 
 int main(int argc, const char * argv[]) {
-  prepareSensors();
   prepareStorage();
+  prepareSensors();
   prepareHttpServer();
   
   
