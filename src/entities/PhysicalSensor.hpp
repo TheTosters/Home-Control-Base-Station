@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <string>
+#include <vector>
 #include "Entity.hpp"
 
 using namespace std;
@@ -79,4 +80,6 @@ class PhysicalSensor : public Entity {
     /** Previous value, it's copy of lastValue before fetching new data is done */
     double              previousValue;
 };
+
+typedef vector<shared_ptr<PhysicalSensor>> PhysicalSensorList;
 #endif /* PhysicalSensor_hpp */

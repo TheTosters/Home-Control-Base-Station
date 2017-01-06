@@ -21,18 +21,17 @@ class CommunicationLink;
 
 typedef tuple<SensorValueType, double, time_t> Measurement;
 typedef shared_ptr<vector<shared_ptr<Measurement>>> MeasurementList;
+typedef shared_ptr<unordered_map<string, MeasurementList>> MeasurementMap;
 
 class SensorNetProtocolParser {
   public:
     SensorNetProtocolParser(CommunicationLink* link);
   
-    void requestMeasurement(unordered_map<string, MeasurementList>& result, int count = 1);
+    void requestMeasurement(MeasurementMap& result, int count = 1);
   private:
     CommunicationLink*   link;
     unordered_map<string, SensorValueType> responseCmdToSensorType;
   
-    bool parseValueWithTimestamp(shared_ptr<string> data, string::iterator& it, double& value, time_t& timeStamp);
-    SensorValueType parseSensorValueType(shared_ptr<string> data, string::iterator& iter);
     bool parseInt(string const& str, int& result);
     bool parseDouble(string const& str, double &result);
   
@@ -40,8 +39,7 @@ class SensorNetProtocolParser {
   
     MeasurementList parseValueWithTimestamp(string const& data, size_t& startIndex, SensorValueType type);
     bool detectResponseCommand(string const& data, size_t& startIndex, string& cmd, SensorValueType& sensorType);
-    void parseMeasurementsRespons(string const& data, unordered_map<string, MeasurementList>& result);
-
+    void parseMeasurementsRespons(string const& data, MeasurementMap& result);
 };
 
 #endif /* SensorNetProtocolParser_hpp */

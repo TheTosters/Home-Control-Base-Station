@@ -19,7 +19,7 @@ class HttpServer {
     void onDeleteRequest(struct mg_connection *c, void *data);
 
     void registerHandler(shared_ptr<RestApiHandler> const& handler);
-    Storage* getStorage() {return storage;}
+    Storage* getStorage();
   private:
     int                     httpPort;
     struct mg_mgr           manager;

@@ -57,7 +57,7 @@ bool SensorNetProtocolParser::parseDouble(string const& str, double &result) {
   return true;
 }
 
-void SensorNetProtocolParser::requestMeasurement(unordered_map<string, MeasurementList>& result, int count) {
+void SensorNetProtocolParser::requestMeasurement(MeasurementMap& result, int count) {
   
   shared_ptr<string> response;
   
@@ -135,7 +135,7 @@ MeasurementList SensorNetProtocolParser::parseValueWithTimestamp(string const& d
   return result;
 }
 
-void SensorNetProtocolParser::parseMeasurementsRespons(string const& data, unordered_map<string, MeasurementList>& result) {
+void SensorNetProtocolParser::parseMeasurementsRespons(string const& data, MeasurementMap& result) {
   size_t startIndex = 0;
   string cmd;
   SensorValueType sensorType;
@@ -143,7 +143,7 @@ void SensorNetProtocolParser::parseMeasurementsRespons(string const& data, unord
   while(detectResponseCommand(data, startIndex, cmd, sensorType)) {
     MeasurementList measurements = parseValueWithTimestamp(data, startIndex, sensorType);
     if (measurements != nullptr) {
-      result[cmd] = measurements;
+      (*result)[cmd] = measurements;
     }
   }
 }

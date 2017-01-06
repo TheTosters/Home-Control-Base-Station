@@ -10,17 +10,22 @@
 #include <sstream>
 #include "SensorNetManager.hpp"
 #include "JSONHelper.hpp"
+#include "CommunicationLink.hpp"
 
 const string FILE_NAME = "sensors-default.json";
 const long DEFAULT_FETCH_DELAY = 600;
 
-SensorNetManager::SensorNetManager(Storage* stor)
-: storage(stor) {
+SensorNetManager::SensorNetManager() {
   loadConfiguration();
 }
 
-void SensorNetManager::fetchMeasurements() {
-  //todo: implement
+MeasurementMap SensorNetManager::fetchMeasurements(shared_ptr<PhysicalSensor> sensor, int count) {
+  CommunicationLink link(cltBluetooth, sensor);
+  SensorNetProtocolParser parser(&link);
+  MeasurementMap result;
+  parser.requestMeasurement(result, count);
+  
+  return result;
 }
 
 shared_ptr<PhysicalSensor> SensorNetManager::loadSensorConfig(json data) {
@@ -80,6 +85,6 @@ void SensorNetManager::loadConfiguration() {
   }
 }
 
-vector<shared_ptr<PhysicalSensor>>& SensorNetManager::getSensors() {
+PhysicalSensorList& SensorNetManager::getSensors() {
   return sensors;
 }
