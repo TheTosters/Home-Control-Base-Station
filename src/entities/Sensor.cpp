@@ -11,11 +11,11 @@
 #define SERIALIZER_SENSOR_ID  2
 
 Sensor::Sensor()
-: Entity(SERIALIZER_SENSOR_ID), posX(0), posY(0), name(""), type(""), lastValue(SensorValue(-1, 0, 0)) {
+: Entity(SERIALIZER_SENSOR_ID), posX(0), posY(0), name(""), type(""), lastValue(SensorValue(-1, -1, 0, svtUndefined, 0)) {
 }
 
 Sensor::Sensor(long _id)
-: Entity(_id, SERIALIZER_SENSOR_ID), posX(0), posY(0), name(""), type(""), lastValue(SensorValue(-1, 0, 0)) {
+: Entity(_id, SERIALIZER_SENSOR_ID), posX(0), posY(0), name(""), type(""), lastValue(SensorValue(-1, -1, 0, svtUndefined, 0)) {
 }
 
 string Sensor::getName() {

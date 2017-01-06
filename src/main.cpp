@@ -15,6 +15,8 @@
 #include "SQLiteSerializers.hpp"
 #include "SensorNetManager.hpp"
 
+#include "CommunicationLink.hpp"
+
 HttpServer* httpServer;
 Storage* storage;
 SensorNetManager* sensorNetManager;
@@ -31,12 +33,12 @@ void prepareHttpServer() {
 }
 
 void prepareSensors() {
-  sensorNetManager = new SensorNetManager();
+  sensorNetManager = new SensorNetManager(storage);
 }
 
 int main(int argc, const char * argv[]) {
-  prepareSensors();
   prepareStorage();
+  prepareSensors();
   prepareHttpServer();
   
   

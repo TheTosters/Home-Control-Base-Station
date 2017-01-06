@@ -15,13 +15,8 @@ SensorValue::SensorValue()
   
 }
 
-SensorValue::SensorValue(double _value, time_t _timestamp)
-: Entity(SERIALIZER_SENSOR_VALUE_ID), value(_value), timestamp(_timestamp) {
-  
-}
-
-SensorValue::SensorValue(int id, double _value, time_t _timestamp)
-: Entity(id, SERIALIZER_SENSOR_VALUE_ID), value(_value), timestamp(_timestamp) {
+SensorValue::SensorValue(long id, long sensId, double _value, SensorValueType valType, time_t _timestamp)
+: Entity(id, SERIALIZER_SENSOR_VALUE_ID), physicalSensorId(sensId), value(_value), timestamp(_timestamp), valueType(valType) {
   
 }
 
@@ -39,4 +34,20 @@ void SensorValue::setValue(double val) {
 
 void SensorValue::setTimestamp(time_t time) {
   timestamp = time;
+}
+
+long SensorValue::getPhysicalSensorId() {
+  return physicalSensorId;
+}
+
+void SensorValue::setPhysicalSensorId(long sensorId) {
+  this->physicalSensorId = sensorId;
+}
+
+SensorValueType SensorValue::getValueType() {
+  return valueType;
+}
+
+void SensorValue::setValueType(SensorValueType value) {
+  this->valueType = value;
 }
