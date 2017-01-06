@@ -15,6 +15,7 @@
 #include "SimpleCriteria.hpp"
 #include "SQLiteEntitySerializer.hpp"
 #include "SensorValue.hpp"
+#include "SQLiteFillableStatement.hpp"
 
 class SQLiteSensorValueSerializer : public SQLiteEntitySerializer {
   public:
@@ -27,7 +28,7 @@ class SQLiteSensorValueSerializer : public SQLiteEntitySerializer {
     shared_ptr<SensorValue> load(long id);
   private:
     void append(string& sql, bool condition, const string& toAppend, bool &andMarker);
-
+    shared_ptr<SensorValue> deserializeRow(SQLiteFillableStatement& statement);
 };
 
 #endif /* SQLiteSensorValueSerializer_hpp */

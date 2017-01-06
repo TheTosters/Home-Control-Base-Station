@@ -15,6 +15,8 @@
 #include "SQLiteSerializers.hpp"
 #include "SensorNetManager.hpp"
 
+#include "CommunicationLink.hpp"
+
 HttpServer* httpServer;
 Storage* storage;
 SensorNetManager* sensorNetManager;
