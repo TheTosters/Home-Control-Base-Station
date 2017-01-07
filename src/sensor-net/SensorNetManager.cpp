@@ -43,7 +43,8 @@ shared_ptr<PhysicalSensor> SensorNetManager::loadSensorConfig(json data) {
     fprintf(stderr, "Missing mandatory field 'type' in %s", data.dump().c_str());
     return result;
   }
-  result->setType( static_cast<PhysicalSensorType>(tmpLong));
+  //todo: napisac
+  //result->setType( static_cast<PhysicalSensorType>(tmpLong));
   
   shared_ptr<string> tmp = getOptionalJSONString(data, "address");
   if (tmp == nullptr) {

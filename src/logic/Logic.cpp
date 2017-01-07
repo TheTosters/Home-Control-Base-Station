@@ -66,6 +66,8 @@ void Logic::execute() {
       measurementTasks.pop();
       
       MeasurementMap data = sensorNetManager->fetchMeasurements(sensor);
+      sensor->setLastFetchTime(time(nullptr));
+      sensor->setLastMeasurements(data);
       storeMeasurements(sensor->getId(), data);
       
       task = make_shared<MeasurementTask>(sensor);
@@ -77,7 +79,6 @@ void Logic::execute() {
 }
 
 void Logic::storeMeasurements(long sensorId, MeasurementMap data) {
-  time_t now = time(0);
   SQLiteSensorValueSerializer* serializer = storage->requestSerializer<SQLiteSensorValueSerializer>(SensorValue());
   
   for(auto iter = data->begin(); iter != data->end(); iter++) {
@@ -88,11 +89,11 @@ void Logic::storeMeasurements(long sensorId, MeasurementMap data) {
       
       double value;
       SensorValueType valType;
-      time_t timeOffset;
+      time_t time;
       
-      tie(valType, value, timeOffset) = *item;
+      tie(valType, value, time) = *item;
       
-      SensorValue tmp(-1, sensorId, value, valType, now - timeOffset);
+      SensorValue tmp(-1, sensorId, value, valType, time);
       serializer->store(&tmp);
     }
   }

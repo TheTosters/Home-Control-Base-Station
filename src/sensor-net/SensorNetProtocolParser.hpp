@@ -12,16 +12,11 @@
 #include <stdio.h>
 #include <vector>
 #include <string>
-#include <unordered_map>
 #include "SensorValue.hpp"
 
 using namespace std;
 
 class CommunicationLink;
-
-typedef tuple<SensorValueType, double, time_t> Measurement;
-typedef shared_ptr<vector<shared_ptr<Measurement>>> MeasurementList;
-typedef shared_ptr<unordered_map<string, MeasurementList>> MeasurementMap;
 
 class SensorNetProtocolParser {
   public:
@@ -37,7 +32,7 @@ class SensorNetProtocolParser {
   
     void logParseError(string const& data, string const& msg, size_t const& column);
   
-    MeasurementList parseValueWithTimestamp(string const& data, size_t& startIndex, SensorValueType type);
+    MeasurementList parseValueWithTimestamp(string const& data, size_t& startIndex, SensorValueType type, time_t now);
     bool detectResponseCommand(string const& data, size_t& startIndex, string& cmd, SensorValueType& sensorType);
     void parseMeasurementsRespons(string const& data, MeasurementMap& result);
 };

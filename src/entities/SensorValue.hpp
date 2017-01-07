@@ -11,6 +11,8 @@
 
 #include <stdio.h>
 #include <time.h>
+#include <unordered_map>
+#include <vector>
 #include "Entity.hpp"
 
 enum SensorValueType {
@@ -19,6 +21,12 @@ enum SensorValueType {
   svtHumidity,
   svtPowerConsumption
 };
+
+using namespace std;
+
+typedef tuple<SensorValueType, double, time_t> Measurement;
+typedef shared_ptr<vector<shared_ptr<Measurement>>> MeasurementList;
+typedef shared_ptr<unordered_map<string, MeasurementList>> MeasurementMap;
 
 class SensorValue : public Entity {
   public:
