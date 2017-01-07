@@ -9,6 +9,8 @@
 #include "Logic.hpp"
 #include <chrono>
 #include <thread>
+#include "SensorValue.hpp"
+#include "SQLiteSensorValueSerializer.hpp"
 
 static const time_t LOGIC_THREAD_SLEEP_TIME = 100; //in ms
 
@@ -60,11 +62,12 @@ void Logic::execute() {
     
     //fetch measurement
     while(task->getTimeToMeasure() == 0) {
+      printf("Checking sensors\n");
       shared_ptr<PhysicalSensor> sensor = task->getSensor();
       measurementTasks.pop();
       
       MeasurementMap data = sensorNetManager->fetchMeasurements(sensor);
-      storeMeasurements(sensor, data);
+      storeMeasurements(sensor->getId(), data);
       
       measurementTasks.push(make_shared<MeasurementTask>(sensor));
       
@@ -73,8 +76,26 @@ void Logic::execute() {
   }
 }
 
-void Logic::storeMeasurements(shared_ptr<PhysicalSensor> sensor, MeasurementMap data) {
+void Logic::storeMeasurements(long sensorId, MeasurementMap data) {
+  time_t now = time(0);
+  SQLiteSensorValueSerializer* serializer = storage->requestSerializer<SQLiteSensorValueSerializer>(SensorValue());
   
+  for(auto iter = data->begin(); iter != data->end(); iter++) {
+    MeasurementList valuesList = iter->second;
+    
+    for(auto iter2 = valuesList->begin(); iter2 != valuesList->end(); iter2++) {
+      shared_ptr<Measurement> item = *iter2;
+      
+      double value;
+      SensorValueType valType;
+      time_t timeOffset;
+      
+      tie(valType, value, timeOffset) = *item;
+      
+      SensorValue tmp(-1, sensorId, value, valType, now - timeOffset);
+      serializer->store(&tmp);
+    }
+  }
 }
 
 void Logic::buildListOfMeasurementTasks() {

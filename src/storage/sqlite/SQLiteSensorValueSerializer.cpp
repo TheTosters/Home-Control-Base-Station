@@ -41,7 +41,7 @@ void SQLiteSensorValueSerializer::useDatabase(sqlite3 *db, Storage* storage) {
     id INTEGER PRIMARY KEY, \
     physicalSensorId INT NOT NULL, \
     value REAL NOT NULL, \
-    valueType INT NOT NULL \
+    valueType INT NOT NULL, \
     timestamp INT NOT NULL \
   )";
   executeUpdateQuery(creationSql);

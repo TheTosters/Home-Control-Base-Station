@@ -37,7 +37,7 @@ class Logic {
   
     void execute();
     void buildListOfMeasurementTasks();
-    void storeMeasurements(shared_ptr<PhysicalSensor> sensor, MeasurementMap data);
+    void storeMeasurements(long sensorId, MeasurementMap data);
 };
 
 #endif /* Logic_hpp */
