@@ -13,8 +13,16 @@ MeasurementTask::MeasurementTask(shared_ptr<PhysicalSensor> sens)
   
 }
 
+bool operator< (const shared_ptr<MeasurementTask>& lhs, const shared_ptr<MeasurementTask>& rhs){
+  return rhs->getNextMeasurementTime() < lhs->getNextMeasurementTime();
+}
+
 bool MeasurementTask::operator<(const MeasurementTask& other) const {
   return other.nextMeasurementTime < nextMeasurementTime;
+}
+
+bool MeasurementTask::operator<(const shared_ptr<MeasurementTask>& other) const {
+  return other->nextMeasurementTime < nextMeasurementTime;
 }
 
 time_t MeasurementTask::getNextMeasurementTime() const {
@@ -28,5 +36,5 @@ shared_ptr<PhysicalSensor> MeasurementTask::getSensor() const {
 time_t MeasurementTask::getTimeToMeasure() {
   time_t now = time(nullptr);
   
-  return (nextMeasurementTime < now) ? 0 : (nextMeasurementTime - now);
+  return (nextMeasurementTime <= now) ? 0 : (nextMeasurementTime - now);
 }

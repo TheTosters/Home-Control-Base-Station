@@ -18,6 +18,7 @@ class MeasurementTask {
     MeasurementTask(shared_ptr<PhysicalSensor> sensor);
   
     bool operator<(const MeasurementTask& other) const;
+    bool operator<(const shared_ptr<MeasurementTask>& other) const;
     time_t  getNextMeasurementTime() const;
     shared_ptr<PhysicalSensor> getSensor() const;
     time_t  getTimeToMeasure();
@@ -25,4 +26,6 @@ class MeasurementTask {
     time_t                      nextMeasurementTime;
     shared_ptr<PhysicalSensor>  sensor;
 };
+
+bool operator< (const shared_ptr<MeasurementTask>& lhs, const shared_ptr<MeasurementTask>& rhs);
 #endif /* MeasurementTask_hpp */

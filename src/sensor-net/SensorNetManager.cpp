@@ -22,7 +22,7 @@ SensorNetManager::SensorNetManager() {
 MeasurementMap SensorNetManager::fetchMeasurements(shared_ptr<PhysicalSensor> sensor, int count) {
   CommunicationLink link(cltBluetooth, sensor);
   SensorNetProtocolParser parser(&link);
-  MeasurementMap result;
+  MeasurementMap result = make_shared<unordered_map<string, MeasurementList>>();
   parser.requestMeasurement(result, count);
   
   return result;

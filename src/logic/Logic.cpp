@@ -15,7 +15,7 @@
 static const time_t LOGIC_THREAD_SLEEP_TIME = 100; //in ms
 
 Logic::Logic(Storage* store, SensorNetManager* sensors)
-: storage(store), sensorNetManager(sensors), terminated(false) {
+: storage(store), sensorNetManager(sensors), terminated(false), logicThread(nullptr) {
   
 }
 
@@ -55,21 +55,21 @@ void Logic::execute() {
     time_t sleepTime = LOGIC_THREAD_SLEEP_TIME;
     
     shared_ptr<MeasurementTask> task = measurementTasks.top();
-    time_t timeToMeasure = task->getTimeToMeasure();
+    time_t timeToMeasure = task->getTimeToMeasure() * 1000;
     sleepTime = sleepTime > timeToMeasure ? timeToMeasure : sleepTime;
     
     this_thread::sleep_for(chrono::milliseconds(sleepTime));
     
     //fetch measurement
     while(task->getTimeToMeasure() == 0) {
-      printf("Checking sensors\n");
       shared_ptr<PhysicalSensor> sensor = task->getSensor();
       measurementTasks.pop();
       
       MeasurementMap data = sensorNetManager->fetchMeasurements(sensor);
       storeMeasurements(sensor->getId(), data);
       
-      measurementTasks.push(make_shared<MeasurementTask>(sensor));
+      task = make_shared<MeasurementTask>(sensor);
+      measurementTasks.push(task);
       
       task = measurementTasks.top();
     }
