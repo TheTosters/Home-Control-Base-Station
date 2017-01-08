@@ -1,0 +1,37 @@
+{
+  "temperatures" : [
+    {"id": "night", "temperature" : 18},
+    {"id": "day", "temperature" : 21},
+    {"id": "sleep", "temperature" : 19.5}
+  ],
+
+  "heatPlans": {
+    "general": [
+      {"day": "saturday", "from": "11:00", "temperature":"day"},
+      {"day": "saturday", "from": "21:00", "temperature":"night"},
+
+      {"day": "sunday", "from": "11:00", "temperature":"day"},
+      {"day": "sunday", "from": "21:00", "temperature":"night"},
+
+      {"day": "every", "from": "00:00", "temperature":"night"},
+      {"day": "every", "from": "08:00", "temperature":"day"},
+      {"day": "every", "from": "23:00", "temperature":"night"},
+    ],
+    "bedroom": [
+      {"day": "saturday", "from": "11:00", "temperature":"night"},
+      {"day": "saturday", "from": "21:00", "temperature":"sleep"},
+
+      {"day": "sunday", "from": "11:00", "temperature":"night"},
+      {"day": "sunday", "from": "21:00", "temperature":"sleep"},
+
+      {"day": "every", "from": "00:00", "temperature":"sleep"},
+      {"day": "every", "from": "08:00", "temperature":"night"},
+      {"day": "every", "from": "23:00", "temperature":"sleep"},
+    ]
+  },
+
+  "roomsHeating": [
+    {"room":"all", "plan": "general"},
+    {"room":"bedroom", "plan": "bedroom"},
+  ]
+}
