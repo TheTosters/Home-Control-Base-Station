@@ -16,7 +16,7 @@ CommunicationLink::CommunicationLink(CommunicationLinkType _type, shared_ptr<Phy
 }
 
 shared_ptr<string> CommunicationLink::sendCommand(string cmd) {
-  int timeOffset = rand() % 3;
+  int timeOffset = rand() % 30;
   int value = rand() % 100;
   stringstream tmp;
   if (device->getAddress() == "aa:ff:22:99") {

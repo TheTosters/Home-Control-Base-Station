@@ -81,10 +81,12 @@ void PhysicalSensor::updateLastMeasurement(SensorValueType valType, double value
     
     tie(tmpValType, tmpValue, tmpTime) = *(*iter);
     
-    if (tmpValType == valType && tmpTime < time) {
-      get<1>( *(*iter) ) = value;
-      get<2>( *(*iter) ) = time;
+    if (tmpValType == valType) {
       found = true;
+      if (tmpTime < time) {
+        get<1>( *(*iter) ) = value;
+        get<2>( *(*iter) ) = time;
+      }
       break;
     }
   }

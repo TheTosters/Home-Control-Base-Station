@@ -69,7 +69,7 @@ void Logic::execute() {
       sensor->setLastFetchTime(time(nullptr));
       sensor->setLastMeasurements(data);
       storeMeasurements(sensor->getId(), data);
-      
+            
       task = make_shared<MeasurementTask>(sensor);
       measurementTasks.push(task);
       
