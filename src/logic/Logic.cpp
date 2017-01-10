@@ -19,7 +19,7 @@
 static const time_t LOGIC_THREAD_SLEEP_TIME = 100; //in ms
 const string CONFIG_FILE_NAME = "timeSchedule.json";
 
-Logic::Logic(Storage* store, SensorNetManager* sensors)
+Logic::Logic(Storage* store, shared_ptr<SensorNetManager> sensors)
 : storage(store),
   sensorNetManager(sensors),
   terminated(false),
@@ -38,6 +38,10 @@ Logic::~Logic() {
 
 void Logic::buildRules() {
   
+}
+
+shared_ptr<SensorNetManager> Logic::getSensorsNetManager() {
+  return sensorNetManager;
 }
 
 void Logic::loadConfig(string const& path) {

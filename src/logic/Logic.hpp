@@ -28,15 +28,17 @@ typedef unordered_map<string, shared_ptr<Schedule>> ScheduleMap;
 
 class Logic {
   public:
-    Logic(Storage* storage, SensorNetManager* sensorNetManager);
+    Logic(Storage* storage, shared_ptr<SensorNetManager> sensorNetManager);
     ~Logic();
   
     Storage*  getStorage();
     void      run();
     void      terminate();
+  
+    shared_ptr<SensorNetManager> getSensorsNetManager();
   private:
     Storage*          storage;
-    SensorNetManager* sensorNetManager;
+    shared_ptr<SensorNetManager> sensorNetManager;
     bool              terminated;
     mutex             logicLock;
     thread*           logicThread;

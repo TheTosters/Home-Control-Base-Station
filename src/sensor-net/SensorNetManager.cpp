@@ -33,29 +33,35 @@ shared_ptr<PhysicalSensor> SensorNetManager::loadSensorConfig(json data) {
   
   long tmpLong = getOptionalJSONLong(data, "id");
   if (tmpLong < 0) {
-    fprintf(stderr, "Missing mandatory field 'id' in %s", data.dump().c_str());
+    fprintf(stderr, "Missing mandatory field 'id' in %s\n", data.dump().c_str());
     return result;
   }
   result->setId(tmpLong);
   
-  tmpLong = getOptionalJSONLong(data, "type");
-  if (tmpLong < 0) {
-    fprintf(stderr, "Missing mandatory field 'type' in %s", data.dump().c_str());
+  if (data.find("type") == data.end()) {
+    fprintf(stderr, "Missing mandatory field 'type' in %s\n", data.dump().c_str());
     return result;
   }
-  //todo: napisac
-  //result->setType( static_cast<PhysicalSensorType>(tmpLong));
+  json types = data["type"];
+  if (types.is_array() == false) {
+    fprintf(stderr, "Mandatory field 'type' must be an array in %s\n", data.dump().c_str());
+    return result;
+  }
+  for(auto iter = types.begin(); iter != types.end(); iter++){
+    int t = *iter;
+    result->addType( static_cast<PhysicalSensorType>(t));
+  }
   
   shared_ptr<string> tmp = getOptionalJSONString(data, "address");
   if (tmp == nullptr) {
-    fprintf(stderr, "Missing mandatory field 'address' in %s", data.dump().c_str());
+    fprintf(stderr, "Missing mandatory field 'address' in %s\n", data.dump().c_str());
     return result;
   }
   result->setAddress(*tmp);
   
   tmp = getOptionalJSONString(data, "name");
   if (tmp == nullptr) {
-    fprintf(stderr, "Missing mandatory field 'name' in %s", data.dump().c_str());
+    fprintf(stderr, "Missing mandatory field 'name' in %s\n", data.dump().c_str());
     return result;
   }
   result->setName(*tmp);

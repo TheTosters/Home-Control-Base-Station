@@ -16,14 +16,15 @@
 #include "SensorNetManager.hpp"
 #include "Logic.hpp"
 #include "CommunicationLink.hpp"
+#include "PhysicalSensorRestApiHandler.hpp"
 
 #include "MeasurementTask.hpp"
 #include <queue>
 
 HttpServer* httpServer;
 Storage* storage;
-SensorNetManager* sensorNetManager;
-Logic* logic;
+shared_ptr<SensorNetManager> sensorNetManager;
+shared_ptr<Logic> logic;
 
 void prepareStorage() {
   storage = new SQLiteStorage();
@@ -34,14 +35,15 @@ void prepareStorage() {
 void prepareHttpServer() {
   httpServer = new HttpServer(storage);
   httpServer->registerHandler(std::make_shared<HomePlanRestApiHandler>());
+  httpServer->registerHandler(std::make_shared<PhysicalSensorRestApiHandler>(logic));
 }
 
 void prepareSensors() {
-  sensorNetManager = new SensorNetManager();
+  sensorNetManager = make_shared<SensorNetManager>();
 }
 
 void prepareLogic() {
-  logic = new Logic(storage, sensorNetManager);
+  logic = make_shared<Logic>(storage, sensorNetManager);
 }
 
 int main(int argc, const char * argv[]) {
@@ -57,8 +59,8 @@ int main(int argc, const char * argv[]) {
   */
   prepareStorage();
   prepareSensors();
-  prepareHttpServer();
   prepareLogic();
+  prepareHttpServer();
   
   logic->run();
   httpServer->start();

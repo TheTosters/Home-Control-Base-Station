@@ -66,6 +66,29 @@ json toJSON(shared_ptr<Room> room) {
   return jsonRoom;
 }
 
+json toJSON(PhysicalSensorList const& list) {
+  json result = json::array();
+  for(auto iter = list.begin(); iter != list.end(); iter++) {
+    
+    json types = json::array();
+    vector<PhysicalSensorType>& tmp = (*iter)->getType();
+    for(auto iter2 = tmp.begin(); iter2 != tmp.end(); iter2++) {
+      types += *iter2;
+    }
+    
+    json item = {
+      {"id", (*iter)->getId()},
+      {"name", (*iter)->getName()},
+      {"address", (*iter)->getAddress()},
+      {"fetchRepeatTime", (*iter)->getDesiredFetchDelay()},
+      {"sensorType", types}
+    };
+    
+    result += item;
+  }
+  return result;
+}
+
 bool checkIfKeysExists(json json, vector<string> const& keys) {
   for(auto iter = keys.begin(); iter != keys.end(); iter++) {
     if (json.find(*iter) == json.end()) {
