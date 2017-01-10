@@ -62,6 +62,12 @@ void RestApiHandler::notFound(struct mg_connection* conn) {
             "Content-Length: 0\r\n\r\n");
 }
 
+void RestApiHandler::noContent(struct mg_connection* conn) {
+  mg_printf(conn, "%s",
+            "HTTP/1.0 204 No Content\r\n"
+            "Content-Length: 0\r\n\r\n");
+}
+
 shared_ptr<string> RestApiHandler::getBodyOrDie(struct mg_connection* conn, void* rawData) {
   struct http_message *message = (struct http_message *) rawData;
   if (message->body.len == 0) {

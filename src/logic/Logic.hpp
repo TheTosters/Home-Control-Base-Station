@@ -36,6 +36,7 @@ class Logic {
     void      terminate();
   
     shared_ptr<SensorNetManager> getSensorsNetManager();
+    void rebuildListOfMeasurementTasks();
   private:
     Storage*          storage;
     shared_ptr<SensorNetManager> sensorNetManager;
@@ -49,7 +50,6 @@ class Logic {
     LogicRulesList    rules;
   
     void execute();
-    void buildListOfMeasurementTasks();
     void storeMeasurements(long sensorId, MeasurementMap data);
   
     void buildRules();

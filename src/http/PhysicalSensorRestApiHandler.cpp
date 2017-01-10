@@ -34,10 +34,23 @@ void PhysicalSensorRestApiHandler::onGetRequest(struct mg_connection *c, void *d
 }
 
 void PhysicalSensorRestApiHandler::onPostRequest(struct mg_connection *c, void *data) {
-  
+  //TODO: implement adding
 }
 
 void PhysicalSensorRestApiHandler::onDeleteRequest(struct mg_connection *c, void *data) {
+  long id;
+  if (getOrDieQueryVariable(c, data, "id", &id) == false) {
+    return;
+  }
   
+  shared_ptr<SensorNetManager> mgr = logic->getSensorsNetManager();
+  if (mgr->deleteSensor(id)) {
+    mgr->saveConfiguration();
+    logic->rebuildListOfMeasurementTasks();
+    noContent(c);
+    
+  } else {
+    notFound(c);
+  }
 }
 

@@ -15,6 +15,18 @@
 const string FILE_NAME = "sensors-default.json";
 const long DEFAULT_FETCH_DELAY = 600;
 
+struct PhysicalSensorByIdComparator : public std::unary_function<std::string, bool>
+{
+  long id;
+  
+  explicit PhysicalSensorByIdComparator(const long& _id) : id(_id) {}
+  
+  bool operator() (const shared_ptr<PhysicalSensor> &arg) {
+    return arg->getId() == id;
+  }
+  
+};
+
 SensorNetManager::SensorNetManager() {
   loadConfiguration();
 }
@@ -26,6 +38,21 @@ MeasurementMap SensorNetManager::fetchMeasurements(shared_ptr<PhysicalSensor> se
   parser.requestMeasurement(result, count);
   
   return result;
+}
+
+void SensorNetManager::saveConfiguration() {
+  json data = toJSON(sensors);
+  std::ofstream outputStream(FILE_NAME);
+  outputStream << std::setw(4) << data << std::endl;
+}
+
+bool SensorNetManager::deleteSensor(long sensorId) {
+  auto posIter = find_if(sensors.begin(), sensors.end(), PhysicalSensorByIdComparator(sensorId));
+  if (posIter == sensors.end()) {
+    return false;
+  }
+  sensors.erase(posIter);
+  return true;
 }
 
 shared_ptr<PhysicalSensor> SensorNetManager::loadSensorConfig(json data) {
@@ -92,6 +119,6 @@ void SensorNetManager::loadConfiguration() {
   }
 }
 
-PhysicalSensorList& SensorNetManager::getSensors() {
+PhysicalSensorList SensorNetManager::getSensors() {
   return sensors;
 }

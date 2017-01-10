@@ -40,6 +40,7 @@ class RestApiHandler {
     void  notFound(struct mg_connection* conn);
     void  bodyExpected(struct mg_connection* conn);
     void  internalError(struct mg_connection* conn);
+    void  noContent(struct mg_connection* conn);
   
     void  sendHttpOk(struct mg_connection* conn);
   
