@@ -9,18 +9,107 @@
 #include "Logic.hpp"
 #include <chrono>
 #include <thread>
+#include <fstream>
+#include <sstream>
 #include "SensorValue.hpp"
 #include "SQLiteSensorValueSerializer.hpp"
+#include "JSONHelper.hpp"
+#include "StringHelper.hpp"
 
 static const time_t LOGIC_THREAD_SLEEP_TIME = 100; //in ms
+const string CONFIG_FILE_NAME = "timeSchedule.json";
 
 Logic::Logic(Storage* store, SensorNetManager* sensors)
-: storage(store), sensorNetManager(sensors), terminated(false), logicThread(nullptr) {
+: storage(store),
+  sensorNetManager(sensors),
+  terminated(false),
+  logicThread(nullptr),
+  heatingPlans(make_shared<ScheduleMap>()),
+  roomHeatingPlan(make_shared<ScheduleMap>()),
+  temperatures(make_shared<vector<shared_ptr<TemperatureIdentifier>>>()) {
   
+  loadConfig(CONFIG_FILE_NAME);
 }
 
 Logic::~Logic() {
   terminate();
+}
+
+void Logic::loadConfig(string const& path) {
+  std::ifstream inputFileStream(path);
+  if (inputFileStream.good() == false) {
+    return;
+  }
+  
+  std::stringstream buffer;
+  buffer << inputFileStream.rdbuf();
+  
+  json inJson = json::parse(buffer.str());
+  
+  if (checkIfKeysExists(inJson, {"temperatures", "heatingPlans", "roomsHeating"}) == false){
+    fprintf(stderr, "Config, is wrong, expected nodes 'temperatures', 'heatingPlans', 'roomsHeating' in file: %s \n",
+            path.c_str());
+    throw invalid_argument("Wrong format of config file.");
+  }
+  
+  parseConfigTemperatures(inJson["temperatures"]);
+  parseHetingPlans(inJson["heatingPlans"]);
+  parseRoomHeating(inJson["roomsHeating"]);
+}
+
+void Logic::parseHetingPlans(json const& definition) {
+  for(auto iter = definition.begin(); iter != definition.end(); iter++) {
+    string planName = iter.key();
+    json const& data = iter.value();
+    shared_ptr<Schedule> schedule = make_shared<Schedule>(data, temperatures);
+    (*heatingPlans)[planName] = schedule;
+  }
+}
+
+void Logic::parseConfigTemperatures(json const& definition) {
+  if (definition.is_array() == false) {
+    fprintf(stderr, "Expected array here! \n%s\n", definition.dump().c_str());
+    throw invalid_argument("Wrong format of 'temperatures' node.");
+  }
+  
+  for(auto iter = definition.begin(); iter != definition.end(); iter ++) {
+    if (checkIfKeysExists(*iter, {"id", "temperature"}) == false){
+      fprintf(stderr, "Config, is wrong, expected nodes 'temperature', 'id' in line: %s \n",
+              (*iter).dump().c_str());
+      throw invalid_argument("Wrong format of config file.");
+    }
+    
+    string name = (*iter)["id"];
+    double temp = (*iter)["temperature"];
+    temperatures->push_back( shared_ptr<TemperatureIdentifier>( new TemperatureIdentifier(name, temp) ) );
+  }
+}
+
+void Logic::parseRoomHeating(json const& definition) {
+  if (definition.is_array() == false) {
+    fprintf(stderr, "Expected array here! \n%s\n", definition.dump().c_str());
+    throw invalid_argument("Wrong format of 'roomsHeating' node.");
+  }
+  
+  for(auto iter = definition.begin(); iter != definition.end(); iter ++) {
+    if (checkIfKeysExists(*iter, {"room", "plan"}) == false){
+      fprintf(stderr, "Config, is wrong, expected nodes 'room', 'plan' in line: %s \n",
+              (*iter).dump().c_str());
+      throw invalid_argument("Wrong format of config file.");
+    }
+    
+    string room = (*iter)["room"];
+    string plan = (*iter)["plan"];
+    
+    if (heatingPlans->find(plan) == heatingPlans->end()) {
+      fprintf(stderr, "Config, is wrong, expected hetaing plan named %s in line: %s \n",
+              plan.c_str(), (*iter).dump().c_str());
+      throw invalid_argument("Undefined plan.");
+    }
+    
+    shared_ptr<Schedule> schedule = (*heatingPlans)[plan];
+    (*roomHeatingPlan)[room] = schedule;
+  }
 }
 
 Storage* Logic::getStorage() {

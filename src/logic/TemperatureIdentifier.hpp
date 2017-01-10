@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <string>
+#include <vector>
 
 using namespace std;
 
@@ -24,4 +25,6 @@ class TemperatureIdentifier {
     string    name;
     double    temperature;
 };
+
+typedef shared_ptr<vector<shared_ptr<TemperatureIdentifier>>> TemperatureIdentifierList;
 #endif /* TemperatureIdentifier_hpp */

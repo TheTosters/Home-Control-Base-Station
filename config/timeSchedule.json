@@ -5,33 +5,33 @@
     {"id": "sleep", "temperature" : 19.5}
   ],
 
-  "heatPlans": {
+  "heatingPlans": {
     "general": [
-      {"day": "saturday", "from": "11:00", "temperature":"day"},
-      {"day": "saturday", "from": "21:00", "temperature":"night"},
+      {"from": "saturday 11:00", "temperature":"day"},
+      {"from": "saturday 21:00", "temperature":"night"},
 
-      {"day": "sunday", "from": "11:00", "temperature":"day"},
-      {"day": "sunday", "from": "21:00", "temperature":"night"},
+      {"from": "sunday 11:00", "temperature":"day"},
+      {"from": "sunday 21:00", "temperature":"night"},
 
-      {"day": "every", "from": "00:00", "temperature":"night"},
-      {"day": "every", "from": "08:00", "temperature":"day"},
-      {"day": "every", "from": "23:00", "temperature":"night"},
+      {"from": "every 00:00", "temperature":"night"},
+      {"from": "every 08:00", "temperature":"day"},
+      {"from": "every 23:00", "temperature":"night"}
     ],
     "bedroom": [
-      {"day": "saturday", "from": "11:00", "temperature":"night"},
-      {"day": "saturday", "from": "21:00", "temperature":"sleep"},
+      {"from": "saturday 11:00", "temperature":"night"},
+      {"from": "saturday 21:00", "temperature":"sleep"},
 
-      {"day": "sunday", "from": "11:00", "temperature":"night"},
-      {"day": "sunday", "from": "21:00", "temperature":"sleep"},
+      {"from": "sunday 11:00", "temperature":"night"},
+      {"from": "sunday 21:00", "temperature":"sleep"},
 
-      {"day": "every", "from": "00:00", "temperature":"sleep"},
-      {"day": "every", "from": "08:00", "temperature":"night"},
-      {"day": "every", "from": "23:00", "temperature":"sleep"},
+      {"from": "every 00:00", "temperature":"sleep"},
+      {"from": "every 08:00", "temperature":"night"},
+      {"from": "every 23:00", "temperature":"sleep"}
     ]
   },
 
   "roomsHeating": [
     {"room":"all", "plan": "general"},
-    {"room":"bedroom", "plan": "bedroom"},
+    {"room":"bedroom", "plan": "bedroom"}
   ]
 }

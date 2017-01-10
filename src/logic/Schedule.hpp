@@ -14,19 +14,25 @@
 #include <string>
 #include "ScheduleItem.hpp"
 #include "TemperatureIdentifier.hpp"
+#include "json.hpp"
 
 using namespace std;
+using namespace nlohmann;
 
 class Schedule {
   public:
-    Schedule(string path);
+    Schedule(json const& definition, TemperatureIdentifierList tempIdentifiers);
   
     double getDesiredTemperature();
     void dumpSchedule();
+    void setTemperatureIds(TemperatureIdentifierList& tempId);
+    TemperatureIdentifierList& getTemperatureIds();
   private:
     vector<shared_ptr<ScheduleItem>> items;
-    vector<shared_ptr<TemperatureIdentifier>> tempId;
+    TemperatureIdentifierList tempId;
 
+    void parseSingleRule(json const& json);
+  
     void parseConfigLine(string line);
     void parseConfigId(string data);
     void parseConfigWeek(string data);
