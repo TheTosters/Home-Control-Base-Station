@@ -19,6 +19,7 @@
 #include "MeasurementTask.hpp"
 #include "Schedule.hpp"
 #include "TemperatureIdentifier.hpp"
+#include "LogicRule.hpp"
 
 using namespace std;
 using namespace nlohmann;
@@ -43,11 +44,13 @@ class Logic {
     shared_ptr<ScheduleMap> heatingPlans;
     shared_ptr<ScheduleMap> roomHeatingPlan;
     TemperatureIdentifierList temperatures;
+    LogicRulesList    rules;
   
     void execute();
     void buildListOfMeasurementTasks();
     void storeMeasurements(long sensorId, MeasurementMap data);
   
+    void buildRules();
     void loadConfig(string const& path);
     void parseConfigTemperatures(json const& definition);
     void parseHetingPlans(json const& definition);

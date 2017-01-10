@@ -29,10 +29,15 @@ Logic::Logic(Storage* store, SensorNetManager* sensors)
   temperatures(make_shared<vector<shared_ptr<TemperatureIdentifier>>>()) {
   
   loadConfig(CONFIG_FILE_NAME);
+  buildRules();
 }
 
 Logic::~Logic() {
   terminate();
+}
+
+void Logic::buildRules() {
+  
 }
 
 void Logic::loadConfig(string const& path) {
@@ -163,6 +168,11 @@ void Logic::execute() {
       measurementTasks.push(task);
       
       task = measurementTasks.top();
+    }
+    
+    //execute rules
+    for(auto iter = rules.begin(); iter != rules.end(); iter ++) {
+      (*iter)->execute();
     }
   }
 }
