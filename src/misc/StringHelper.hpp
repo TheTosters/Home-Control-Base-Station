@@ -26,4 +26,5 @@ string formatString( const string& format, Args ... args )
   return string( buf.get(), buf.get() + size - 1 ); // We don't want the '\0' inside
 }
 
+string trim(const string &s);
 #endif /* StringHelper_hpp */
