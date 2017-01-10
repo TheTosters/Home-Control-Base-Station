@@ -80,8 +80,8 @@ json toJSON(PhysicalSensorList const& list) {
       {"id", (*iter)->getId()},
       {"name", (*iter)->getName()},
       {"address", (*iter)->getAddress()},
-      {"fetchRepeatTime", (*iter)->getDesiredFetchDelay()},
-      {"sensorType", types}
+      {"fetchDelay", (*iter)->getDesiredFetchDelay()},
+      {"type", types}
     };
     
     result += item;
