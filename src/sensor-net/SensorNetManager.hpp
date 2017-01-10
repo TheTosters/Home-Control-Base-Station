@@ -33,6 +33,5 @@ class SensorNetManager {
     PhysicalSensorList  sensors;
   
     void loadConfiguration();
-    shared_ptr<PhysicalSensor> loadSensorConfig(json data);
 };
 #endif /* SensorNetManager_hpp */

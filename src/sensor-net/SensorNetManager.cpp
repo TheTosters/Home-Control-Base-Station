@@ -13,7 +13,6 @@
 #include "CommunicationLink.hpp"
 
 const string FILE_NAME = "sensors-default.json";
-const long DEFAULT_FETCH_DELAY = 600;
 
 struct PhysicalSensorByIdComparator : public std::unary_function<std::string, bool>
 {
@@ -55,51 +54,6 @@ bool SensorNetManager::deleteSensor(long sensorId) {
   return true;
 }
 
-shared_ptr<PhysicalSensor> SensorNetManager::loadSensorConfig(json data) {
-  shared_ptr<PhysicalSensor> result = make_shared<PhysicalSensor>();
-  
-  long tmpLong = getOptionalJSONLong(data, "id");
-  if (tmpLong < 0) {
-    fprintf(stderr, "Missing mandatory field 'id' in %s\n", data.dump().c_str());
-    return result;
-  }
-  result->setId(tmpLong);
-  
-  if (data.find("type") == data.end()) {
-    fprintf(stderr, "Missing mandatory field 'type' in %s\n", data.dump().c_str());
-    return result;
-  }
-  json types = data["type"];
-  if (types.is_array() == false) {
-    fprintf(stderr, "Mandatory field 'type' must be an array in %s\n", data.dump().c_str());
-    return result;
-  }
-  for(auto iter = types.begin(); iter != types.end(); iter++){
-    int t = *iter;
-    result->addType( static_cast<PhysicalSensorType>(t));
-  }
-  
-  shared_ptr<string> tmp = getOptionalJSONString(data, "address");
-  if (tmp == nullptr) {
-    fprintf(stderr, "Missing mandatory field 'address' in %s\n", data.dump().c_str());
-    return result;
-  }
-  result->setAddress(*tmp);
-  
-  tmp = getOptionalJSONString(data, "name");
-  if (tmp == nullptr) {
-    fprintf(stderr, "Missing mandatory field 'name' in %s\n", data.dump().c_str());
-    return result;
-  }
-  result->setName(*tmp);
-
-  tmpLong = getOptionalJSONLong(data, "fetchDelay");
-  tmpLong = tmpLong < 0 ? DEFAULT_FETCH_DELAY : tmpLong;
-  result->setDesiredFetchDelay(static_cast<time_t>(tmpLong));
-  
-  return result;
-}
-
 void SensorNetManager::loadConfiguration() {
   std::ifstream inputFileStream(FILE_NAME);
   if (inputFileStream.good() == false) {
@@ -108,15 +62,7 @@ void SensorNetManager::loadConfiguration() {
   
   std::stringstream buffer;
   buffer << inputFileStream.rdbuf();
-  
-  json inJson = json::parse(buffer.str());
-  
-  if (inJson.is_array()) {
-    for(auto iter = inJson.begin(); iter != inJson.end(); iter++) {
-      shared_ptr<PhysicalSensor> sensor = loadSensorConfig(*iter);
-      sensors.push_back(sensor);
-    }
-  }
+  sensors = physicalSensorsFromJSON(buffer.str());
 }
 
 PhysicalSensorList SensorNetManager::getSensors() {
