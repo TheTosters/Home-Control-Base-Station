@@ -11,7 +11,9 @@
 
 #include <stdio.h>
 #include <string>
+#include <vector>
 #include "Entity.hpp"
+#include "SensorValue.hpp"
 
 using namespace std;
 
@@ -39,8 +41,8 @@ class PhysicalSensor : public Entity {
     void    setAddress(string const& address);
     string& getAddress();
   
-    void    setType(PhysicalSensorType type);
-    PhysicalSensorType getType();
+    void    addType(PhysicalSensorType type);
+    vector<PhysicalSensorType>& getType();
   
     void    setLastFetchTime(time_t value);
     time_t  getLastFetchTime();
@@ -48,18 +50,12 @@ class PhysicalSensor : public Entity {
     void    setDesiredFetchDelay(time_t value);
     time_t  getDesiredFetchDelay();
   
-    void    setLastMeasurementTime(time_t value);
-    time_t  getLastMeasurementTime();
-  
-    void    setLastValue(double value);
-    double  getLastValue();
-  
-    void    setPreviousValue(double value);
-    double  getPreviousValue();
+    void    setLastMeasurements(MeasurementMap data);
+    MeasurementList& getLastMeasurements();
   protected:
     string              name;
     string              address;    //it can be MAC, Bluetooth address, or other protocol dependent
-    PhysicalSensorType  type;
+    vector<PhysicalSensorType>  types;
   
     /** Timestamp of last connection to physical device with request for measurements */
     time_t              lastFetchTime;
@@ -67,16 +63,12 @@ class PhysicalSensor : public Entity {
     /** Config related value, informs about intervals in which communication with Physical device should 
      be done. It's minimal value which should be waited before new fetch is tried */
     time_t              desiredFetchDelay;
+
+    /** List with the newest values fetch from physical device */
+    MeasurementList     lastMeasurements;
   
-    /** Time reported by physical device, when measurement was done. Do not confuse with lastFetchTime.
-     Each device marks time when measurement is done, it has nothing to do with time when this info is
-     feteched from physical device */
-    time_t              lastMeasurementTime;
-  
-    /** Value read from physical device at lastFetchTime. This is the newest obtained value from physical device */
-    double              lastValue;
-  
-    /** Previous value, it's copy of lastValue before fetching new data is done */
-    double              previousValue;
+    void updateLastMeasurement(SensorValueType valType, double value, time_t time);
 };
+
+typedef vector<shared_ptr<PhysicalSensor>> PhysicalSensorList;
 #endif /* PhysicalSensor_hpp */

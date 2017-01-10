@@ -30,4 +30,5 @@ shared_ptr<vector<shared_ptr<Room>>> roomListFromJSON(string const& data);
 long getOptionalJSONLong(json json, string const& key);
 shared_ptr<string> getOptionalJSONString(json json, string const& key);
 
+bool checkIfKeysExists(json json, vector<string> const& keys);
 #endif /* JSONHelper_hpp */

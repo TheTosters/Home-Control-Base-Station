@@ -10,17 +10,22 @@
 #include <sstream>
 #include "SensorNetManager.hpp"
 #include "JSONHelper.hpp"
+#include "CommunicationLink.hpp"
 
 const string FILE_NAME = "sensors-default.json";
 const long DEFAULT_FETCH_DELAY = 600;
 
-SensorNetManager::SensorNetManager(Storage* stor)
-: storage(stor) {
+SensorNetManager::SensorNetManager() {
   loadConfiguration();
 }
 
-void SensorNetManager::fetchMeasurements() {
-  //todo: implement
+MeasurementMap SensorNetManager::fetchMeasurements(shared_ptr<PhysicalSensor> sensor, int count) {
+  CommunicationLink link(cltBluetooth, sensor);
+  SensorNetProtocolParser parser(&link);
+  MeasurementMap result = make_shared<unordered_map<string, MeasurementList>>();
+  parser.requestMeasurement(result, count);
+  
+  return result;
 }
 
 shared_ptr<PhysicalSensor> SensorNetManager::loadSensorConfig(json data) {
@@ -38,7 +43,8 @@ shared_ptr<PhysicalSensor> SensorNetManager::loadSensorConfig(json data) {
     fprintf(stderr, "Missing mandatory field 'type' in %s", data.dump().c_str());
     return result;
   }
-  result->setType( static_cast<PhysicalSensorType>(tmpLong));
+  //todo: napisac
+  //result->setType( static_cast<PhysicalSensorType>(tmpLong));
   
   shared_ptr<string> tmp = getOptionalJSONString(data, "address");
   if (tmp == nullptr) {
@@ -80,6 +86,6 @@ void SensorNetManager::loadConfiguration() {
   }
 }
 
-vector<shared_ptr<PhysicalSensor>>& SensorNetManager::getSensors() {
+PhysicalSensorList& SensorNetManager::getSensors() {
   return sensors;
 }

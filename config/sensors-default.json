@@ -4,20 +4,27 @@
     "name" : "Dummy Temp",
     "type" : 0,
     "address" : "aa:ff:22:99",
-    "fetchDelay" : 600
+    "fetchDelay" : 5
  },
  {
    "id" : 2,
    "name" : "Dummy Humidity",
    "type" : 1,
    "address" : "bb:ff:22:99",
-   "fetchDelay" : 600
+   "fetchDelay" : 6
  },
  {
    "id" : 3,
    "name" : "Dummy Power",
    "type" : 2,
    "address" : "cc:ff:22:99",
-   "fetchDelay" : 600
+   "fetchDelay" : 7
+ },
+ {
+   "id" : 4,
+   "name" : "Dummy combi Temp and Hum",
+   "type" : 2,
+   "address" : "dd:ff:22:99",
+   "fetchDelay" : 3
  }
 ]

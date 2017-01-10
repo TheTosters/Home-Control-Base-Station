@@ -57,7 +57,7 @@ bool SensorNetProtocolParser::parseDouble(string const& str, double &result) {
   return true;
 }
 
-void SensorNetProtocolParser::requestMeasurement(unordered_map<string, MeasurementList>& result, int count) {
+void SensorNetProtocolParser::requestMeasurement(MeasurementMap& result, int count) {
   
   shared_ptr<string> response;
   
@@ -94,7 +94,7 @@ bool SensorNetProtocolParser::detectResponseCommand(string const& data, size_t& 
   return true;
 }
 
-MeasurementList SensorNetProtocolParser::parseValueWithTimestamp(string const& data, size_t& startIndex, SensorValueType type) {
+MeasurementList SensorNetProtocolParser::parseValueWithTimestamp(string const& data, size_t& startIndex, SensorValueType type, time_t now) {
   MeasurementList result = make_shared<vector<shared_ptr<Measurement>>>();
   
   while (startIndex < data.length() && data[startIndex] == '(') {
@@ -112,7 +112,7 @@ MeasurementList SensorNetProtocolParser::parseValueWithTimestamp(string const& d
       logParseError(data, "Can't convert this string into int.", startIndex);
       break;
     }
-    time_t timeStamp = static_cast<user_time_t>(tmpInt);
+    time_t timeStamp = now - static_cast<user_time_t>(tmpInt);
     
     size_t endPos = data.find(")", comaPos);
     if (endPos == string::npos) {
@@ -135,15 +135,16 @@ MeasurementList SensorNetProtocolParser::parseValueWithTimestamp(string const& d
   return result;
 }
 
-void SensorNetProtocolParser::parseMeasurementsRespons(string const& data, unordered_map<string, MeasurementList>& result) {
+void SensorNetProtocolParser::parseMeasurementsRespons(string const& data, MeasurementMap& result) {
   size_t startIndex = 0;
   string cmd;
   SensorValueType sensorType;
+  time_t now = time(nullptr);
   
   while(detectResponseCommand(data, startIndex, cmd, sensorType)) {
-    MeasurementList measurements = parseValueWithTimestamp(data, startIndex, sensorType);
+    MeasurementList measurements = parseValueWithTimestamp(data, startIndex, sensorType, now);
     if (measurements != nullptr) {
-      result[cmd] = measurements;
+      (*result)[cmd] = measurements;
     }
   }
 }

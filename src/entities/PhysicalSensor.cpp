@@ -8,7 +8,7 @@
 
 #include "PhysicalSensor.hpp"
 PhysicalSensor::PhysicalSensor()
-: Entity(-1) {
+: Entity(-1), lastMeasurements(make_shared<vector<shared_ptr<Measurement>>>()) {
   
 }
 
@@ -28,12 +28,12 @@ string& PhysicalSensor::getAddress() {
   return address;
 }
 
-void PhysicalSensor::setType(PhysicalSensorType type) {
-  this->type = type;
+void PhysicalSensor::addType(PhysicalSensorType type) {
+  this->types.push_back(type);
 }
 
-PhysicalSensorType PhysicalSensor::getType() {
-  return type;
+vector<PhysicalSensorType>& PhysicalSensor::getType() {
+  return types;
 }
 
 void PhysicalSensor::setLastFetchTime(time_t value) {
@@ -52,26 +52,50 @@ time_t PhysicalSensor::getDesiredFetchDelay() {
   return desiredFetchDelay;
 }
 
-void PhysicalSensor::setLastMeasurementTime(time_t value) {
-  lastMeasurementTime = value;
+void PhysicalSensor::setLastMeasurements(MeasurementMap data) {
+  //store values only if timestamp is newer or equal then currently stored
+  for(auto iter = data->begin(); iter != data->end(); iter++) {
+    MeasurementList valuesList = iter->second;
+    
+    for(auto iter2 = valuesList->begin(); iter2 != valuesList->end(); iter2++) {
+      shared_ptr<Measurement> item = *iter2;
+      
+      double value;
+      SensorValueType valType;
+      time_t timeOffset;
+      
+      tie(valType, value, timeOffset) = *item;
+      
+      updateLastMeasurement(valType, value, timeOffset);
+    }
+  }
 }
 
-time_t PhysicalSensor::getLastMeasurementTime() {
-  return lastMeasurementTime;
+void PhysicalSensor::updateLastMeasurement(SensorValueType valType, double value, time_t time) {
+  bool found = false;
+  for(auto iter = lastMeasurements->begin(); iter != lastMeasurements->end(); iter++) {
+
+    double tmpValue;
+    SensorValueType tmpValType;
+    time_t tmpTime;
+    
+    tie(tmpValType, tmpValue, tmpTime) = *(*iter);
+    
+    if (tmpValType == valType) {
+      found = true;
+      if (tmpTime < time) {
+        get<1>( *(*iter) ) = value;
+        get<2>( *(*iter) ) = time;
+      }
+      break;
+    }
+  }
+  
+  if (found == false) {
+    lastMeasurements->push_back(make_shared<Measurement>(valType, value, time));
+  }
 }
 
-void PhysicalSensor::setLastValue(double value) {
-  lastValue = value;
-}
-
-double PhysicalSensor::getLastValue() {
-  return lastValue;
-}
-
-void PhysicalSensor::setPreviousValue(double value) {
-  previousValue = value;
-}
-
-double PhysicalSensor::getPreviousValue() {
-  return previousValue;
+MeasurementList& PhysicalSensor::getLastMeasurements() {
+  return lastMeasurements;
 }

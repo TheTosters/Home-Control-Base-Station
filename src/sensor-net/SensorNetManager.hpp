@@ -14,7 +14,7 @@
 
 #include "PhysicalSensor.hpp"
 #include "json.hpp"
-#include "Storage.hpp"
+#include "SensorNetProtocolParser.hpp"
 
 using namespace std;
 using namespace nlohmann;
@@ -23,13 +23,12 @@ class PhysicalSensor;
 
 class SensorNetManager {
   public:
-    SensorNetManager(Storage* storage);
-    vector<shared_ptr<PhysicalSensor>>& getSensors();
+    SensorNetManager();
+    PhysicalSensorList& getSensors();
   
-    void fetchMeasurements();
+    MeasurementMap fetchMeasurements(shared_ptr<PhysicalSensor> sensor, int count = 1);
   private:
-    vector<shared_ptr<PhysicalSensor>>  sensors;
-    Storage*  storage;
+    PhysicalSensorList  sensors;
   
     void loadConfiguration();
     shared_ptr<PhysicalSensor> loadSensorConfig(json data);
