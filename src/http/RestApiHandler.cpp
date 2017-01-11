@@ -37,6 +37,12 @@ void RestApiHandler::sendHttpOk(struct mg_connection* conn) {
             "Content-Length: 0\r\n\r\n");
 }
 
+void RestApiHandler::conflict(struct mg_connection* conn) {
+  mg_printf(conn, "%s",
+            "HTTP/1.0 409 Conflict\r\n"
+            "Content-Length: 0\r\n\r\n");
+}
+
 void RestApiHandler::missingQueryVariable(struct mg_connection* conn, string const& varName) {
   string msg("Expected query variable:");
   msg.append(varName);
@@ -56,9 +62,21 @@ void RestApiHandler::bodyExpected(struct mg_connection* conn) {
             "%s", msg.length(), msg.c_str());
 }
 
+void RestApiHandler::badRequest(struct mg_connection* conn) {
+  mg_printf(conn, "%s",
+            "HTTP/1.0 400 Bad Request\r\n"
+            "Content-Length: 0\r\n\r\n");
+}
+
 void RestApiHandler::notFound(struct mg_connection* conn) {
   mg_printf(conn, "%s",
             "HTTP/1.0 404 Not Found\r\n"
+            "Content-Length: 0\r\n\r\n");
+}
+
+void RestApiHandler::noContent(struct mg_connection* conn) {
+  mg_printf(conn, "%s",
+            "HTTP/1.0 204 No Content\r\n"
             "Content-Length: 0\r\n\r\n");
 }
 

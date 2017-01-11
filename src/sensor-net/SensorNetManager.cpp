@@ -13,7 +13,18 @@
 #include "CommunicationLink.hpp"
 
 const string FILE_NAME = "sensors-default.json";
-const long DEFAULT_FETCH_DELAY = 600;
+
+struct PhysicalSensorByIdComparator : public std::unary_function<std::string, bool>
+{
+  long id;
+  
+  explicit PhysicalSensorByIdComparator(const long& _id) : id(_id) {}
+  
+  bool operator() (const shared_ptr<PhysicalSensor> &arg) {
+    return arg->getId() == id;
+  }
+  
+};
 
 SensorNetManager::SensorNetManager() {
   loadConfiguration();
@@ -28,46 +39,45 @@ MeasurementMap SensorNetManager::fetchMeasurements(shared_ptr<PhysicalSensor> se
   return result;
 }
 
-shared_ptr<PhysicalSensor> SensorNetManager::loadSensorConfig(json data) {
-  shared_ptr<PhysicalSensor> result = make_shared<PhysicalSensor>();
-  
-  long tmpLong = getOptionalJSONLong(data, "id");
-  if (tmpLong < 0) {
-    fprintf(stderr, "Missing mandatory field 'id' in %s", data.dump().c_str());
-    return result;
+void SensorNetManager::saveConfiguration() {
+  {//critical section
+    unique_lock<mutex> lock(managerMutex);
+    json data = toJSON(sensors);
+    std::ofstream outputStream(FILE_NAME);
+    outputStream << std::setw(4) << data << std::endl;
   }
-  result->setId(tmpLong);
-  
-  tmpLong = getOptionalJSONLong(data, "type");
-  if (tmpLong < 0) {
-    fprintf(stderr, "Missing mandatory field 'type' in %s", data.dump().c_str());
-    return result;
-  }
-  //todo: napisac
-  //result->setType( static_cast<PhysicalSensorType>(tmpLong));
-  
-  shared_ptr<string> tmp = getOptionalJSONString(data, "address");
-  if (tmp == nullptr) {
-    fprintf(stderr, "Missing mandatory field 'address' in %s", data.dump().c_str());
-    return result;
-  }
-  result->setAddress(*tmp);
-  
-  tmp = getOptionalJSONString(data, "name");
-  if (tmp == nullptr) {
-    fprintf(stderr, "Missing mandatory field 'name' in %s", data.dump().c_str());
-    return result;
-  }
-  result->setName(*tmp);
+}
 
-  tmpLong = getOptionalJSONLong(data, "fetchDelay");
-  tmpLong = tmpLong < 0 ? DEFAULT_FETCH_DELAY : tmpLong;
-  result->setDesiredFetchDelay(static_cast<time_t>(tmpLong));
+bool SensorNetManager::deleteSensor(long sensorId) {
+  //whole metod is critical section
+  unique_lock<mutex> lock(managerMutex);
   
-  return result;
+  auto posIter = find_if(sensors.begin(), sensors.end(), PhysicalSensorByIdComparator(sensorId));
+  if (posIter == sensors.end()) {
+    return false;
+  }
+  sensors.erase(posIter);
+  return true;
+}
+
+bool SensorNetManager::addSensor(shared_ptr<PhysicalSensor> sensor) {
+  //whole metod is critical section
+  unique_lock<mutex> lock(managerMutex);
+  
+  //fail if sensor with used id is registered
+  auto posIter = find_if(sensors.begin(), sensors.end(), PhysicalSensorByIdComparator(sensor->getId()));
+  if (posIter != sensors.end()) {
+    return false;
+  }
+  
+  sensors.push_back(sensor);
+  return true;
 }
 
 void SensorNetManager::loadConfiguration() {
+  //whole metod is critical section
+  unique_lock<mutex> lock(managerMutex);
+  
   std::ifstream inputFileStream(FILE_NAME);
   if (inputFileStream.good() == false) {
     return;
@@ -75,17 +85,12 @@ void SensorNetManager::loadConfiguration() {
   
   std::stringstream buffer;
   buffer << inputFileStream.rdbuf();
-  
-  json inJson = json::parse(buffer.str());
-  
-  if (inJson.is_array()) {
-    for(auto iter = inJson.begin(); iter != inJson.end(); iter++) {
-      shared_ptr<PhysicalSensor> sensor = loadSensorConfig(*iter);
-      sensors.push_back(sensor);
-    }
-  }
+  sensors = physicalSensorsFromJSON(buffer.str());
 }
 
-PhysicalSensorList& SensorNetManager::getSensors() {
+PhysicalSensorList SensorNetManager::getSensors() {
+  //whole metod is critical section
+  unique_lock<mutex> lock(managerMutex);
+  
   return sensors;
 }

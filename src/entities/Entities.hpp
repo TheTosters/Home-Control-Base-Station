@@ -10,3 +10,4 @@
 #include "Room.hpp"
 #include "Sensor.hpp"
 #include "SensorValue.hpp"
+#include "PhysicalSensor.hpp"

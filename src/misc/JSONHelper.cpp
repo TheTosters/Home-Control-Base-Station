@@ -8,6 +8,8 @@
 
 #include "JSONHelper.hpp"
 
+const long PHYSICAL_SENSOR_DEFAULT_FETCH_DELAY = 600;
+
 json toJSON(Point* point) {
   json jsonPoint = {
     {"id", point->getId()},
@@ -66,6 +68,29 @@ json toJSON(shared_ptr<Room> room) {
   return jsonRoom;
 }
 
+json toJSON(PhysicalSensorList const& list) {
+  json result = json::array();
+  for(auto iter = list.begin(); iter != list.end(); iter++) {
+    
+    json types = json::array();
+    vector<PhysicalSensorType>& tmp = (*iter)->getType();
+    for(auto iter2 = tmp.begin(); iter2 != tmp.end(); iter2++) {
+      types += *iter2;
+    }
+    
+    json item = {
+      {"id", (*iter)->getId()},
+      {"name", (*iter)->getName()},
+      {"address", (*iter)->getAddress()},
+      {"fetchDelay", (*iter)->getDesiredFetchDelay()},
+      {"type", types}
+    };
+    
+    result += item;
+  }
+  return result;
+}
+
 bool checkIfKeysExists(json json, vector<string> const& keys) {
   for(auto iter = keys.begin(); iter != keys.end(); iter++) {
     if (json.find(*iter) == json.end()) {
@@ -114,6 +139,65 @@ shared_ptr<Point> pointFromJSON(json const& json) {
   } else {
     result = make_shared<Point>(json["x"], json["y"]);
   }
+  return result;
+}
+
+shared_ptr<PhysicalSensor> physicalSensorFromJSON(json const& data) {
+  shared_ptr<PhysicalSensor> result = make_shared<PhysicalSensor>();
+  
+  long tmpLong = getOptionalJSONLong(data, "id");
+  if (tmpLong < 0) {
+    fprintf(stderr, "Missing mandatory field 'id' in %s\n", data.dump().c_str());
+    return result;
+  }
+  result->setId(tmpLong);
+  
+  if (data.find("type") == data.end()) {
+    fprintf(stderr, "Missing mandatory field 'type' in %s\n", data.dump().c_str());
+    return result;
+  }
+  json types = data["type"];
+  if (types.is_array() == false) {
+    fprintf(stderr, "Mandatory field 'type' must be an array in %s\n", data.dump().c_str());
+    return result;
+  }
+  for(auto iter = types.begin(); iter != types.end(); iter++){
+    int t = *iter;
+    result->addType( static_cast<PhysicalSensorType>(t));
+  }
+  
+  shared_ptr<string> tmp = getOptionalJSONString(data, "address");
+  if (tmp == nullptr) {
+    fprintf(stderr, "Missing mandatory field 'address' in %s\n", data.dump().c_str());
+    return result;
+  }
+  result->setAddress(*tmp);
+  
+  tmp = getOptionalJSONString(data, "name");
+  if (tmp == nullptr) {
+    fprintf(stderr, "Missing mandatory field 'name' in %s\n", data.dump().c_str());
+    return result;
+  }
+  result->setName(*tmp);
+  
+  tmpLong = getOptionalJSONLong(data, "fetchDelay");
+  tmpLong = tmpLong < 0 ? PHYSICAL_SENSOR_DEFAULT_FETCH_DELAY : tmpLong;
+  result->setDesiredFetchDelay(static_cast<time_t>(tmpLong));
+  
+  return result;
+}
+
+PhysicalSensorList physicalSensorsFromJSON(string const& data) {
+  PhysicalSensorList result;
+  json inJson = json::parse(data);
+  
+  if (inJson.is_array()) {
+    for(auto iter = inJson.begin(); iter != inJson.end(); iter++) {
+      shared_ptr<PhysicalSensor> sensor = physicalSensorFromJSON(*iter);
+      result.push_back(sensor);
+    }
+  }
+  
   return result;
 }
 

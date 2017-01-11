@@ -19,7 +19,7 @@
 static const time_t LOGIC_THREAD_SLEEP_TIME = 100; //in ms
 const string CONFIG_FILE_NAME = "timeSchedule.json";
 
-Logic::Logic(Storage* store, SensorNetManager* sensors)
+Logic::Logic(Storage* store, shared_ptr<SensorNetManager> sensors)
 : storage(store),
   sensorNetManager(sensors),
   terminated(false),
@@ -38,6 +38,10 @@ Logic::~Logic() {
 
 void Logic::buildRules() {
   
+}
+
+shared_ptr<SensorNetManager> Logic::getSensorsNetManager() {
+  return sensorNetManager;
 }
 
 void Logic::loadConfig(string const& path) {
@@ -135,11 +139,12 @@ void Logic::run() {
 
 //this is main loop for thread
 void Logic::execute() {
-  buildListOfMeasurementTasks();
+  rebuildListOfMeasurementTasks();
   while(true) {
     //Check if thread should finish
     {//critical section
       unique_lock<mutex> lock(logicLock);
+      
       if (terminated == true) {
         break;
       }
@@ -148,7 +153,12 @@ void Logic::execute() {
     //Sleep if there is nothing to do
     time_t sleepTime = LOGIC_THREAD_SLEEP_TIME;
     
-    shared_ptr<MeasurementTask> task = measurementTasks.top();
+    shared_ptr<MeasurementTask> task;
+    {//critical section
+      unique_lock<mutex> lock(logicLock);
+      
+      task = measurementTasks.top();
+    }
     time_t timeToMeasure = task->getTimeToMeasure() * 1000;
     sleepTime = sleepTime > timeToMeasure ? timeToMeasure : sleepTime;
     
@@ -157,7 +167,11 @@ void Logic::execute() {
     //fetch measurement
     while(task->getTimeToMeasure() == 0) {
       shared_ptr<PhysicalSensor> sensor = task->getSensor();
-      measurementTasks.pop();
+      {//critical section
+        unique_lock<mutex> lock(logicLock);
+        
+        measurementTasks.pop();
+      }
       
       MeasurementMap data = sensorNetManager->fetchMeasurements(sensor);
       sensor->setLastFetchTime(time(nullptr));
@@ -165,9 +179,13 @@ void Logic::execute() {
       storeMeasurements(sensor->getId(), data);
             
       task = make_shared<MeasurementTask>(sensor);
-      measurementTasks.push(task);
-      
-      task = measurementTasks.top();
+      {//critical section
+        unique_lock<mutex> lock(logicLock);
+        
+        measurementTasks.push(task);
+        
+        task = measurementTasks.top();
+      }
     }
     
     //execute rules
@@ -198,11 +216,19 @@ void Logic::storeMeasurements(long sensorId, MeasurementMap data) {
   }
 }
 
-void Logic::buildListOfMeasurementTasks() {
+void Logic::rebuildListOfMeasurementTasks() {
   PhysicalSensorList list = sensorNetManager->getSensors();
-  for(auto iter = list.begin(); iter != list.end(); iter++) {
-    shared_ptr<PhysicalSensor> sensor = *iter;
-    measurementTasks.push( make_shared<MeasurementTask>(sensor));
+  
+  {//critical section
+    unique_lock<mutex> lock(logicLock);
+    
+    //no clear method, so just recreate collection
+    measurementTasks = priority_queue<shared_ptr<MeasurementTask>>();
+    
+    for(auto iter = list.begin(); iter != list.end(); iter++) {
+      shared_ptr<PhysicalSensor> sensor = *iter;
+      measurementTasks.push( make_shared<MeasurementTask>(sensor));
+    }
   }
 }
 
