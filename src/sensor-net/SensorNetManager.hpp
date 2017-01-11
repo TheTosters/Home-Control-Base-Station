@@ -29,6 +29,7 @@ class SensorNetManager {
     MeasurementMap fetchMeasurements(shared_ptr<PhysicalSensor> sensor, int count = 1);
     void saveConfiguration();
     bool deleteSensor(long sensorId);
+    bool addSensor(shared_ptr<PhysicalSensor> sensor);
   private:
     PhysicalSensorList  sensors;
   

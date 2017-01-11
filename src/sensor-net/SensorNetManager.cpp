@@ -54,6 +54,18 @@ bool SensorNetManager::deleteSensor(long sensorId) {
   return true;
 }
 
+bool SensorNetManager::addSensor(shared_ptr<PhysicalSensor> sensor) {
+  
+  //fail if sensor with used id is registered
+  auto posIter = find_if(sensors.begin(), sensors.end(), PhysicalSensorByIdComparator(sensor->getId()));
+  if (posIter != sensors.end()) {
+    return false;
+  }
+  
+  sensors.push_back(sensor);
+  return true;
+}
+
 void SensorNetManager::loadConfiguration() {
   std::ifstream inputFileStream(FILE_NAME);
   if (inputFileStream.good() == false) {

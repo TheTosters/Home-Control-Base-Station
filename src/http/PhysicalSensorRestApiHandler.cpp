@@ -34,7 +34,27 @@ void PhysicalSensorRestApiHandler::onGetRequest(struct mg_connection *c, void *d
 }
 
 void PhysicalSensorRestApiHandler::onPostRequest(struct mg_connection *c, void *data) {
-  //TODO: implement adding
+  shared_ptr<string> str = getBodyOrDie(c, data);
+  if (str == nullptr) {
+    return;
+  }
+  string tmp = "[" + *str + "]";
+  PhysicalSensorList list = physicalSensorsFromJSON(tmp);
+  if (list.size() != 1) {
+    badRequest(c);
+    return;
+  }
+  shared_ptr<PhysicalSensor> item = list[0];
+  shared_ptr<SensorNetManager> mgr = logic->getSensorsNetManager();
+  
+  if (mgr->addSensor(item)) {
+    mgr->saveConfiguration();
+    logic->rebuildListOfMeasurementTasks();
+    sendHttpOk(c);
+    
+  } else {
+    conflict(c);
+  }
 }
 
 void PhysicalSensorRestApiHandler::onDeleteRequest(struct mg_connection *c, void *data) {
