@@ -40,12 +40,18 @@ MeasurementMap SensorNetManager::fetchMeasurements(shared_ptr<PhysicalSensor> se
 }
 
 void SensorNetManager::saveConfiguration() {
-  json data = toJSON(sensors);
-  std::ofstream outputStream(FILE_NAME);
-  outputStream << std::setw(4) << data << std::endl;
+  {//critical section
+    unique_lock<mutex> lock(managerMutex);
+    json data = toJSON(sensors);
+    std::ofstream outputStream(FILE_NAME);
+    outputStream << std::setw(4) << data << std::endl;
+  }
 }
 
 bool SensorNetManager::deleteSensor(long sensorId) {
+  //whole metod is critical section
+  unique_lock<mutex> lock(managerMutex);
+  
   auto posIter = find_if(sensors.begin(), sensors.end(), PhysicalSensorByIdComparator(sensorId));
   if (posIter == sensors.end()) {
     return false;
@@ -55,6 +61,8 @@ bool SensorNetManager::deleteSensor(long sensorId) {
 }
 
 bool SensorNetManager::addSensor(shared_ptr<PhysicalSensor> sensor) {
+  //whole metod is critical section
+  unique_lock<mutex> lock(managerMutex);
   
   //fail if sensor with used id is registered
   auto posIter = find_if(sensors.begin(), sensors.end(), PhysicalSensorByIdComparator(sensor->getId()));
@@ -67,6 +75,9 @@ bool SensorNetManager::addSensor(shared_ptr<PhysicalSensor> sensor) {
 }
 
 void SensorNetManager::loadConfiguration() {
+  //whole metod is critical section
+  unique_lock<mutex> lock(managerMutex);
+  
   std::ifstream inputFileStream(FILE_NAME);
   if (inputFileStream.good() == false) {
     return;
@@ -78,5 +89,8 @@ void SensorNetManager::loadConfiguration() {
 }
 
 PhysicalSensorList SensorNetManager::getSensors() {
+  //whole metod is critical section
+  unique_lock<mutex> lock(managerMutex);
+  
   return sensors;
 }

@@ -11,7 +11,7 @@
 
 #include <stdio.h>
 #include <vector>
-
+#include <mutex>
 #include "PhysicalSensor.hpp"
 #include "json.hpp"
 #include "SensorNetProtocolParser.hpp"
@@ -32,6 +32,7 @@ class SensorNetManager {
     bool addSensor(shared_ptr<PhysicalSensor> sensor);
   private:
     PhysicalSensorList  sensors;
+    mutex               managerMutex;
   
     void loadConfiguration();
 };
