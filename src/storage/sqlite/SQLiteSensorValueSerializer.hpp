@@ -24,11 +24,16 @@ class SQLiteSensorValueSerializer : public SQLiteEntitySerializer {
     void useDatabase(sqlite3 *db, Storage* storage);
     
     shared_ptr<vector<shared_ptr<SensorValue>>> loadAll();
-    shared_ptr<vector<shared_ptr<SensorValue>>> loadMatching(SimpleCriteria criteria);
+    shared_ptr<vector<shared_ptr<SensorValue>>> loadMatching(SimpleCriteria const& criteria);
     shared_ptr<SensorValue> load(long id);
+  
+    bool remove(SimpleCriteria const& criteria);
+    long count(SimpleCriteria const& criteria);
   private:
     void append(string& sql, bool condition, const string& toAppend, bool &andMarker);
     shared_ptr<SensorValue> deserializeRow(SQLiteFillableStatement& statement);
+  
+    shared_ptr<SQLiteFillableStatement> appendWhere(string& sql, SimpleCriteria const& criteria);
 };
 
 #endif /* SQLiteSensorValueSerializer_hpp */

@@ -1,13 +1,13 @@
 //
-//  PhysicalSensorRestApiHandler.hpp
+//  MeasurementsRestApiHandler.hpp
 //  HomeControl
 //
-//  Created by Bartłomiej on 10/01/17.
+//  Created by Bartłomiej on 11/01/17.
 //  Copyright © 2017 Imagination Systems. All rights reserved.
 //
 
-#ifndef PhysicalSensorRestApiHandler_hpp
-#define PhysicalSensorRestApiHandler_hpp
+#ifndef MeasurementsRestApiHandler_hpp
+#define MeasurementsRestApiHandler_hpp
 
 #include <stdio.h>
 #include <memory>
@@ -16,15 +16,19 @@
 
 using namespace std;
 
-class PhysicalSensorRestApiHandler : public RestApiHandler {
+class SimpleCriteria;
+
+class MeasurementsRestApiHandler : public RestApiHandler {
   public:
-    PhysicalSensorRestApiHandler(shared_ptr<Logic> logic);
+    MeasurementsRestApiHandler(shared_ptr<Logic> logic);
     
     virtual void onGetRequest(struct mg_connection *c, void *data) override;
     virtual void onPostRequest(struct mg_connection *c, void *data) override;
     virtual void onDeleteRequest(struct mg_connection *c, void *data) override;
   private:
     shared_ptr<Logic> logic;
+  
+    void parseCriteria(void *data, SimpleCriteria& criteria, bool parseNavi);
 };
 
-#endif /* PhysicalSensorRestApiHandler_hpp */
+#endif /* MeasurementsRestApiHandler_hpp */

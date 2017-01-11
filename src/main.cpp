@@ -17,9 +17,7 @@
 #include "Logic.hpp"
 #include "CommunicationLink.hpp"
 #include "PhysicalSensorRestApiHandler.hpp"
-
-#include "MeasurementTask.hpp"
-#include <queue>
+#include "MeasurementsRestApiHandler.hpp"
 
 HttpServer* httpServer;
 Storage* storage;
@@ -36,6 +34,7 @@ void prepareHttpServer() {
   httpServer = new HttpServer(storage);
   httpServer->registerHandler(std::make_shared<HomePlanRestApiHandler>());
   httpServer->registerHandler(std::make_shared<PhysicalSensorRestApiHandler>(logic));
+  httpServer->registerHandler(std::make_shared<MeasurementsRestApiHandler>(logic));
 }
 
 void prepareSensors() {
@@ -47,16 +46,7 @@ void prepareLogic() {
 }
 
 int main(int argc, const char * argv[]) {
-  /*
-  priority_queue<shared_ptr<MeasurementTask>> q;
-  q.push( make_shared<MeasurementTask>(300));
-  q.push( make_shared<MeasurementTask>(350));
-  q.push( make_shared<MeasurementTask>(100));
   
-  printf("%ld\n", q.top()->getNextMeasurementTime()); q.pop();
-  printf("%ld\n", q.top()->getNextMeasurementTime()); q.pop();
-  printf("%ld\n", q.top()->getNextMeasurementTime()); q.pop();
-  */
   prepareStorage();
   prepareSensors();
   prepareLogic();
