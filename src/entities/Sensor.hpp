@@ -18,34 +18,23 @@ using namespace std;
 
 class Sensor : public Entity {
   public:
-    Sensor();
-    Sensor(long id);
+    Sensor(long id = -1);
   
-    Point*      getPosition();
     string      getName();
-    time_t      getTimestamp();
-    void        setPosition(Point p);
     void        setName(string const& name);
     long        getRoomId();
     void        setRoomId(long roomId);
-    void        setAddress(string const& address);
-    string      getAddress();
-    void        setType(string const& type);
-    string      getType();
+    void        setPhysicalSensorId(long id);
+    long        getPhysicalSensorId();
     void        setX(int x);
     int         getX();
     void        setY(int y);
     int         getY();
-  
-    SensorValue getLastValue();
-    void        addValue(SensorValue val);
   private:
     int           posX;
     int           posY;
     string        name;
-    string        address;    //it can be MAC, Bluetooth address, or other protocol dependent
-    string        type;
-    SensorValue   lastValue;
+    long          physicalSensorId;
     long          roomId;
 };
 
