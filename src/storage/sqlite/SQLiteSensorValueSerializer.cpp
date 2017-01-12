@@ -47,7 +47,7 @@ void SQLiteSensorValueSerializer::useDatabase(sqlite3 *db, Storage* storage) {
   executeUpdateQuery(creationSql);
 }
 
-shared_ptr<vector<shared_ptr<SensorValue>>> SQLiteSensorValueSerializer::loadAll() {
+SensorValueList SQLiteSensorValueSerializer::loadAll() {
   //todo: implement when needed
   return nullptr;
 }
@@ -73,7 +73,7 @@ shared_ptr<SensorValue> SQLiteSensorValueSerializer::deserializeRow(SQLiteFillab
   return make_shared<SensorValue>(id, sensId, value, static_cast<SensorValueType>(valType), static_cast<time_t>(timestamp));
 }
 
-shared_ptr<vector<shared_ptr<SensorValue>>> SQLiteSensorValueSerializer::loadMatching(SimpleCriteria const& criteria) {
+SensorValueList SQLiteSensorValueSerializer::loadMatching(SimpleCriteria const& criteria) {
 
   bool andRequired = false;
   string sql("SELECT * FROM SensorValues WHERE ");

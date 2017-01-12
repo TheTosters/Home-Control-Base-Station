@@ -276,9 +276,25 @@ shared_ptr<Room> roomFromJSON(string const& data) {
   return roomFromJSON(json);
 }
 
-json toJSON(shared_ptr<SensorValue> sensor) {
-  //todo: implement
-  return nullptr;
+json toJSON(shared_ptr<SensorValue> sensorValue, bool includeSensorId) {
+  json result = {
+    {"id", sensorValue->getId()},
+    {"value", sensorValue->getValue()},
+    {"timestamp", static_cast<long>(sensorValue->getTimestamp())},
+    {"valueType", static_cast<int>(sensorValue->getValueType())}
+  };
+  if (includeSensorId) {
+    result["sensorId"] = sensorValue->getPhysicalSensorId();
+  }
+  return result;
+}
+
+json toJSON(SensorValueList const& list, bool includeSensorId) {
+  json result = json::array();
+  for(auto iter = list->begin(); iter != list->end(); iter++) {
+    result += toJSON(*iter, includeSensorId);
+  }
+  return result;
 }
 
 shared_ptr<vector<shared_ptr<Room>>> roomListFromJSON(string const& data) {

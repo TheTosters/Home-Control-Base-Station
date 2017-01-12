@@ -44,11 +44,13 @@ class RestApiHandler {
     void  badRequest(struct mg_connection* conn);
     void  conflict(struct mg_connection* conn);
   
-    void  sendHttpOk(struct mg_connection* conn);
+    void  sendHttpOk(struct mg_connection* conn, string const& body = "");
   
     //helper methods
     bool getQueryVariable(void* rawData, string const& varName, long* result);
+    bool getQueryVariable(void* rawData, string const& varName, string* result);
     bool getOrDieQueryVariable(struct mg_connection* conn, void* rawData, string const& varName, long* result);
+    bool getOrDieQueryVariable(struct mg_connection* conn, void* rawData, string const& varName, string* result);
     shared_ptr<string> getBodyOrDie(struct mg_connection* conn, void* rawData);
 };
 #endif /* RestApiHandler_hpp */

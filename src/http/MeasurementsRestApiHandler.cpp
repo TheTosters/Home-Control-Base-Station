@@ -27,9 +27,41 @@ MeasurementsRestApiHandler::MeasurementsRestApiHandler(shared_ptr<Logic> _logic)
 
 void MeasurementsRestApiHandler::onGetRequest(struct mg_connection *c, void *data) {
   //two kinds of requests:
-  //cmd=get, sensorId, offset, count, resultType[optional], from[optional, timestamp], to[optional, timestamp]
+  //cmd=get, sensorId, offset[=0], count[=30], resultType[optional], from[optional, timestamp], to[optional, timestamp]
   //cmd=info, sensorId, resultType[optional], from[optional, timestamp], to[optional, timestamp]
+  string cmd;
+  if (getOrDieQueryVariable(c, data, "cmd", &cmd) == false) {
+    return;
+  }
   
+  SimpleCriteria criteria;
+  parseCriteria(data, criteria, true);
+  
+  if (criteria.helperId < 0) {
+    missingQueryVariable(c, "sensorId");
+    return;
+  }
+  
+  if (cmd == "get") {
+    criteria.offset = criteria.offset < 0 ? 0 : criteria.offset;
+    criteria.count = criteria.count < 0 ? 30 : criteria.count;
+    criteria.count = criteria.count > 100 ? 100 : criteria.count;
+    auto serialiser = logic->getStorage()->requestSerializer<SQLiteSensorValueSerializer>(SensorValue());
+    auto result = serialiser->loadMatching(criteria);
+    json outJson = toJSON(result, false);
+    sendHttpOk(c, outJson.dump());
+
+  } else if (cmd == "info") {
+    auto serialiser = logic->getStorage()->requestSerializer<SQLiteSensorValueSerializer>(SensorValue());
+    long result = serialiser->count(criteria);
+    json outJson = {
+      "count", result
+    };
+    sendHttpOk(c, outJson.dump());
+    
+  } else {
+    badRequest(c);
+  }
 }
 
 void MeasurementsRestApiHandler::onPostRequest(struct mg_connection *c, void *data) {

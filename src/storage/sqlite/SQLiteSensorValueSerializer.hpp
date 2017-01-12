@@ -23,8 +23,8 @@ class SQLiteSensorValueSerializer : public SQLiteEntitySerializer {
     void storeOrUpdate(SensorValue* data);
     void useDatabase(sqlite3 *db, Storage* storage);
     
-    shared_ptr<vector<shared_ptr<SensorValue>>> loadAll();
-    shared_ptr<vector<shared_ptr<SensorValue>>> loadMatching(SimpleCriteria const& criteria);
+    SensorValueList loadAll();
+    SensorValueList loadMatching(SimpleCriteria const& criteria);
     shared_ptr<SensorValue> load(long id);
   
     bool remove(SimpleCriteria const& criteria);

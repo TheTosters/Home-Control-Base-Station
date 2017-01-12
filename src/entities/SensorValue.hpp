@@ -51,4 +51,6 @@ class SensorValue : public Entity {
     SensorValueType valueType;
 };
 
+typedef shared_ptr<vector<shared_ptr<SensorValue>>> SensorValueList;
+
 #endif /* SensorValue_hpp */
