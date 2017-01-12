@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <vector>
+#include <memory>
 
 using namespace std;
 
@@ -20,12 +21,13 @@ public:
   shared_ptr<string>  name;
   long                id;
   long                helperId; //additional id, Serializer dependent
+  long                type; //misc value, Serializer dependent
   time_t              from;
   time_t              to;
   long                offset; //for pagination
   long                count;  //for pagination
   
-  SimpleCriteria() : id(-1), helperId(-1), from(0), to(0), offset(0), count(0) {}
+  SimpleCriteria() : id(-1), helperId(-1), type(-1), from(0), to(0), offset(0), count(0) {}
 };
 
 #endif /* SimpleCriteria_hpp */

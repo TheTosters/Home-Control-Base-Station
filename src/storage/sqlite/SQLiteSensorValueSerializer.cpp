@@ -47,7 +47,7 @@ void SQLiteSensorValueSerializer::useDatabase(sqlite3 *db, Storage* storage) {
   executeUpdateQuery(creationSql);
 }
 
-shared_ptr<vector<shared_ptr<SensorValue>>> SQLiteSensorValueSerializer::loadAll() {
+SensorValueList SQLiteSensorValueSerializer::loadAll() {
   //todo: implement when needed
   return nullptr;
 }
@@ -73,13 +73,15 @@ shared_ptr<SensorValue> SQLiteSensorValueSerializer::deserializeRow(SQLiteFillab
   return make_shared<SensorValue>(id, sensId, value, static_cast<SensorValueType>(valType), static_cast<time_t>(timestamp));
 }
 
-shared_ptr<vector<shared_ptr<SensorValue>>> SQLiteSensorValueSerializer::loadMatching(SimpleCriteria criteria) {
+SensorValueList SQLiteSensorValueSerializer::loadMatching(SimpleCriteria const& criteria) {
 
   bool andRequired = false;
   string sql("SELECT * FROM SensorValues WHERE ");
   
   append(sql, criteria.from > 0, "(timestamp >= ?)", andRequired);
   append(sql, criteria.to > 0, "(timestamp <= ?)", andRequired);
+  append(sql, criteria.type >= 0, "(valueType == ?)", andRequired);
+  append(sql, criteria.helperId >= 0, "(physicalSensorId == ?)", andRequired);
   
   andRequired = false;
   append(sql, criteria.count > 0, " LIMIT ?", andRequired);
@@ -96,6 +98,12 @@ shared_ptr<vector<shared_ptr<SensorValue>>> SQLiteSensorValueSerializer::loadMat
   }
   if (criteria.to > 0) {
     statement.bindNext( static_cast<long>(criteria.to) );
+  }
+  if (criteria.type >= 0) {
+    statement.bindNext( criteria.type );
+  }
+  if (criteria.helperId >= 0) {
+    statement.bindNext( criteria.helperId );
   }
   if (criteria.count > 0) {
     statement.bindNext( criteria.count );
@@ -121,5 +129,57 @@ shared_ptr<SensorValue> SQLiteSensorValueSerializer::load(long id) {
     
   } else {
     return nullptr;
+  }
+}
+
+shared_ptr<SQLiteFillableStatement> SQLiteSensorValueSerializer::appendWhere(string& sql, SimpleCriteria const& criteria) {
+  bool andRequired = false;
+  append(sql, criteria.id >= 0, "(id == ?)", andRequired);
+  append(sql, criteria.from > 0, "(timestamp >= ?)", andRequired);
+  append(sql, criteria.to > 0, "(timestamp <= ?)", andRequired);
+  append(sql, criteria.type >= 0, "(valueType == ?)", andRequired);
+  append(sql, criteria.helperId >= 0, "(physicalSensorId == ?)", andRequired);
+  
+  //build statement
+  shared_ptr<SQLiteFillableStatement> statement = make_shared<SQLiteFillableStatement>(db, sql);
+  
+  //bind data, NOTE: order is important!
+  if (criteria.id >= 0) {
+    statement->bindNext( criteria.id );
+  }
+  if (criteria.from > 0) {
+    statement->bindNext( static_cast<long>(criteria.from) );
+  }
+  if (criteria.to > 0) {
+    statement->bindNext( static_cast<long>(criteria.to) );
+  }
+  if (criteria.type >= 0) {
+    statement->bindNext( criteria.type );
+  }
+  if (criteria.helperId >= 0) {
+    statement->bindNext( criteria.helperId );
+  }
+  
+  return statement;
+}
+
+bool SQLiteSensorValueSerializer::remove(SimpleCriteria const& criteria) {
+  string sql("DELETE FROM SensorValues WHERE ");
+  shared_ptr<SQLiteFillableStatement> statement = appendWhere(sql, criteria);
+
+  return statement->executeUpdate();
+}
+
+long SQLiteSensorValueSerializer::count(SimpleCriteria const& criteria) {
+  string sql("SELECT COUNT(*) FROM SensorValues WHERE ");
+  shared_ptr<SQLiteFillableStatement> statement = appendWhere(sql, criteria);
+
+  if (statement->executeSelectNext() > 0) {
+    long count = 0;
+    statement->getColumns(&count);
+    return count;
+    
+  } else {
+    return -1;
   }
 }

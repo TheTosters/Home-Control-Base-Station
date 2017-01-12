@@ -30,8 +30,7 @@ json toJSON(Sensor* sensor) {
     {"x", sensor->getX()},
     {"y", sensor->getY()},
     {"name", sensor->getName()},
-    {"address", sensor->getAddress()},
-    {"type", sensor->getType()}
+    {"physicalSensorId", sensor->getPhysicalSensorId()},
   };
   
   return jsonSensor;
@@ -208,20 +207,21 @@ shared_ptr<Point> pointFromJSON(string const& data) {
 
 shared_ptr<Sensor> sensorFromJSON(string const& data) {
   json json = json::parse(data);
-  if (checkIfKeysExists(json, {"position", "name", "address", "type", "x", "y"}) == false) {
+  if (checkIfKeysExists(json, {"id", "position", "name", "x", "y"}) == false) {
     return nullptr;
   }
-  long id = getOptionalJSONLong(json, "id");
   
-  shared_ptr<Point> position = pointFromJSON(json["position"]);
+  long id = json["id"];
+  shared_ptr<Sensor> result = make_shared<Sensor>(id);
   
-  shared_ptr<Sensor> result = (id >= 0) ? make_shared<Sensor>(id) : make_shared<Sensor>();
-  
-  result->setAddress( json["address"] );
-  result->setType( json["type"] );
   result->setName( json["name"] );
   result->setX( json["x"] );
   result->setY( json["y"] );
+  
+  long sensId = getOptionalJSONLong(json, "physicalSensorId");
+  if (sensId >= 0) {
+    result->setPhysicalSensorId(sensId);
+  }
   
   long roomId = getOptionalJSONLong(json, "roomId");
   if (roomId >= 0) {
@@ -276,9 +276,25 @@ shared_ptr<Room> roomFromJSON(string const& data) {
   return roomFromJSON(json);
 }
 
-json toJSON(shared_ptr<SensorValue> sensor) {
-  //todo: implement
-  return nullptr;
+json toJSON(shared_ptr<SensorValue> sensorValue, bool includeSensorId) {
+  json result = {
+    {"id", sensorValue->getId()},
+    {"value", sensorValue->getValue()},
+    {"timestamp", static_cast<long>(sensorValue->getTimestamp())},
+    {"valueType", static_cast<int>(sensorValue->getValueType())}
+  };
+  if (includeSensorId) {
+    result["sensorId"] = sensorValue->getPhysicalSensorId();
+  }
+  return result;
+}
+
+json toJSON(SensorValueList const& list, bool includeSensorId) {
+  json result = json::array();
+  for(auto iter = list->begin(); iter != list->end(); iter++) {
+    result += toJSON(*iter, includeSensorId);
+  }
+  return result;
 }
 
 shared_ptr<vector<shared_ptr<Room>>> roomListFromJSON(string const& data) {

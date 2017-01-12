@@ -19,9 +19,10 @@ using namespace nlohmann;
 json toJSON(shared_ptr<Point> point);
 json toJSON(shared_ptr<Room> room);
 json toJSON(shared_ptr<Sensor> sensor);
-json toJSON(shared_ptr<SensorValue> sensor);
+json toJSON(shared_ptr<SensorValue> sensorValue, bool includeSensorId);
 json toJSON(shared_ptr<vector<shared_ptr<Room>>> roomsList);
 json toJSON(PhysicalSensorList const& list);
+json toJSON(SensorValueList const& list, bool includeSensorId);
 
 shared_ptr<Point> pointFromJSON(string const& data);
 shared_ptr<Sensor> sensorFromJSON(string const& data);

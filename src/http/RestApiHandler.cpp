@@ -31,10 +31,11 @@ void RestApiHandler::internalError(struct mg_connection* conn) {
             "Content-Length: 0\r\n\r\n");
 }
 
-void RestApiHandler::sendHttpOk(struct mg_connection* conn) {
-  mg_printf(conn, "%s",
+void RestApiHandler::sendHttpOk(struct mg_connection* conn, string const& body) {
+  mg_printf(conn,
             "HTTP/1.0 200 OK\r\n"
-            "Content-Length: 0\r\n\r\n");
+            "Content-Length: %lu\r\n\r\n"
+            "%s", body.length(), body.c_str());
 }
 
 void RestApiHandler::conflict(struct mg_connection* conn) {
@@ -110,9 +111,34 @@ bool RestApiHandler::getQueryVariable(void* rawData, string const& varName, long
   return true;
 }
 
+bool RestApiHandler::getQueryVariable(void* rawData, string const& varName, string* result) {
+  struct http_message *message = (struct http_message *) rawData;
+  if (message->query_string.len == 0) {
+    return false;
+  }
+  
+  char idStr[125];
+  if (mg_get_http_var(&message->query_string, varName.c_str(), idStr, sizeof(idStr)) < 0) {
+    return false;
+  }
+  result->append(idStr);
+  return true;
+}
+
 bool RestApiHandler::getOrDieQueryVariable(struct mg_connection* conn, void* rawData, string const& varName, long* result) {
   bool queryResult = getQueryVariable(rawData, varName, result);
 
+  if (queryResult == false) {
+    missingQueryVariable(conn, varName);
+    return false;
+  }
+  
+  return true;
+}
+
+bool RestApiHandler::getOrDieQueryVariable(struct mg_connection* conn, void* rawData, string const& varName, string* result) {
+  bool queryResult = getQueryVariable(rawData, varName, result);
+  
   if (queryResult == false) {
     missingQueryVariable(conn, varName);
     return false;

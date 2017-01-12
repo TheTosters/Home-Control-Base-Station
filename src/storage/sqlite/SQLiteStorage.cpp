@@ -11,7 +11,7 @@
 #include "Entity.hpp"
 
 bool SQLiteStorage::open() {
-  int rc = sqlite3_open("storage.sqlite", &db);
+  int rc = sqlite3_open_v2("storage.sqlite", &db, SQLITE_OPEN_CREATE|SQLITE_OPEN_READWRITE|SQLITE_OPEN_FULLMUTEX, NULL);
   if ( rc ){
     //todo: proper logs not fprint
     fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
