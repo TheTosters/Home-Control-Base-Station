@@ -37,4 +37,7 @@ class Room : public Entity {
     vector<Point>     shape;
 };
 
+typedef vector<shared_ptr<Room>> RoomsVector;
+typedef shared_ptr<RoomsVector> RoomsList;
+
 #endif /* Room_hpp */

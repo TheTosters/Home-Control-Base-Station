@@ -16,9 +16,17 @@ using namespace std;
 
 class LogicRule {
   public:
+    LogicRule();
+  
+    void setEnabled(bool state);
+    bool isEnabled();
+
     virtual void execute() = 0;
+  protected:
+    bool  enabled;
 };
 
-typedef vector<shared_ptr<LogicRule>> LogicRulesList;
+typedef vector<shared_ptr<LogicRule>> LogicRulesVector;
+typedef shared_ptr<LogicRulesVector> LogicRulesList;
 
 #endif /* LogicRule_hpp */

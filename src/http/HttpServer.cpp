@@ -36,12 +36,12 @@ void restApiHanlder(struct mg_connection *c, int event, void *data) {
   }
 }
 
-HttpServer::HttpServer(Storage* stor, int port)
+HttpServer::HttpServer(shared_ptr<Storage> stor, int port)
 : httpPort(port), stopLoop(false), storage(stor) {
   
 }
 
-Storage* HttpServer::getStorage() {
+shared_ptr<Storage> HttpServer::getStorage() {
   return storage;
 }
 

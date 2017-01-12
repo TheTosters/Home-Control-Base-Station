@@ -20,6 +20,7 @@
 #include "Schedule.hpp"
 #include "TemperatureIdentifier.hpp"
 #include "LogicRule.hpp"
+#include "Entities.hpp"
 
 using namespace std;
 using namespace nlohmann;
@@ -28,35 +29,30 @@ typedef unordered_map<string, shared_ptr<Schedule>> ScheduleMap;
 
 class Logic {
   public:
-    Logic(Storage* storage, shared_ptr<SensorNetManager> sensorNetManager);
+    Logic(shared_ptr<Storage> storage, shared_ptr<SensorNetManager> sensorNetManager);
     ~Logic();
   
-    Storage*  getStorage();
-    void      run();
-    void      terminate();
+    shared_ptr<Storage> getStorage();
+    void run();
+    void terminate();
   
     shared_ptr<SensorNetManager> getSensorsNetManager();
     void rebuildListOfMeasurementTasks();
+    LogicRulesList getRules();
+    shared_ptr<ScheduleMap> getRoomHeatingPlan();
   private:
-    Storage*          storage;
+    shared_ptr<Storage> storage;
     shared_ptr<SensorNetManager> sensorNetManager;
     bool              terminated;
     mutex             logicLock;
     thread*           logicThread;
     priority_queue<shared_ptr<MeasurementTask>> measurementTasks;
-    shared_ptr<ScheduleMap> heatingPlans;
     shared_ptr<ScheduleMap> roomHeatingPlan;
-    TemperatureIdentifierList temperatures;
     LogicRulesList    rules;
+    RoomsList         rooms;
   
     void execute();
     void storeMeasurements(long sensorId, MeasurementMap data);
-  
-    void buildRules();
-    void loadConfig(string const& path);
-    void parseConfigTemperatures(json const& definition);
-    void parseHetingPlans(json const& definition);
-    void parseRoomHeating(json const& definition);
 };
 
 #endif /* Logic_hpp */

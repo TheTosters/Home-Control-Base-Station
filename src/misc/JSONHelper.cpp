@@ -69,7 +69,7 @@ json toJSON(shared_ptr<Room> room) {
 
 json toJSON(PhysicalSensorList const& list) {
   json result = json::array();
-  for(auto iter = list.begin(); iter != list.end(); iter++) {
+  for(auto iter = list->begin(); iter != list->end(); iter++) {
     
     json types = json::array();
     vector<PhysicalSensorType>& tmp = (*iter)->getType();
@@ -90,9 +90,12 @@ json toJSON(PhysicalSensorList const& list) {
   return result;
 }
 
-bool checkIfKeysExists(json json, vector<string> const& keys) {
+bool checkIfKeysExists(json json, vector<string> const& keys, string* missing) {
   for(auto iter = keys.begin(); iter != keys.end(); iter++) {
     if (json.find(*iter) == json.end()) {
+      if (missing != nullptr) {
+        *missing = *iter;
+      }
       return false;
     }
   }
@@ -187,13 +190,13 @@ shared_ptr<PhysicalSensor> physicalSensorFromJSON(json const& data) {
 }
 
 PhysicalSensorList physicalSensorsFromJSON(string const& data) {
-  PhysicalSensorList result;
+  PhysicalSensorList result = make_shared<PhysicalSensorVector>();
   json inJson = json::parse(data);
   
   if (inJson.is_array()) {
     for(auto iter = inJson.begin(); iter != inJson.end(); iter++) {
       shared_ptr<PhysicalSensor> sensor = physicalSensorFromJSON(*iter);
-      result.push_back(sensor);
+      result->push_back(sensor);
     }
   }
   
@@ -311,7 +314,7 @@ shared_ptr<vector<shared_ptr<Room>>> roomListFromJSON(string const& data) {
   return result;
 }
 
-json toJSON(shared_ptr<vector<shared_ptr<Room>>> roomsList) {
+json toJSON(RoomsList roomsList) {
   json result = json::array();
   
   for(vector<shared_ptr<Room>>::iterator iter = roomsList->begin(); iter != roomsList->end(); iter ++) {

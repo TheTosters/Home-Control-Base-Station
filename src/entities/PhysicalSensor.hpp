@@ -70,5 +70,6 @@ class PhysicalSensor : public Entity {
     void updateLastMeasurement(SensorValueType valType, double value, time_t time);
 };
 
-typedef vector<shared_ptr<PhysicalSensor>> PhysicalSensorList;
+typedef vector<shared_ptr<PhysicalSensor>> PhysicalSensorVector;
+typedef shared_ptr<PhysicalSensorVector> PhysicalSensorList;
 #endif /* PhysicalSensor_hpp */

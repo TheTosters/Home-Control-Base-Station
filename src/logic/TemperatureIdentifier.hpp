@@ -26,5 +26,6 @@ class TemperatureIdentifier {
     double    temperature;
 };
 
-typedef shared_ptr<vector<shared_ptr<TemperatureIdentifier>>> TemperatureIdentifierList;
+typedef vector<shared_ptr<TemperatureIdentifier>> TemperatureIdentifierVector;
+typedef shared_ptr<TemperatureIdentifierVector> TemperatureIdentifierList;
 #endif /* TemperatureIdentifier_hpp */
