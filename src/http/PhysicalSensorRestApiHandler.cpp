@@ -22,7 +22,7 @@ PhysicalSensorRestApiHandler::PhysicalSensorRestApiHandler(shared_ptr<Logic> _lo
 
 void PhysicalSensorRestApiHandler::onGetRequest(struct mg_connection *c, void *data) {
   shared_ptr<SensorNetManager> mgr = logic->getSensorsNetManager();
-  PhysicalSensorList list = mgr->getSensors();
+  PhysicalSensorList list = make_shared<PhysicalSensorVector>(mgr->getSensors());
   
   json result = toJSON(list);
   string response = result.dump().c_str();
@@ -40,11 +40,11 @@ void PhysicalSensorRestApiHandler::onPostRequest(struct mg_connection *c, void *
   }
   string tmp = "[" + *str + "]";
   PhysicalSensorList list = physicalSensorsFromJSON(tmp);
-  if (list.size() != 1) {
+  if (list->size() != 1) {
     badRequest(c);
     return;
   }
-  shared_ptr<PhysicalSensor> item = list[0];
+  shared_ptr<PhysicalSensor> item = (*list)[0];
   shared_ptr<SensorNetManager> mgr = logic->getSensorsNetManager();
   
   if (mgr->addSensor(item)) {

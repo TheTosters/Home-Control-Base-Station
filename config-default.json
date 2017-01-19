@@ -1,0 +1,9 @@
+{
+    "heatingPlan" : "heatingPlan-default.json",
+    "homePlan" : "homePlan-default.json",
+    "sensors" : "sensors-default.json",
+    "dbFile" : "storage.sqlite",
+    "webServer" : {
+        "port" : 8000
+    }
+}

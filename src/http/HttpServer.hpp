@@ -9,7 +9,7 @@
 
 class HttpServer {
   public:
-    HttpServer(Storage* storage, int port = 8000);
+    HttpServer(shared_ptr<Storage> storage, int port = 8000);
   
     void start();
     void stop();
@@ -19,14 +19,14 @@ class HttpServer {
     void onDeleteRequest(struct mg_connection *c, void *data);
 
     void registerHandler(shared_ptr<RestApiHandler> const& handler);
-    Storage* getStorage();
+    shared_ptr<Storage> getStorage();
   private:
     int                     httpPort;
     struct mg_mgr           manager;
     std::mutex              mutex;
     bool                    stopLoop;
     bool                    runLoopDone;
-    Storage*                storage;
+    shared_ptr<Storage>     storage;
     map<string, shared_ptr<RestApiHandler>> handlers;
 };
 

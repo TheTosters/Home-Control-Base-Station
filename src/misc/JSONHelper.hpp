@@ -20,7 +20,7 @@ json toJSON(shared_ptr<Point> point);
 json toJSON(shared_ptr<Room> room);
 json toJSON(shared_ptr<Sensor> sensor);
 json toJSON(shared_ptr<SensorValue> sensorValue, bool includeSensorId);
-json toJSON(shared_ptr<vector<shared_ptr<Room>>> roomsList);
+json toJSON(RoomsList roomsList);
 json toJSON(PhysicalSensorList const& list);
 json toJSON(SensorValueList const& list, bool includeSensorId);
 
@@ -34,5 +34,5 @@ PhysicalSensorList physicalSensorsFromJSON(string const& data);
 long getOptionalJSONLong(json json, string const& key);
 shared_ptr<string> getOptionalJSONString(json json, string const& key);
 
-bool checkIfKeysExists(json json, vector<string> const& keys);
+bool checkIfKeysExists(json json, vector<string> const& keys, string* missing = nullptr);
 #endif /* JSONHelper_hpp */

@@ -6,51 +6,38 @@
 //  Copyright © 2016 Imagination Systems. All rights reserved.
 //
 
-#include <iostream>
-#include "mongoose.h"
+#include <string>
+#include "MasterBuilder.hpp"
 #include "HttpServer.hpp"
-#include "HomePlanRestApiHandler.hpp"
-#include "SQLiteStorage.hpp"
-#include "Entities.hpp"
-#include "SQLiteSerializers.hpp"
-#include "SensorNetManager.hpp"
 #include "Logic.hpp"
-#include "CommunicationLink.hpp"
-#include "PhysicalSensorRestApiHandler.hpp"
-#include "MeasurementsRestApiHandler.hpp"
+#include <TCLAP/CmdLine.h>
 
-HttpServer* httpServer;
-Storage* storage;
-shared_ptr<SensorNetManager> sensorNetManager;
-shared_ptr<Logic> logic;
-
-void prepareStorage() {
-  storage = new SQLiteStorage();
-  storage->registerSerializer(SensorValue(), new SQLiteSensorValueSerializer());
-  storage->open();
-}
-
-void prepareHttpServer() {
-  httpServer = new HttpServer(storage);
-  httpServer->registerHandler(std::make_shared<HomePlanRestApiHandler>());
-  httpServer->registerHandler(std::make_shared<PhysicalSensorRestApiHandler>(logic));
-  httpServer->registerHandler(std::make_shared<MeasurementsRestApiHandler>(logic));
-}
-
-void prepareSensors() {
-  sensorNetManager = make_shared<SensorNetManager>();
-}
-
-void prepareLogic() {
-  logic = make_shared<Logic>(storage, sensorNetManager);
-}
+using namespace TCLAP;
+using namespace std;
 
 int main(int argc, const char * argv[]) {
+
+  shared_ptr<MasterBuilder> builder;
   
-  prepareStorage();
-  prepareSensors();
-  prepareLogic();
-  prepareHttpServer();
+  try {
+    CmdLine cmd("Home Control Gateway Application", ' ', "0.0.1");
+    ValueArg<string> configFile("c", "config", "Path to config file", false, DEFAULT_CONFIG_FILE, "string");
+    cmd.add( configFile );
+    
+    ValueArg<int> logLevel("v", "logLevel", "Logging level 0-DEBUG, 5-ERROR", false, 4, "number");
+    cmd.add( logLevel );
+    
+    cmd.parse( argc, argv );
+    
+    builder = make_shared<MasterBuilder>(configFile.getValue());
+  } catch (ArgException &e) {
+    cerr << "error: " << e.error() << " for arg " << e.argId() << endl;
+    return -1;
+  }
+  
+  builder->build();
+  shared_ptr<HttpServer> httpServer = builder->getHttpServer();
+  shared_ptr<Logic> logic = builder->getLogic();
   
   logic->run();
   httpServer->start();

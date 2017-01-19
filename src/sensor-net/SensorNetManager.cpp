@@ -26,8 +26,8 @@ struct PhysicalSensorByIdComparator : public std::unary_function<std::string, bo
   
 };
 
-SensorNetManager::SensorNetManager() {
-  loadConfiguration();
+void SensorNetManager::setSensorsList(PhysicalSensorList sensorsList) {
+  sensors = sensorsList;
 }
 
 MeasurementMap SensorNetManager::fetchMeasurements(shared_ptr<PhysicalSensor> sensor, int count) {
@@ -52,11 +52,11 @@ bool SensorNetManager::deleteSensor(long sensorId) {
   //whole metod is critical section
   unique_lock<mutex> lock(managerMutex);
   
-  auto posIter = find_if(sensors.begin(), sensors.end(), PhysicalSensorByIdComparator(sensorId));
-  if (posIter == sensors.end()) {
+  auto posIter = find_if(sensors->begin(), sensors->end(), PhysicalSensorByIdComparator(sensorId));
+  if (posIter == sensors->end()) {
     return false;
   }
-  sensors.erase(posIter);
+  sensors->erase(posIter);
   return true;
 }
 
@@ -65,32 +65,18 @@ bool SensorNetManager::addSensor(shared_ptr<PhysicalSensor> sensor) {
   unique_lock<mutex> lock(managerMutex);
   
   //fail if sensor with used id is registered
-  auto posIter = find_if(sensors.begin(), sensors.end(), PhysicalSensorByIdComparator(sensor->getId()));
-  if (posIter != sensors.end()) {
+  auto posIter = find_if(sensors->begin(), sensors->end(), PhysicalSensorByIdComparator(sensor->getId()));
+  if (posIter != sensors->end()) {
     return false;
   }
   
-  sensors.push_back(sensor);
+  sensors->push_back(sensor);
   return true;
 }
 
-void SensorNetManager::loadConfiguration() {
+PhysicalSensorVector SensorNetManager::getSensors() {
   //whole metod is critical section
   unique_lock<mutex> lock(managerMutex);
   
-  std::ifstream inputFileStream(FILE_NAME);
-  if (inputFileStream.good() == false) {
-    return;
-  }
-  
-  std::stringstream buffer;
-  buffer << inputFileStream.rdbuf();
-  sensors = physicalSensorsFromJSON(buffer.str());
-}
-
-PhysicalSensorList SensorNetManager::getSensors() {
-  //whole metod is critical section
-  unique_lock<mutex> lock(managerMutex);
-  
-  return sensors;
+  return *sensors;
 }

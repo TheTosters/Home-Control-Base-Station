@@ -23,17 +23,14 @@ class PhysicalSensor;
 
 class SensorNetManager {
   public:
-    SensorNetManager();
-    PhysicalSensorList getSensors();
-  
+    PhysicalSensorVector getSensors();
+    void setSensorsList(PhysicalSensorList sensorsList);
     MeasurementMap fetchMeasurements(shared_ptr<PhysicalSensor> sensor, int count = 1);
     void saveConfiguration();
     bool deleteSensor(long sensorId);
     bool addSensor(shared_ptr<PhysicalSensor> sensor);
   private:
-    PhysicalSensorList  sensors;
-    mutex               managerMutex;
-  
-    void loadConfiguration();
+    PhysicalSensorList    sensors;
+    mutex                 managerMutex;
 };
 #endif /* SensorNetManager_hpp */
