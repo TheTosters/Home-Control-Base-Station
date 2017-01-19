@@ -107,6 +107,8 @@ void MasterBuilder::buildLoggers() {
       overrideLogger(*iter, nullptr, &(*tmpS));
     }
   }
+  
+  spdlog::get(MISC_LOGGER_NAME)->info("Loggers created");
 }
 
 shared_ptr<Logic> MasterBuilder::getLogic() {
@@ -125,15 +127,20 @@ shared_ptr<HttpServer> MasterBuilder::getHttpServer() {
 
 void MasterBuilder::buildStorage() {
   string dbFile = masterConfig[KEY_STORAGE_DB_FILE];
+  spdlog::get(MISC_LOGGER_NAME)->info("Building SQLite storage...");
+  spdlog::get(MISC_LOGGER_NAME)->info("  DB File:{}", dbFile);
   storage = make_shared<SQLiteStorage>(dbFile);
   storage->registerSerializer(SensorValue(), new SQLiteSensorValueSerializer());
   storage->open();
+  spdlog::get(MISC_LOGGER_NAME)->info("Building SQLite storage DONE.");
 }
 
 void MasterBuilder::buildSensors() {
   sensorNetManager = make_shared<SensorNetManager>();
   
   string configFile = masterConfig[KEY_SENSORS_CONFIG_FILE];
+  spdlog::get(MISC_LOGGER_NAME)->info("Building Sensors Net...");
+  spdlog::get(MISC_LOGGER_NAME)->info("  Config:{}", configFile);
   std::ifstream inputFileStream(configFile);
   if (inputFileStream.good() == false) {
     throw invalid_argument("Can't open config:" + configFile);
@@ -143,11 +150,15 @@ void MasterBuilder::buildSensors() {
   buffer << inputFileStream.rdbuf();
   PhysicalSensorList sensors = physicalSensorsFromJSON(buffer.str());
   sensorNetManager->setSensorsList(sensors);
+  spdlog::get(MISC_LOGGER_NAME)->info("  Sensors count:{}", sensors->size());
+  spdlog::get(MISC_LOGGER_NAME)->info("Building Sensors Net DONE.");
 }
 
 void MasterBuilder::buildHeatingPlan() {
   
   string configFile = masterConfig[KEY_HEATING_CONFIG_FILE];
+  spdlog::get(MISC_LOGGER_NAME)->info("Building heating plan...");
+  spdlog::get(MISC_LOGGER_NAME)->info("  Config file:{}", configFile);
   std::ifstream inputFileStream( configFile );
   if (inputFileStream.good() == false) {
     throw invalid_argument("Can't open config:" + configFile);
@@ -161,14 +172,14 @@ void MasterBuilder::buildHeatingPlan() {
   vector<string> expected = {"temperatures", "heatingPlans", "roomsHeating"};
   string missing;
   if (checkIfKeysExists(inJson, expected, &missing) == false){
-    fprintf(stderr, "Config is wrong. Lack of mandatory node '%s' in file: %s \n",
-            missing.c_str(), configFile.c_str());
+    spdlog::get(MISC_LOGGER_NAME)->error("  Config is wrong. Lack of mandatory node '{}'", missing);
     throw invalid_argument("Wrong format of config file.");
   }
   
   parseConfigTemperatures(inJson["temperatures"]);
   parseHetingPlans(inJson["heatingPlans"]);
   parseRoomHeating(inJson["roomsHeating"]);
+  spdlog::get(MISC_LOGGER_NAME)->info("Building heating plan DONE.");
 }
 
 
@@ -181,19 +192,21 @@ void MasterBuilder::parseHetingPlans(json const& definition) {
     shared_ptr<Schedule> schedule = make_shared<Schedule>(data, temperatures);
     (*heatingPlans)[planName] = schedule;
   }
+  spdlog::get(MISC_LOGGER_NAME)->info("  Plans:{}", definition.size());
 }
 
 void MasterBuilder::parseConfigTemperatures(json const& definition) {
   temperatures = make_shared<TemperatureIdentifierVector>();
   if (definition.is_array() == false) {
-    fprintf(stderr, "Expected array here! \n%s\n", definition.dump().c_str());
+    spdlog::get(MISC_LOGGER_NAME)->error("  Expected array here:{}", definition.dump());
     throw invalid_argument("Wrong format of 'temperatures' node.");
   }
   
   for(auto iter = definition.begin(); iter != definition.end(); iter ++) {
     if (checkIfKeysExists(*iter, {"id", "temperature"}) == false){
-      fprintf(stderr, "Config, is wrong, expected nodes 'temperature', 'id' in line: %s \n",
-              (*iter).dump().c_str());
+      spdlog::get(MISC_LOGGER_NAME)->error("  Config, is wrong, expected nodes 'temperature', 'id' in line:{}",
+              (*iter).dump());
+      
       throw invalid_argument("Wrong format of config file.");
     }
     
@@ -201,11 +214,12 @@ void MasterBuilder::parseConfigTemperatures(json const& definition) {
     double temp = (*iter)["temperature"];
     temperatures->push_back( shared_ptr<TemperatureIdentifier>( new TemperatureIdentifier(name, temp) ) );
   }
+  spdlog::get(MISC_LOGGER_NAME)->info("  Temperatures ids:{}", definition.size());
 }
 
 void MasterBuilder::parseRoomHeating(json const& definition) {
   if (definition.is_array() == false) {
-    fprintf(stderr, "Expected array here! \n%s\n", definition.dump().c_str());
+    spdlog::get(MISC_LOGGER_NAME)->error("  Expected array here:{}", definition.dump());
     throw invalid_argument("Wrong format of 'roomsHeating' node.");
   }
   
@@ -213,8 +227,8 @@ void MasterBuilder::parseRoomHeating(json const& definition) {
   
   for(auto iter = definition.begin(); iter != definition.end(); iter ++) {
     if (checkIfKeysExists(*iter, {"room", "plan"}) == false){
-      fprintf(stderr, "Config, is wrong, expected nodes 'room', 'plan' in line: %s \n",
-              (*iter).dump().c_str());
+      spdlog::get(MISC_LOGGER_NAME)->error("  Config, is wrong, expected nodes 'room', 'plan' in line:{}",
+              (*iter).dump());
       throw invalid_argument("Wrong format of config file.");
     }
     
@@ -222,8 +236,8 @@ void MasterBuilder::parseRoomHeating(json const& definition) {
     string plan = (*iter)["plan"];
     
     if (heatingPlans->find(plan) == heatingPlans->end()) {
-      fprintf(stderr, "Config, is wrong, expected hetaing plan named %s in line: %s \n",
-              plan.c_str(), (*iter).dump().c_str());
+      spdlog::get(MISC_LOGGER_NAME)->error("  Config, is wrong, expected hetaing plan named {} in line:{}",
+              plan, (*iter).dump());
       throw invalid_argument("Undefined plan.");
     }
     
@@ -233,20 +247,25 @@ void MasterBuilder::parseRoomHeating(json const& definition) {
 }
 
 void MasterBuilder::buildLogic() {
+  spdlog::get(MISC_LOGGER_NAME)->info("Building logic...");
   buildStorage();
   buildSensors();
   
   logic = make_shared<Logic>(storage, sensorNetManager);
   
   buildHeatingPlan();
+  spdlog::get(MISC_LOGGER_NAME)->info("Building logic DONE.");
 }
 
 void MasterBuilder::buildHttpServer() {
+  spdlog::get(MISC_LOGGER_NAME)->info("Building http server...");
   int port = masterConfig[KEY_WEB_SERVER_CONFIG][KEY_WEB_PORT];
+  spdlog::get(MISC_LOGGER_NAME)->info("  Http listen port:{}", port);
   httpServer = make_shared<HttpServer>(storage, port);
   httpServer->registerHandler(std::make_shared<HomePlanRestApiHandler>());
   httpServer->registerHandler(std::make_shared<PhysicalSensorRestApiHandler>(logic));
   httpServer->registerHandler(std::make_shared<MeasurementsRestApiHandler>(logic));
+  spdlog::get(MISC_LOGGER_NAME)->info("Building http server DONE.");
 }
 
 

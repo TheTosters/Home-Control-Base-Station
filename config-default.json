@@ -6,11 +6,11 @@
     "webServer" : {
         "port" : 8000
     },
-    "logging" : {
+    "logging" : {
         "console" : true,
         "file" : "logs",
-        "level" : 4,
-        "format": "[%n]%M:%S:%e[%t] %L: %v",
+        "level" : 1,
+        "format": "[%n][%t]%M:%S:%e %L: %v",
         "logic" : {
           "level" : 2
         }
