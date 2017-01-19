@@ -7,16 +7,57 @@
 //
 
 #include <string>
+#include <TCLAP/CmdLine.h>
+#include <signal.h>
 #include "MasterBuilder.hpp"
 #include "HttpServer.hpp"
 #include "Logic.hpp"
-#include <TCLAP/CmdLine.h>
 
 using namespace TCLAP;
 using namespace std;
 
+struct Components {
+  shared_ptr<HttpServer> httpServer;
+  shared_ptr<Logic> logic;
+};
+
+static struct Components components = {
+  .httpServer = NULL,
+  .logic = NULL
+};
+
+void signalHandler(int sig, siginfo_t *siginfo, void *context) {
+  cout<<"Signal to terminate received!" << endl;
+  components.logic->terminate();
+  components.httpServer->stop();
+}
+
+bool attachSignalsHandlers() {
+  struct sigaction act;
+  
+  memset (&act, '\0', sizeof(act));
+  act.sa_sigaction = &signalHandler;
+  act.sa_flags = SA_SIGINFO;
+  
+  if (sigaction(SIGTERM, &act, NULL) < 0) {
+    cerr << "error: " << "Can't attach to signal handlers" << endl;
+    return false;
+  }
+
+  if (sigaction(SIGINT, &act, NULL) < 0) {
+    cerr << "error: " << "Can't attach to signal handlers" << endl;
+    return false;
+  }
+
+  return true;
+}
+
 int main(int argc, const char * argv[]) {
 
+  if (attachSignalsHandlers() == false) {
+    return -1;
+  }
+  
   shared_ptr<MasterBuilder> builder;
   
   try {
@@ -36,10 +77,10 @@ int main(int argc, const char * argv[]) {
   }
   
   builder->build();
-  shared_ptr<HttpServer> httpServer = builder->getHttpServer();
-  shared_ptr<Logic> logic = builder->getLogic();
+  components.httpServer = builder->getHttpServer();
+  components.logic = builder->getLogic();
   
-  logic->run();
-  httpServer->start();
+  components.logic->run();
+  components.httpServer->start();
   return 0;
 }
