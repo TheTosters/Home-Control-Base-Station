@@ -1,3 +1,4 @@
+#include <thread>
 #include "HttpServer.hpp"
 
 static const int POOL_TIMEOUT = 1000;
@@ -45,7 +46,7 @@ shared_ptr<Storage> HttpServer::getStorage() {
   return storage;
 }
 
-void HttpServer::stop() {
+void HttpServer::stop(bool waitForStop) {
   
   { //critical section
     std::unique_lock<std::mutex> lock(mutex);
@@ -53,13 +54,14 @@ void HttpServer::stop() {
     lock.unlock();
     
     //wait to server done
-    for(;;) {
+    for(;waitForStop;) {
       lock.lock();
       if (runLoopDone == true) {
         lock.unlock();
         break;
       }
       lock.unlock();
+      this_thread::sleep_for(chrono::milliseconds(50));
     }
   }
   
@@ -97,6 +99,7 @@ void HttpServer::start() {
       lock.unlock();
     }
   }
+  runLoopDone = true;
 }
 
 void HttpServer::onGetRequest(struct mg_connection *c, void *data) {

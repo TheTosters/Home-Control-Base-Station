@@ -12,7 +12,7 @@ class HttpServer {
     HttpServer(shared_ptr<Storage> storage, int port = 8000);
   
     void start();
-    void stop();
+    void stop(bool waitForStop = false);
   
     void onGetRequest(struct mg_connection *c, void *data);
     void onPostRequest(struct mg_connection *c, void *data);

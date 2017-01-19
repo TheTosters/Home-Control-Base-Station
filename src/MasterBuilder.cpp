@@ -102,7 +102,7 @@ void MasterBuilder::buildHeatingPlan() {
   
   vector<string> expected = {"temperatures", "heatingPlans", "roomsHeating"};
   string missing;
-  if (checkIfKeysExists(masterConfig, expected, &missing) == false){
+  if (checkIfKeysExists(inJson, expected, &missing) == false){
     fprintf(stderr, "Config is wrong. Lack of mandatory node '%s' in file: %s \n",
             missing.c_str(), configFile.c_str());
     throw invalid_argument("Wrong format of config file.");
