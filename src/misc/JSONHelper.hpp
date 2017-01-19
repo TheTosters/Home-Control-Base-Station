@@ -33,6 +33,7 @@ PhysicalSensorList physicalSensorsFromJSON(string const& data);
 
 long getOptionalJSONLong(json json, string const& key);
 shared_ptr<string> getOptionalJSONString(json json, string const& key);
+void getOptionalJSONBool(json json, string const& key, bool& value);
 
 bool checkIfKeysExists(json json, vector<string> const& keys, string* missing = nullptr);
 #endif /* JSONHelper_hpp */

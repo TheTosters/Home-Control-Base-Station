@@ -14,13 +14,21 @@
 #include "MeasurementsRestApiHandler.hpp"
 #include "JSONHelper.hpp"
 #include "TemperatureIdentifier.hpp"
+#include "LogHelper.hpp"
 
 static const string KEY_HEATING_CONFIG_FILE = "heatingPlan";
 static const string KEY_HOME_PLAN_CONFIG_FILE = "homePlan";
 static const string KEY_SENSORS_CONFIG_FILE = "sensors";
 static const string KEY_STORAGE_DB_FILE = "dbFile";
+
 static const string KEY_WEB_SERVER_CONFIG = "webServer";
-static const string KEY_HTTP_PORT = "port";
+static const string KEY_WEB_PORT = "port";
+
+static const string KEY_LOGGING = "logging";
+static const string KEY_LOGGING_LEVEL = "level";
+static const string KEY_LOGGING_CONSOLE = "console";
+static const string KEY_LOGGING_FILE = "file";
+static const string KEY_LOGGING_FORMAT = "format";
 
 MasterBuilder::MasterBuilder(string const& configFile)
 : wasBuilded(false) {
@@ -47,8 +55,58 @@ MasterBuilder::MasterBuilder(string const& configFile)
 
 void MasterBuilder::build() {
   wasBuilded = true;
+  buildLoggers();
   buildLogic();
   buildHttpServer();
+}
+
+void MasterBuilder::buildLoggers() {
+  int logLevel = 4;
+  bool logToConsole = false;
+  string logFile = "logs";
+  string customFormat = "";
+  
+  if (checkIfKeysExists(masterConfig, {KEY_LOGGING})) {
+    //Global log level
+    json loggerConf = masterConfig[KEY_LOGGING];
+    long tmp = getOptionalJSONLong(loggerConf, KEY_LOGGING_LEVEL);
+    if (tmp > -1) {
+      logLevel = static_cast<int>(tmp);
+    }
+    
+    getOptionalJSONBool(loggerConf, KEY_LOGGING_CONSOLE, logToConsole);
+    
+    shared_ptr<string> tmpS = getOptionalJSONString(loggerConf, KEY_LOGGING_FILE);
+    if (tmpS != nullptr) {
+      logFile = *tmpS;
+    }
+    
+    tmpS = getOptionalJSONString(loggerConf, KEY_LOGGING_FORMAT);
+    if (tmpS != nullptr) {
+      customFormat = *tmpS;
+    }
+  }
+  
+  createLoggers(logLevel, logToConsole, logFile, customFormat);
+  
+  //override loggers if extra configs found
+  for(auto iter = loggerNames.begin(); iter != loggerNames.end(); iter ++) {
+    if (checkIfKeysExists(masterConfig, {*iter}) == false) {
+      continue;
+    }
+    json subConf = masterConfig[*iter];
+    
+    long tmp = getOptionalJSONLong(subConf, KEY_LOGGING_LEVEL);
+    if (tmp > -1) {
+      int level = static_cast<int>(tmp);
+      overrideLogger(*iter, &level, nullptr);
+    }
+    
+    shared_ptr<string> tmpS = getOptionalJSONString(subConf, KEY_LOGGING_FORMAT);
+    if (tmpS != nullptr) {
+      overrideLogger(*iter, nullptr, &(*tmpS));
+    }
+  }
 }
 
 shared_ptr<Logic> MasterBuilder::getLogic() {
@@ -184,7 +242,7 @@ void MasterBuilder::buildLogic() {
 }
 
 void MasterBuilder::buildHttpServer() {
-  int port = masterConfig[KEY_WEB_SERVER_CONFIG][KEY_HTTP_PORT];
+  int port = masterConfig[KEY_WEB_SERVER_CONFIG][KEY_WEB_PORT];
   httpServer = make_shared<HttpServer>(storage, port);
   httpServer->registerHandler(std::make_shared<HomePlanRestApiHandler>());
   httpServer->registerHandler(std::make_shared<PhysicalSensorRestApiHandler>(logic));

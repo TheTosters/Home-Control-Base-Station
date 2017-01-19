@@ -38,6 +38,7 @@ class MasterBuilder {
     shared_ptr<ScheduleMap> heatingPlans;
     TemperatureIdentifierList temperatures;
 
+    void buildLoggers();
     void buildLogic();
     void buildStorage();
     void buildSensors();

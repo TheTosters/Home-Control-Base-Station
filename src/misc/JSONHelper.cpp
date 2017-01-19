@@ -102,6 +102,18 @@ bool checkIfKeysExists(json json, vector<string> const& keys, string* missing) {
   return true;
 }
 
+void getOptionalJSONBool(json json, string const& key, bool& resultValue) {
+  if (json.find(key) == json.end()) {
+    return;
+  }
+  
+  auto value = json[key];
+  if (value.is_boolean() == false) {
+    return;
+  }
+  resultValue = value;
+}
+
 shared_ptr<string> getOptionalJSONString(json json, string const& key) {
   if (json.find(key) == json.end()) {
     return nullptr;

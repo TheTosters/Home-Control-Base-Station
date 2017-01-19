@@ -5,5 +5,14 @@
     "dbFile" : "storage.sqlite",
     "webServer" : {
         "port" : 8000
+    },
+    "logging" : {
+        "console" : true,
+        "file" : "logs",
+        "level" : 4,
+        "format": "[%n]%M:%S:%e[%t] %L: %v",
+        "logic" : {
+          "level" : 2
+        }
     }
 }
