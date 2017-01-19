@@ -26,6 +26,11 @@ struct PhysicalSensorByIdComparator : public std::unary_function<std::string, bo
   
 };
 
+SensorNetManager::SensorNetManager()
+: logger(spdlog::get(COMMUNICATION_LOGGER_NAME)) {
+  
+}
+
 void SensorNetManager::setSensorsList(PhysicalSensorList sensorsList) {
   sensors = sensorsList;
 }
@@ -40,6 +45,7 @@ MeasurementMap SensorNetManager::fetchMeasurements(shared_ptr<PhysicalSensor> se
 }
 
 void SensorNetManager::saveConfiguration() {
+  logger->info("Saving sensors net configuration");
   {//critical section
     unique_lock<mutex> lock(managerMutex);
     json data = toJSON(sensors);
@@ -54,9 +60,11 @@ bool SensorNetManager::deleteSensor(long sensorId) {
   
   auto posIter = find_if(sensors->begin(), sensors->end(), PhysicalSensorByIdComparator(sensorId));
   if (posIter == sensors->end()) {
+    logger->error("Failed to delete sensor with id {}", sensorId);
     return false;
   }
   sensors->erase(posIter);
+  logger->info("Removed sensor with id {}", sensorId);
   return true;
 }
 
@@ -67,10 +75,14 @@ bool SensorNetManager::addSensor(shared_ptr<PhysicalSensor> sensor) {
   //fail if sensor with used id is registered
   auto posIter = find_if(sensors->begin(), sensors->end(), PhysicalSensorByIdComparator(sensor->getId()));
   if (posIter != sensors->end()) {
+    logger->error("Failed to add new sensor - id:{}, name:{}, address:{}, type:{}",
+                 sensor->getId(), sensor->getName(), sensor->getAddress(), sensor->getType());
     return false;
   }
   
   sensors->push_back(sensor);
+  logger->info("Added new sensor - id:{}, name:{}, address:{}, type:{}",
+               sensor->getId(), sensor->getName(), sensor->getAddress(), sensor->getType());
   return true;
 }
 

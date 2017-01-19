@@ -7,6 +7,7 @@
 //
 
 #include "JSONHelper.hpp"
+#include "LogHelper.hpp"
 
 const long PHYSICAL_SENSOR_DEFAULT_FETCH_DELAY = 600;
 
@@ -161,18 +162,18 @@ shared_ptr<PhysicalSensor> physicalSensorFromJSON(json const& data) {
   
   long tmpLong = getOptionalJSONLong(data, "id");
   if (tmpLong < 0) {
-    fprintf(stderr, "Missing mandatory field 'id' in %s\n", data.dump().c_str());
+    spdlog::get(MISC_LOGGER_NAME)->error("Missing mandatory field 'id' in {}", data.dump());
     return result;
   }
   result->setId(tmpLong);
   
   if (data.find("type") == data.end()) {
-    fprintf(stderr, "Missing mandatory field 'type' in %s\n", data.dump().c_str());
+    spdlog::get(MISC_LOGGER_NAME)->error("Missing mandatory field 'type' in {}", data.dump());
     return result;
   }
   json types = data["type"];
   if (types.is_array() == false) {
-    fprintf(stderr, "Mandatory field 'type' must be an array in %s\n", data.dump().c_str());
+    spdlog::get(MISC_LOGGER_NAME)->error("Mandatory field 'type' must be an array in {}", data.dump());
     return result;
   }
   for(auto iter = types.begin(); iter != types.end(); iter++){
@@ -182,14 +183,14 @@ shared_ptr<PhysicalSensor> physicalSensorFromJSON(json const& data) {
   
   shared_ptr<string> tmp = getOptionalJSONString(data, "address");
   if (tmp == nullptr) {
-    fprintf(stderr, "Missing mandatory field 'address' in %s\n", data.dump().c_str());
+    spdlog::get(MISC_LOGGER_NAME)->error("Missing mandatory field 'address' in {}", data.dump());
     return result;
   }
   result->setAddress(*tmp);
   
   tmp = getOptionalJSONString(data, "name");
   if (tmp == nullptr) {
-    fprintf(stderr, "Missing mandatory field 'name' in %s\n", data.dump().c_str());
+    spdlog::get(MISC_LOGGER_NAME)->error("Missing mandatory field 'name' in {}", data.dump());
     return result;
   }
   result->setName(*tmp);

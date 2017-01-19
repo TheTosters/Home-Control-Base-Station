@@ -14,6 +14,7 @@
 #include <iomanip>
 #include <unordered_map>
 #include "CommunicationLink.hpp"
+#include "LogHelper.hpp"
 
 const string SINGLE_MEASUREMENT_REQUEST = "RDR0001";
 const string MEASUREMENT_COMMAND = "RDR";
@@ -24,7 +25,8 @@ SensorNetProtocolParser::SensorNetProtocolParser(CommunicationLink* _link)
     {"VTH", svtTemperature},
     {"VHH", svtHumidity},
     {"VPH", svtPowerConsumption}
-  })
+  }),
+  logger(spdlog::get(COMMUNICATION_LOGGER_NAME))
 {
     
 }
@@ -150,9 +152,10 @@ void SensorNetProtocolParser::parseMeasurementsRespons(string const& data, Measu
 }
 
 void SensorNetProtocolParser::logParseError(string const& data, string const& msg, size_t const& column) {
-  cerr << "Parse error near " << column << ":" << msg << endl;
-  cerr << "Received data:" << data << endl;
+  
+  logger->warn("Parse error near {}: {}", column, msg);
+  logger->warn("Received data:{}", data);
   string tmp = string(column + 14, ' ');
   tmp.append("^");
-  cerr << tmp << endl;
+  logger->warn("{}", tmp);
 }
