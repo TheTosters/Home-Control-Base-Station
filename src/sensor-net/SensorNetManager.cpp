@@ -75,14 +75,14 @@ bool SensorNetManager::addSensor(shared_ptr<PhysicalSensor> sensor) {
   //fail if sensor with used id is registered
   auto posIter = find_if(sensors->begin(), sensors->end(), PhysicalSensorByIdComparator(sensor->getId()));
   if (posIter != sensors->end()) {
-    logger->error("Failed to add new sensor - id:{}, name:{}, address:{}, type:{}",
-                 sensor->getId(), sensor->getName(), sensor->getAddress(), sensor->getType());
+    logger->error("Failed to add new sensor - id:{}, name:{}, address:{}",
+                 sensor->getId(), sensor->getName(), sensor->getAddress());
     return false;
   }
   
   sensors->push_back(sensor);
-  logger->info("Added new sensor - id:{}, name:{}, address:{}, type:{}",
-               sensor->getId(), sensor->getName(), sensor->getAddress(), sensor->getType());
+  logger->info("Added new sensor - id:{}, name:{}, address:{}",
+               sensor->getId(), sensor->getName(), sensor->getAddress());
   return true;
 }
 
