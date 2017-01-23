@@ -21,6 +21,7 @@
 #include "TemperatureIdentifier.hpp"
 #include "LogicRule.hpp"
 #include "Entities.hpp"
+#include "LogHelper.hpp"
 
 using namespace std;
 using namespace nlohmann;
@@ -50,6 +51,7 @@ class Logic {
     shared_ptr<ScheduleMap> roomHeatingPlan;
     LogicRulesList    rules;
     RoomsList         rooms;
+    shared_ptr<spdlog::logger> logger;
   
     void execute();
     void storeMeasurements(long sensorId, MeasurementMap data);

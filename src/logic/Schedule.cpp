@@ -12,6 +12,7 @@
 #include <time.h> 
 #include "StringHelper.hpp"
 #include "JSONHelper.hpp"
+#include "LogHelper.hpp"
 
 const double UNKNOWN_TEMPERATURE = 18;
 
@@ -42,7 +43,7 @@ Schedule::Schedule(json const& definition, TemperatureIdentifierList tempIdentif
 
 void Schedule::parseSingleRule(json const& json) {
   if (checkIfKeysExists(json, {"from", "temperature"}) == false){
-    fprintf(stderr, "Config, wrong format of line: %s\n", json.dump().c_str());
+    spdlog::get(MISC_LOGGER_NAME)->error("  Config, wrong format of line:{}", json.dump());
     return;
   }
     
@@ -52,7 +53,7 @@ void Schedule::parseSingleRule(json const& json) {
   string prefix("every");
   if (equal(prefix.begin(), prefix.end(), startTimeStr.begin())) {
     if (pareseEveryDayInWeek( trim(startTimeStr.substr(prefix.size())), tempIdNameStr) == false) {
-      fprintf(stderr, "Config, wrong format of line: %s\n", json.dump().c_str());
+      spdlog::get(MISC_LOGGER_NAME)->error("  Config, wrong format of line:{}", json.dump());
     }
     return;
   }
@@ -60,13 +61,14 @@ void Schedule::parseSingleRule(json const& json) {
   tm startTime;
   memset(&startTime, 0, sizeof(tm));
   if (strptime(startTimeStr.c_str(), "%a %H:%M", &startTime) == NULL) {
-    fprintf(stderr, "Config, wrong format of line: %s\n", json.dump().c_str());
+    spdlog::get(MISC_LOGGER_NAME)->error("  Config, wrong format of line:{}", json.dump());
     return;
   }
   
   auto tempId = findTemperatureIdentifier(tempIdNameStr);
   if (tempId == NULL) {
-    fprintf(stderr, "Config, undefined temperature identifier: %s (line:%s)\n", tempIdNameStr.c_str(), json.dump().c_str());
+    spdlog::get(MISC_LOGGER_NAME)->error("  Config, undefined temperature identifier:{} (line:{})",
+                                         tempIdNameStr, json.dump());
     return;
   }
   
@@ -90,7 +92,7 @@ bool Schedule::pareseEveryDayInWeek(string timeStr, string tempIdNameStr) {
   
   auto tempId = findTemperatureIdentifier(tempIdNameStr);
   if (tempId == NULL) {
-    fprintf(stderr, "Config, undefined temperature identifier: %s\n", tempIdNameStr.c_str());
+    spdlog::get(MISC_LOGGER_NAME)->error("  Config, undefined temperature identifier:{}", tempIdNameStr);
     return false;
   }
   

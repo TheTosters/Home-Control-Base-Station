@@ -7,11 +7,12 @@
 //
 
 #include <string>
-#include <TCLAP/CmdLine.h>
+#include <tclap/CmdLine.h>
 #include <signal.h>
 #include "MasterBuilder.hpp"
 #include "HttpServer.hpp"
 #include "Logic.hpp"
+#include "LogHelper.hpp"
 
 using namespace TCLAP;
 using namespace std;
@@ -62,15 +63,21 @@ int main(int argc, const char * argv[]) {
   
   try {
     CmdLine cmd("Home Control Gateway Application", ' ', "0.0.1");
-    ValueArg<string> configFile("c", "config", "Path to config file", false, DEFAULT_CONFIG_FILE, "string");
+    ValueArg<string> configFile("c", "config", "Path to config file", false, DEFAULT_CONFIG_FILE, "path");
     cmd.add( configFile );
     
-    ValueArg<int> logLevel("v", "logLevel", "Logging level 0-DEBUG, 5-ERROR", false, 4, "number");
+    ValueArg<int> logLevel("v", "logLevel", "Logging level (trace = 0, debug = 1, info = 2, warn = 3, err = 4, critical = 5, off = 6)", false, 3, "number");
     cmd.add( logLevel );
     
     cmd.parse( argc, argv );
     
     builder = make_shared<MasterBuilder>(configFile.getValue());
+
+    //this must be after builder
+    if (logLevel.isSet()) {
+      overrideLoggersLevel(logLevel.getValue());
+    }
+    
   } catch (ArgException &e) {
     cerr << "error: " << e.error() << " for arg " << e.argId() << endl;
     return -1;
@@ -82,5 +89,6 @@ int main(int argc, const char * argv[]) {
   
   components.logic->run();
   components.httpServer->start();
+  
   return 0;
 }

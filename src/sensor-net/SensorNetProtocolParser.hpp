@@ -13,6 +13,7 @@
 #include <vector>
 #include <string>
 #include "SensorValue.hpp"
+#include "LogHelper.hpp"
 
 using namespace std;
 
@@ -26,6 +27,7 @@ class SensorNetProtocolParser {
   private:
     CommunicationLink*   link;
     unordered_map<string, SensorValueType> responseCmdToSensorType;
+    shared_ptr<spdlog::logger> logger;
   
     bool parseInt(string const& str, int& result);
     bool parseDouble(string const& str, double &result);

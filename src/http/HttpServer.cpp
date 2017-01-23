@@ -1,5 +1,6 @@
 #include <thread>
 #include "HttpServer.hpp"
+#include "LogHelper.hpp"
 
 static const int POOL_TIMEOUT = 1000;
 static const struct mg_str METHOD_GET = MG_MK_STR("GET");
@@ -111,7 +112,7 @@ void HttpServer::onGetRequest(struct mg_connection *c, void *data) {
     handler->onGetRequest(c, data);
     
   } else {
-    printf("No handler for request: %s", uriStr.c_str());
+    spdlog::get(WEB_LOGGER_NAME)->warn("No handler for request:{}", uriStr);
   }
 }
 
@@ -124,7 +125,7 @@ void HttpServer::onPostRequest(struct mg_connection *c, void *data) {
     handler->onPostRequest(c, data);
     
   } else {
-    printf("No handler for request: %s", uriStr.c_str());
+    spdlog::get(WEB_LOGGER_NAME)->warn("No handler for request:{}", uriStr);
   }
 }
 
@@ -137,14 +138,13 @@ void HttpServer::onDeleteRequest(struct mg_connection *c, void *data) {
     handler->onDeleteRequest(c, data);
     
   } else {
-    printf("No handler for request: %s", uriStr.c_str());
+    spdlog::get(WEB_LOGGER_NAME)->warn("No handler for request:{}", uriStr);
   }
 }
 
 void HttpServer::registerHandler(shared_ptr<RestApiHandler> const& handler) {
   if (handlers.find( handler->getEndpoint() ) != handlers.end()) {
-    //todo: add logging
-    printf("Endpoint '%s' already registered!", handler->getEndpoint().c_str());
+    spdlog::get(MISC_LOGGER_NAME)->error("  Endpoint {} already registered!", handler->getEndpoint());
     return;
   }
   handlers[handler->getEndpoint()] = handler;

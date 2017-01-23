@@ -25,7 +25,8 @@ Logic::Logic(shared_ptr<Storage> store, shared_ptr<SensorNetManager> sensors)
   logicThread(nullptr),
   roomHeatingPlan(make_shared<ScheduleMap>()),
   rules(make_shared<LogicRulesVector>()),
-  rooms(make_shared<RoomsVector>()) {
+  rooms(make_shared<RoomsVector>()),
+  logger( spdlog::get(LOGIC_LOGGER_NAME) ){
 
 }
 
@@ -62,6 +63,7 @@ void Logic::run() {
 
 //this is main loop for thread
 void Logic::execute() {
+  logger->info("*** Entering main logic loop ***");
   rebuildListOfMeasurementTasks();
   while(true) {
     //Check if thread should finish
@@ -69,6 +71,7 @@ void Logic::execute() {
       unique_lock<mutex> lock(logicLock);
       
       if (terminated == true) {
+        logger->info("*** Break logic loop ***");
         break;
       }
     }
@@ -118,6 +121,8 @@ void Logic::execute() {
       }
     }
   }
+  
+  logger->info("*** Leaving main logic loop ***");
 }
 
 void Logic::storeMeasurements(long sensorId, MeasurementMap data) {
@@ -142,6 +147,7 @@ void Logic::storeMeasurements(long sensorId, MeasurementMap data) {
 }
 
 void Logic::rebuildListOfMeasurementTasks() {
+  logger->info("Rebuilding list of measurement tasks.");
   PhysicalSensorVector list = sensorNetManager->getSensors();
   
   {//critical section
@@ -158,6 +164,7 @@ void Logic::rebuildListOfMeasurementTasks() {
 }
 
 void Logic::terminate() {
+  logger->info("Requested termination of logic.");
   thread* tmp = nullptr;
   
   {//critical section

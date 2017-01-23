@@ -15,6 +15,7 @@
 #include "PhysicalSensor.hpp"
 #include "json.hpp"
 #include "SensorNetProtocolParser.hpp"
+#include "LogHelper.hpp"
 
 using namespace std;
 using namespace nlohmann;
@@ -23,6 +24,7 @@ class PhysicalSensor;
 
 class SensorNetManager {
   public:
+    SensorNetManager();
     PhysicalSensorVector getSensors();
     void setSensorsList(PhysicalSensorList sensorsList);
     MeasurementMap fetchMeasurements(shared_ptr<PhysicalSensor> sensor, int count = 1);
@@ -32,5 +34,6 @@ class SensorNetManager {
   private:
     PhysicalSensorList    sensors;
     mutex                 managerMutex;
+    shared_ptr<spdlog::logger> logger;
 };
 #endif /* SensorNetManager_hpp */
