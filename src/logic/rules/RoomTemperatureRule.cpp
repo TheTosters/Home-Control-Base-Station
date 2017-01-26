@@ -7,3 +7,8 @@
 //
 
 #include "RoomTemperatureRule.hpp"
+
+RoomTemperatureRule::RoomTemperatureRule(shared_ptr<Logic> _logic)
+: logic(_logic) {
+  
+}

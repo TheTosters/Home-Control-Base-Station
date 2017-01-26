@@ -47,6 +47,7 @@ class MasterBuilder {
     void parseConfigTemperatures(json const& definition);
     void parseHetingPlans(json const& definition);
     void parseRoomHeating(json const& definition);
+    void buildLogicRules();
 };
 
 #endif /* MasterBuilder_hpp */

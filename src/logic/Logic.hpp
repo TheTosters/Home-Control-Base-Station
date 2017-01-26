@@ -27,6 +27,7 @@ using namespace std;
 using namespace nlohmann;
 
 typedef unordered_map<string, shared_ptr<Schedule>> ScheduleMap;
+typedef shared_ptr<unordered_map<int, int>> SharedState;
 
 class Logic {
   public:
@@ -41,6 +42,7 @@ class Logic {
     void rebuildListOfMeasurementTasks();
     LogicRulesList getRules();
     shared_ptr<ScheduleMap> getRoomHeatingPlan();
+    SharedState getSharedState();
   private:
     shared_ptr<Storage> storage;
     shared_ptr<SensorNetManager> sensorNetManager;
@@ -52,6 +54,7 @@ class Logic {
     LogicRulesList    rules;
     RoomsList         rooms;
     shared_ptr<spdlog::logger> logger;
+    SharedState sharedState;   //this is state vector for logic rules
   
     void execute();
     void storeMeasurements(long sensorId, MeasurementMap data);

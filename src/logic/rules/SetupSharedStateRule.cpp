@@ -7,3 +7,34 @@
 //
 
 #include "SetupSharedStateRule.hpp"
+
+SetupSharedStateRule::SetupSharedStateRule(SharedState state)
+: sharedState(state),
+  valuesToSet(make_shared<unordered_map<int, int>>()) {
+  
+}
+
+SetupSharedStateRule::~SetupSharedStateRule() {
+  
+}
+
+void SetupSharedStateRule::execute() {
+  for(auto iter = valuesToSet->begin(); iter != valuesToSet->end(); iter++) {
+    (*sharedState)[iter->first] = iter->second;
+  }
+}
+
+void SetupSharedStateRule::setValue(int key, int value) {
+  (*valuesToSet)[key] = value;
+}
+
+void SetupSharedStateRule::removeValue(int key) {
+  valuesToSet->erase(key);
+}
+
+SharedState SetupSharedStateRule::getValuesCopy() {
+//  unordered_map<int, int> map(
+//  auto result = make_shared<unordered_map<int, int>>();
+//  result->
+  return nullptr;
+}

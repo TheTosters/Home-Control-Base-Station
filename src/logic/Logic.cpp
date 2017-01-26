@@ -26,7 +26,8 @@ Logic::Logic(shared_ptr<Storage> store, shared_ptr<SensorNetManager> sensors)
   roomHeatingPlan(make_shared<ScheduleMap>()),
   rules(make_shared<LogicRulesVector>()),
   rooms(make_shared<RoomsVector>()),
-  logger( spdlog::get(LOGIC_LOGGER_NAME) ){
+  logger( spdlog::get(LOGIC_LOGGER_NAME) ),
+  sharedState(make_shared<unordered_map<int, int>>()) {
 
 }
 
@@ -123,6 +124,10 @@ void Logic::execute() {
   }
   
   logger->info("*** Leaving main logic loop ***");
+}
+
+SharedState Logic::getSharedState() {
+  return sharedState;
 }
 
 void Logic::storeMeasurements(long sensorId, MeasurementMap data) {
