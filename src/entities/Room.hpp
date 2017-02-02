@@ -12,9 +12,9 @@
 #include <stdio.h>
 #include <string>
 #include <vector>
-#include "Point.hpp"
-#include "Entity.hpp"
-#include "Sensor.hpp"
+#include "entities/Point.hpp"
+#include "entities/Entity.hpp"
+#include "entities/Sensor.hpp"
 
 using namespace std;
 

@@ -10,11 +10,12 @@
 #define HomePlanRestApiHandler_hpp
 
 #include <stdio.h>
-#include "RestApiHandler.hpp"
+#include "http/RestApiHandler.hpp"
 
 class HomePlanRestApiHandler : public RestApiHandler {
   public:
     HomePlanRestApiHandler();
+    virtual ~HomePlanRestApiHandler() = default;
 
     virtual void onGetRequest(struct mg_connection *c, void *data) override;
     virtual void onPostRequest(struct mg_connection *c, void *data) override;

@@ -8,9 +8,9 @@
 
 #include <fstream>
 #include <sstream>
-#include "SensorNetManager.hpp"
-#include "JSONHelper.hpp"
-#include "CommunicationLink.hpp"
+#include "sensor-net/SensorNetManager.hpp"
+#include "misc/JSONHelper.hpp"
+#include "sensor-net/CommunicationLink.hpp"
 
 const string FILE_NAME = "sensors-default.json";
 
@@ -84,6 +84,14 @@ bool SensorNetManager::addSensor(shared_ptr<PhysicalSensor> sensor) {
   logger->info("Added new sensor - id:{}, name:{}, address:{}",
                sensor->getId(), sensor->getName(), sensor->getAddress());
   return true;
+}
+
+shared_ptr<PhysicalSensor> SensorNetManager::getSensorById(long id) {
+  auto posIter = find_if(sensors->begin(), sensors->end(), PhysicalSensorByIdComparator(id));
+  if (posIter != sensors->end()) {
+    return nullptr;
+  }
+  return *posIter;
 }
 
 PhysicalSensorVector SensorNetManager::getSensors() {

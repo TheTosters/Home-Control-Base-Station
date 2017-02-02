@@ -6,8 +6,8 @@
 //  Copyright © 2016 Imagination Systems. All rights reserved.
 //
 
-#include "Point.hpp"
-#include "Room.hpp"
-#include "Sensor.hpp"
-#include "SensorValue.hpp"
-#include "PhysicalSensor.hpp"
+#include "entities/Point.hpp"
+#include "entities/Room.hpp"
+#include "entities/Sensor.hpp"
+#include "entities/SensorValue.hpp"
+#include "entities/PhysicalSensor.hpp"

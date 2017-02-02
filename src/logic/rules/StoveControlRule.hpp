@@ -10,15 +10,16 @@
 #define StoveControlRule_hpp
 
 #include <stdio.h>
-#include "LogicRule.hpp"
-#include "Logic.hpp"
+#include "logic/rules/LogicRule.hpp"
+#include "logic/Logic.hpp"
 
 class StoveControlRule : public LogicRule {
   public:
-    StoveControlRule(shared_ptr<Logic> logic);
+    StoveControlRule(SharedState state);
+    virtual void execute() override;
   
   private:
-    shared_ptr<Logic> logic;
+    SharedState sharedState;
 };
 
 #endif /* StoveControlRule_hpp */

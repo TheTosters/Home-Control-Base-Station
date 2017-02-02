@@ -11,12 +11,12 @@
 
 #include <stdio.h>
 #include <string>
-#include "Logic.hpp"
-#include "HttpServer.hpp"
-#include "SQLiteStorage.hpp"
-#include "SensorNetManager.hpp"
-#include "json.hpp"
-#include "TemperatureIdentifier.hpp"
+#include "logic/Logic.hpp"
+#include "http/HttpServer.hpp"
+#include "storage/sqlite/SQLiteStorage.hpp"
+#include "sensor-net/SensorNetManager.hpp"
+#include "json/json.hpp"
+#include "logic/TemperatureIdentifier.hpp"
 
 static const string DEFAULT_CONFIG_FILE = "config-default.json";
 

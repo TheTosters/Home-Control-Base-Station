@@ -3,9 +3,9 @@
 
 #include <mutex>
 #include <map>
-#include "mongoose.h"
-#include "RestApiHandler.hpp"
-#include "Storage.hpp"
+#include "mongoose/mongoose.h"
+#include "http/RestApiHandler.hpp"
+#include "storage/Storage.hpp"
 
 class HttpServer {
   public:

@@ -13,7 +13,7 @@
 #include <sqlite3.h>
 #include <string>
 
-#include "EntitySerializer.hpp"
+#include "storage/EntitySerializer.hpp"
 
 using namespace std;
 
@@ -21,6 +21,7 @@ class Storage;
 
 class SQLiteEntitySerializer : public EntitySerializer {
   public:
+    virtual ~SQLiteEntitySerializer() = default;
     virtual void useDatabase(sqlite3 *db, Storage* storage);
   protected:
     sqlite3*  db;

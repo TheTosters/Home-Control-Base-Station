@@ -10,7 +10,7 @@
 #define Point_hpp
 
 #include <stdio.h>
-#include "Entity.hpp"
+#include "entities/Entity.hpp"
 
 class Point : public Entity {
   public:

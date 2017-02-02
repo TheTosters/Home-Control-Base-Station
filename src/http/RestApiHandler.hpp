@@ -11,15 +11,17 @@
 
 #include <stdio.h>
 #include <string>
-#include "mongoose.h"
+#include "mongoose/mongoose.h"
+#include <memory>
 
 using namespace std;
 class HttpServer;
 
 class RestApiHandler {
   public:
-    RestApiHandler(string _endpoint) : endpoint(_endpoint) {}
-  
+    RestApiHandler(string _endpoint) : server(nullptr), endpoint(_endpoint) {}
+    virtual ~RestApiHandler() = default;
+
     virtual void onGetRequest(struct mg_connection *c, void *data) {}
     virtual void onPostRequest(struct mg_connection *c, void *data) {}
     virtual void onDeleteRequest(struct mg_connection *c, void *data) {}

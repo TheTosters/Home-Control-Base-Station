@@ -11,10 +11,10 @@
 #include <thread>
 #include <fstream>
 #include <sstream>
-#include "SensorValue.hpp"
-#include "SQLiteSensorValueSerializer.hpp"
-#include "JSONHelper.hpp"
-#include "StringHelper.hpp"
+#include "entities/SensorValue.hpp"
+#include "storage/sqlite/SQLiteSensorValueSerializer.hpp"
+#include "misc/JSONHelper.hpp"
+#include "misc/StringHelper.hpp"
 
 static const time_t LOGIC_THREAD_SLEEP_TIME = 100; //in ms
 
@@ -128,6 +128,10 @@ void Logic::execute() {
 
 SharedState Logic::getSharedState() {
   return sharedState;
+}
+
+RoomsList Logic::getRooms() {
+  return rooms;
 }
 
 void Logic::storeMeasurements(long sensorId, MeasurementMap data) {

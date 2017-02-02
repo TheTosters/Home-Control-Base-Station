@@ -6,12 +6,12 @@
 //  Copyright © 2016 Imagination Systems. All rights reserved.
 //
 
-#include "Point.hpp"
+#include "entities/Point.hpp"
 
 #define SERIALIZER_POINT_ID  4
 
 Point::Point()
-: Entity(SERIALIZER_POINT_ID), x(0), y(0) {
+: Entity(SERIALIZER_POINT_ID), x(0), y(0), ownerId(-1) {
   
 }
 

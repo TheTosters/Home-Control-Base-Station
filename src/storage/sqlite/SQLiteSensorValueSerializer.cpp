@@ -6,8 +6,8 @@
 //  Copyright © 2016 Imagination Systems. All rights reserved.
 //
 
-#include "SQLiteSensorValueSerializer.hpp"
-#include "SQLiteFillableStatement.hpp"
+#include "storage/sqlite/SQLiteSensorValueSerializer.hpp"
+#include "storage/sqlite/SQLiteFillableStatement.hpp"
 
 void SQLiteSensorValueSerializer::store(SensorValue* data) {
   SQLiteFillableStatement statement(db, "INSERT INTO SensorValues VALUES (NULL, ?, ?, ?, ?)");

@@ -6,9 +6,9 @@
 //  Copyright © 2016 Imagination Systems. All rights reserved.
 //
 
-#include "SQLiteStorage.hpp"
-#include "SQLiteEntitySerializer.hpp"
-#include "Entity.hpp"
+#include "storage/sqlite/SQLiteStorage.hpp"
+#include "storage/sqlite/SQLiteEntitySerializer.hpp"
+#include "entities/Entity.hpp"
 
 SQLiteStorage::SQLiteStorage(string _dbFilePath)
 : dbFilePath(_dbFilePath), db(NULL) {

@@ -10,8 +10,8 @@
 #define JSONHelper_hpp
 
 #include <stdio.h>
-#include "json.hpp"
-#include "Entities.hpp"
+#include "json/json.hpp"
+#include "entities/Entities.hpp"
 
 using namespace std;
 using namespace nlohmann;

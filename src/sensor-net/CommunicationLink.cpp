@@ -6,7 +6,7 @@
 //  Copyright © 2017 Imagination Systems. All rights reserved.
 //
 
-#include "CommunicationLink.hpp"
+#include "sensor-net/CommunicationLink.hpp"
 #include <stdlib.h> 
 #include <sstream>
 

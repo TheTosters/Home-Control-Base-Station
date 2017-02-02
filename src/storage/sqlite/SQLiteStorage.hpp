@@ -12,11 +12,13 @@
 #include <stdio.h>
 #include <sqlite3.h>
 #include <string>
-#include "Storage.hpp"
+#include "storage/Storage.hpp"
 
 class SQLiteStorage : public Storage {
   public:
     SQLiteStorage(string dbFilePath);
+    virtual ~SQLiteStorage() = default;
+
     virtual bool open() override;
     virtual void close() override;
 

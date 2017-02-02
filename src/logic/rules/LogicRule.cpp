@@ -6,7 +6,7 @@
 //  Copyright © 2017 Imagination Systems. All rights reserved.
 //
 
-#include "LogicRule.hpp"
+#include "logic/rules/LogicRule.hpp"
 
 LogicRule::LogicRule()
 : enabled(true) {

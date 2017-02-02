@@ -6,15 +6,15 @@
 //  Copyright © 2017 Imagination Systems. All rights reserved.
 //
 
-#include "SensorNetProtocolParser.hpp"
+#include "sensor-net/SensorNetProtocolParser.hpp"
 #include <string>
 #include <sstream>
 #include <cstdlib>
 #include <iostream>
 #include <iomanip>
 #include <unordered_map>
-#include "CommunicationLink.hpp"
-#include "LogHelper.hpp"
+#include "sensor-net/CommunicationLink.hpp"
+#include "misc/LogHelper.hpp"
 
 const string SINGLE_MEASUREMENT_REQUEST = "RDR0001";
 const string MEASUREMENT_COMMAND = "RDR";
@@ -114,7 +114,7 @@ MeasurementList SensorNetProtocolParser::parseValueWithTimestamp(string const& d
       logParseError(data, "Can't convert this string into int.", startIndex);
       break;
     }
-    time_t timeStamp = now - static_cast<user_time_t>(tmpInt);
+    time_t timeStamp = now - static_cast<time_t>(tmpInt);
     
     size_t endPos = data.find(")", comaPos);
     if (endPos == string::npos) {

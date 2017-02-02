@@ -6,9 +6,15 @@
 //  Copyright © 2016 Imagination Systems. All rights reserved.
 //
 
-#include "PhysicalSensor.hpp"
+#include <algorithm>
+#include "entities/PhysicalSensor.hpp"
+#include "misc/ConversionHelper.hpp"
+
 PhysicalSensor::PhysicalSensor()
-: Entity(-1), lastMeasurements(make_shared<vector<shared_ptr<Measurement>>>()) {
+: Entity(-1),
+  lastFetchTime(0),
+  desiredFetchDelay(0),
+  lastMeasurements(make_shared<vector<shared_ptr<Measurement>>>()) {
   
 }
 
@@ -98,4 +104,19 @@ void PhysicalSensor::updateLastMeasurement(SensorValueType valType, double value
 
 MeasurementList& PhysicalSensor::getLastMeasurements() {
   return lastMeasurements;
+}
+
+bool PhysicalSensor::isType(PhysicalSensorType type) {
+  return find(types.begin(), types.end(), type) != types.end();
+}
+
+shared_ptr<Measurement> PhysicalSensor::getLastMeasurement(PhysicalSensorType type) {
+
+  for(auto msrPtr : *lastMeasurements) {
+    SensorValueType valType = get<0>( *(msrPtr) );
+    if (toPhysicalSensorType(valType) == type) {
+      return msrPtr;
+    }
+  }
+  return nullptr;
 }

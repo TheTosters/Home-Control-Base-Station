@@ -6,8 +6,8 @@
 //  Copyright © 2016 Imagination Systems. All rights reserved.
 //
 
-#include "SQLiteEntitySerializer.hpp"
-#include "Storage.hpp"
+#include "storage/sqlite/SQLiteEntitySerializer.hpp"
+#include "storage/Storage.hpp"
 
 void SQLiteEntitySerializer::useDatabase(sqlite3 *db, Storage* storage) {
   this->db = db;

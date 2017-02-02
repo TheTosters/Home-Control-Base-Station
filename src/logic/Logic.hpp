@@ -14,14 +14,14 @@
 #include <thread>
 #include <queue>
 #include <unordered_map>
-#include "Storage.hpp"
-#include "SensorNetManager.hpp"
-#include "MeasurementTask.hpp"
-#include "Schedule.hpp"
-#include "TemperatureIdentifier.hpp"
-#include "LogicRule.hpp"
-#include "Entities.hpp"
-#include "LogHelper.hpp"
+#include "storage/Storage.hpp"
+#include "sensor-net/SensorNetManager.hpp"
+#include "logic/MeasurementTask.hpp"
+#include "logic/Schedule.hpp"
+#include "logic/TemperatureIdentifier.hpp"
+#include "logic/rules/LogicRule.hpp"
+#include "entities/Entities.hpp"
+#include "misc/LogHelper.hpp"
 
 using namespace std;
 using namespace nlohmann;
@@ -43,6 +43,7 @@ class Logic {
     LogicRulesList getRules();
     shared_ptr<ScheduleMap> getRoomHeatingPlan();
     SharedState getSharedState();
+    RoomsList getRooms();
   private:
     shared_ptr<Storage> storage;
     shared_ptr<SensorNetManager> sensorNetManager;

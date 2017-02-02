@@ -6,7 +6,7 @@
 //  Copyright © 2017 Imagination Systems. All rights reserved.
 //
 
-#include "SetupSharedStateRule.hpp"
+#include "logic/rules/SetupSharedStateRule.hpp"
 
 SetupSharedStateRule::SetupSharedStateRule(SharedState state)
 : sharedState(state),
@@ -33,8 +33,7 @@ void SetupSharedStateRule::removeValue(int key) {
 }
 
 SharedState SetupSharedStateRule::getValuesCopy() {
-//  unordered_map<int, int> map(
-//  auto result = make_shared<unordered_map<int, int>>();
-//  result->
-  return nullptr;
+  auto result = make_shared<unordered_map<int, int>>();
+  result->insert(valuesToSet->begin(), valuesToSet->end());
+  return result;
 }

@@ -11,7 +11,7 @@
 
 #include <stdio.h>
 #include <time.h>
-#include "PhysicalSensor.hpp"
+#include "entities/PhysicalSensor.hpp"
 
 class MeasurementTask {
   public:

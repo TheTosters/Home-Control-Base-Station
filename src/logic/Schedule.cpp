@@ -6,13 +6,13 @@
 //  Copyright © 2016 Imagination Systems. All rights reserved.
 //
 
-#include "Schedule.hpp"
+#include "logic/Schedule.hpp"
 #include <fstream>
 #include <algorithm>
 #include <time.h> 
-#include "StringHelper.hpp"
-#include "JSONHelper.hpp"
-#include "LogHelper.hpp"
+#include "misc/StringHelper.hpp"
+#include "misc/JSONHelper.hpp"
+#include "misc/LogHelper.hpp"
 
 const double UNKNOWN_TEMPERATURE = 18;
 

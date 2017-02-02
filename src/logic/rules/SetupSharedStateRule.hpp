@@ -10,12 +10,12 @@
 #define SetupSharedStateRule_hpp
 
 #include <stdio.h>
-#include "LogicRule.hpp"
-#include "Logic.hpp"
+#include "logic/rules/LogicRule.hpp"
+#include "logic/Logic.hpp"
 
 class SetupSharedStateRule : public LogicRule {
   public:
-    SetupSharedStateRule(SharedState logic);
+    SetupSharedStateRule(SharedState state);
     virtual ~SetupSharedStateRule();
   
     virtual void execute() override;

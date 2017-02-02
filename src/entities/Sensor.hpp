@@ -11,8 +11,8 @@
 
 #include <stdio.h>
 #include <string>
-#include "SensorValue.hpp"
-#include "Point.hpp"
+#include "entities/SensorValue.hpp"
+#include "entities/Point.hpp"
 
 using namespace std;
 

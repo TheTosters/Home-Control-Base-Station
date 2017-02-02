@@ -10,9 +10,9 @@
 #include <tclap/CmdLine.h>
 #include <signal.h>
 #include "MasterBuilder.hpp"
-#include "HttpServer.hpp"
-#include "Logic.hpp"
-#include "LogHelper.hpp"
+#include "http/HttpServer.hpp"
+#include "logic/Logic.hpp"
+#include "misc/LogHelper.hpp"
 
 using namespace TCLAP;
 using namespace std;

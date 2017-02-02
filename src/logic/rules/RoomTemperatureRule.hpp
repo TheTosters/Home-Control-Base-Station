@@ -10,15 +10,17 @@
 #define RoomTemperatureRule_hpp
 
 #include <stdio.h>
-#include "LogicRule.hpp"
-#include "Logic.hpp"
+#include "logic/rules/LogicRule.hpp"
+#include "logic/Logic.hpp"
 
 class RoomTemperatureRule : public LogicRule {
-public:
-  RoomTemperatureRule(shared_ptr<Logic> logic);
+  public:
+    RoomTemperatureRule(shared_ptr<Logic> logic);
+    virtual void execute() override;
+  private:
+    shared_ptr<Logic> logic;
   
-private:
-  shared_ptr<Logic> logic;
+    double getTemperatureInRoom(shared_ptr<Room> room, bool& measured);
 };
 
 #endif /* RoomTemperatureRule_hpp */

@@ -8,16 +8,16 @@
 
 #include <fstream>
 #include "MasterBuilder.hpp"
-#include "SQLiteSensorValueSerializer.hpp"
-#include "HomePlanRestApiHandler.hpp"
-#include "PhysicalSensorRestApiHandler.hpp"
-#include "MeasurementsRestApiHandler.hpp"
-#include "JSONHelper.hpp"
-#include "TemperatureIdentifier.hpp"
-#include "LogHelper.hpp"
-#include "SetupSharedStateRule.hpp"
-#include "StoveControlRule.hpp"
-#include "RoomTemperatureRule.hpp"
+#include "storage/sqlite/SQLiteSensorValueSerializer.hpp"
+#include "http/HomePlanRestApiHandler.hpp"
+#include "http/PhysicalSensorRestApiHandler.hpp"
+#include "http/MeasurementsRestApiHandler.hpp"
+#include "misc/JSONHelper.hpp"
+#include "logic/TemperatureIdentifier.hpp"
+#include "misc/LogHelper.hpp"
+#include "logic/rules/SetupSharedStateRule.hpp"
+#include "logic/rules/StoveControlRule.hpp"
+#include "logic/rules/RoomTemperatureRule.hpp"
 #include "SharedStatesConsts.h"
 
 static const string KEY_HEATING_CONFIG_FILE = "heatingPlan";
@@ -262,7 +262,7 @@ void MasterBuilder::buildLogicRules() {
   logic->getRules()->push_back( make_shared<RoomTemperatureRule>(logic) );
   
   //this is probably one of last rules, must be after all rules which control sove behavior
-  logic->getRules()->push_back( make_shared<StoveControlRule>(logic) );
+  logic->getRules()->push_back( make_shared<StoveControlRule>(logic->getSharedState()) );
 }
 
 void MasterBuilder::buildLogic() {

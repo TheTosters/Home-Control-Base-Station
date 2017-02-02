@@ -12,14 +12,15 @@
 #include <stdio.h>
 #include <map>
 #include <vector>
-#include "Entity.hpp"
-#include "SimpleCriteria.hpp"
-#include "EntitySerializer.hpp"
+#include "entities/Entity.hpp"
+#include "storage/SimpleCriteria.hpp"
+#include "storage/EntitySerializer.hpp"
 
 using namespace std;
 
 class Storage {
   public:
+    virtual ~Storage() = default;
     virtual bool open() = 0;
     virtual void close() = 0;
     

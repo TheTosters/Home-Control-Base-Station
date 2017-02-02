@@ -6,9 +6,9 @@
 //  Copyright © 2016 Imagination Systems. All rights reserved.
 //
 
-#include "Storage.hpp"
-#include "Entity.hpp"
-#include "EntitySerializer.hpp"
+#include "storage/Storage.hpp"
+#include "entities/Entity.hpp"
+#include "storage/EntitySerializer.hpp"
 
 void Storage::registerSerializer(Entity entityType, EntitySerializer* serializer) {
   map<int, EntitySerializer*>::iterator it = serializers.find(entityType.getSerializerId());

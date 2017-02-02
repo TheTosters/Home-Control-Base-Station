@@ -6,7 +6,7 @@
 //  Copyright © 2017 Imagination Systems. All rights reserved.
 //
 
-#include "LogHelper.hpp"
+#include "misc/LogHelper.hpp"
 #include <vector>
 #include <iostream>
 
