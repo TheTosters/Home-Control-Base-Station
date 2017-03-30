@@ -15,9 +15,7 @@
 #include "misc/JSONHelper.hpp"
 #include "logic/TemperatureIdentifier.hpp"
 #include "misc/LogHelper.hpp"
-#include "logic/rules/SetupSharedStateRule.hpp"
-#include "logic/rules/StoveControlRule.hpp"
-#include "logic/rules/RoomTemperatureRule.hpp"
+#include "logic/rules/Rules.hpp"
 #include "SharedStatesConsts.h"
 
 static const string KEY_HEATING_CONFIG_FILE = "heatingPlan";

@@ -26,9 +26,8 @@ SensorNetProtocolParser::SensorNetProtocolParser(CommunicationLink* _link)
     {"VHH", svtHumidity},
     {"VPH", svtPowerConsumption}
   }),
-  logger(spdlog::get(COMMUNICATION_LOGGER_NAME))
-{
-    
+  logger(spdlog::get(COMMUNICATION_LOGGER_NAME)) {
+
 }
 
 bool SensorNetProtocolParser::parseInt(string const& str, int& result) {

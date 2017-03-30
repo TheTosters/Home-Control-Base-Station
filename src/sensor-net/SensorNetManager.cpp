@@ -69,7 +69,7 @@ bool SensorNetManager::deleteSensor(long sensorId) {
 }
 
 bool SensorNetManager::addSensor(shared_ptr<PhysicalSensor> sensor) {
-  //whole metod is critical section
+  //whole method is critical section
   unique_lock<mutex> lock(managerMutex);
   
   //fail if sensor with used id is registered
@@ -95,7 +95,7 @@ shared_ptr<PhysicalSensor> SensorNetManager::getSensorById(long id) {
 }
 
 PhysicalSensorVector SensorNetManager::getSensors() {
-  //whole metod is critical section
+  //whole method is critical section
   unique_lock<mutex> lock(managerMutex);
   
   return *sensors;
