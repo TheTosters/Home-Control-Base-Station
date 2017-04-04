@@ -12,8 +12,8 @@
 #include <stdio.h>
 #include <string>
 #include <vector>
-#include "Entity.hpp"
-#include "SensorValue.hpp"
+#include "entities/Entity.hpp"
+#include "entities/SensorValue.hpp"
 
 using namespace std;
 
@@ -52,6 +52,9 @@ class PhysicalSensor : public Entity {
   
     void    setLastMeasurements(MeasurementMap data);
     MeasurementList& getLastMeasurements();
+  
+    bool    isType(PhysicalSensorType type);
+    shared_ptr<Measurement> getLastMeasurement(PhysicalSensorType type);
   protected:
     string              name;
     string              address;    //it can be MAC, Bluetooth address, or other protocol dependent

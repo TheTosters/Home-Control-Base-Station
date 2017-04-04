@@ -11,10 +11,10 @@
 #include <thread>
 #include <fstream>
 #include <sstream>
-#include "SensorValue.hpp"
-#include "SQLiteSensorValueSerializer.hpp"
-#include "JSONHelper.hpp"
-#include "StringHelper.hpp"
+#include "entities/SensorValue.hpp"
+#include "storage/sqlite/SQLiteSensorValueSerializer.hpp"
+#include "misc/JSONHelper.hpp"
+#include "misc/StringHelper.hpp"
 
 static const time_t LOGIC_THREAD_SLEEP_TIME = 100; //in ms
 
@@ -26,7 +26,8 @@ Logic::Logic(shared_ptr<Storage> store, shared_ptr<SensorNetManager> sensors)
   roomHeatingPlan(make_shared<ScheduleMap>()),
   rules(make_shared<LogicRulesVector>()),
   rooms(make_shared<RoomsVector>()),
-  logger( spdlog::get(LOGIC_LOGGER_NAME) ){
+  logger( spdlog::get(LOGIC_LOGGER_NAME) ),
+  sharedState(make_shared<unordered_map<int, int>>()) {
 
 }
 
@@ -123,6 +124,14 @@ void Logic::execute() {
   }
   
   logger->info("*** Leaving main logic loop ***");
+}
+
+SharedState Logic::getSharedState() {
+  return sharedState;
+}
+
+RoomsList Logic::getRooms() {
+  return rooms;
 }
 
 void Logic::storeMeasurements(long sensorId, MeasurementMap data) {

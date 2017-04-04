@@ -8,13 +8,15 @@
 
 #include <fstream>
 #include "MasterBuilder.hpp"
-#include "SQLiteSensorValueSerializer.hpp"
-#include "HomePlanRestApiHandler.hpp"
-#include "PhysicalSensorRestApiHandler.hpp"
-#include "MeasurementsRestApiHandler.hpp"
-#include "JSONHelper.hpp"
-#include "TemperatureIdentifier.hpp"
-#include "LogHelper.hpp"
+#include "storage/sqlite/SQLiteSensorValueSerializer.hpp"
+#include "http/HomePlanRestApiHandler.hpp"
+#include "http/PhysicalSensorRestApiHandler.hpp"
+#include "http/MeasurementsRestApiHandler.hpp"
+#include "misc/JSONHelper.hpp"
+#include "logic/TemperatureIdentifier.hpp"
+#include "misc/LogHelper.hpp"
+#include "logic/rules/Rules.hpp"
+#include "SharedStatesConsts.h"
 
 static const string KEY_HEATING_CONFIG_FILE = "heatingPlan";
 static const string KEY_HOME_PLAN_CONFIG_FILE = "homePlan";
@@ -246,6 +248,21 @@ void MasterBuilder::parseRoomHeating(json const& definition) {
   }
 }
 
+void MasterBuilder::buildLogicRules() {
+  //NOTE: Order DOES matter, change with caution!
+  
+  //this should be first rule, probably always
+  shared_ptr<SetupSharedStateRule> setupRule = make_shared<SetupSharedStateRule>(logic->getSharedState());
+  setupRule->setValue(STATE_WANT_HEATING, 0);
+  logic->getRules()->push_back( setupRule );
+  
+  //this need to be before StoveControlRule
+  logic->getRules()->push_back( make_shared<RoomTemperatureRule>(logic) );
+  
+  //this is probably one of last rules, must be after all rules which control sove behavior
+  logic->getRules()->push_back( make_shared<StoveControlRule>(logic->getSharedState()) );
+}
+
 void MasterBuilder::buildLogic() {
   spdlog::get(MISC_LOGGER_NAME)->info("Building logic...");
   buildStorage();
@@ -255,6 +272,8 @@ void MasterBuilder::buildLogic() {
   
   buildHeatingPlan();
   spdlog::get(MISC_LOGGER_NAME)->info("Building logic DONE.");
+  
+  buildLogicRules();
 }
 
 void MasterBuilder::buildHttpServer() {

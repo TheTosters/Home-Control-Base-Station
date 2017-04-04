@@ -6,7 +6,7 @@
 //  Copyright © 2016 Imagination Systems. All rights reserved.
 //
 
-#include "SQLiteFillableStatement.hpp"
+#include "storage/sqlite/SQLiteFillableStatement.hpp"
 
 SQLiteFillableStatement::SQLiteFillableStatement(sqlite3* _db, const string sql) : nextBindIndex(1), nextColumnIndex(0), statement(NULL), db(_db) {
 

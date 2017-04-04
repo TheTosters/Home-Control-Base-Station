@@ -12,8 +12,8 @@
 #include <stdio.h>
 #include <vector>
 #include <string>
-#include "SensorValue.hpp"
-#include "LogHelper.hpp"
+#include "entities/SensorValue.hpp"
+#include "misc/LogHelper.hpp"
 
 using namespace std;
 

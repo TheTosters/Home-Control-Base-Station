@@ -12,13 +12,14 @@
 #include <stdio.h>
 #include <vector>
 
-#include "SimpleCriteria.hpp"
-#include "SQLiteEntitySerializer.hpp"
-#include "SensorValue.hpp"
-#include "SQLiteFillableStatement.hpp"
+#include "storage/SimpleCriteria.hpp"
+#include "storage/sqlite/SQLiteEntitySerializer.hpp"
+#include "entities/SensorValue.hpp"
+#include "storage/sqlite/SQLiteFillableStatement.hpp"
 
 class SQLiteSensorValueSerializer : public SQLiteEntitySerializer {
   public:
+    virtual ~SQLiteSensorValueSerializer() = default;
     void store(SensorValue* data);
     void storeOrUpdate(SensorValue* data);
     void useDatabase(sqlite3 *db, Storage* storage);

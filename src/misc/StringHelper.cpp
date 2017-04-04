@@ -6,7 +6,7 @@
 //  Copyright © 2017 Imagination Systems. All rights reserved.
 //
 
-#include "StringHelper.hpp"
+#include "misc/StringHelper.hpp"
 
 string trim(const string &s)
 {

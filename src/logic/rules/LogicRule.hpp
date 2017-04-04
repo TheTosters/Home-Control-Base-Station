@@ -11,12 +11,14 @@
 
 #include <stdio.h>
 #include <vector>
+#include <memory>
 
 using namespace std;
 
 class LogicRule {
   public:
     LogicRule();
+    virtual ~LogicRule() = default;
   
     void setEnabled(bool state);
     bool isEnabled();

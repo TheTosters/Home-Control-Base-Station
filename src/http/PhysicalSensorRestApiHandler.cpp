@@ -7,9 +7,8 @@
 //
 
 #include "PhysicalSensorRestApiHandler.hpp"
-#include "json.hpp"
-#include "SensorNetManager.hpp"
-#include "JSONHelper.hpp"
+#include "sensor-net/SensorNetManager.hpp"
+#include "misc/JSONHelper.hpp"
 
 using namespace std;
 using namespace nlohmann;

@@ -12,10 +12,10 @@
 #include <stdio.h>
 #include <vector>
 #include <mutex>
-#include "PhysicalSensor.hpp"
-#include "json.hpp"
-#include "SensorNetProtocolParser.hpp"
-#include "LogHelper.hpp"
+#include "entities/PhysicalSensor.hpp"
+#include "json/json.hpp"
+#include "sensor-net/SensorNetProtocolParser.hpp"
+#include "misc/LogHelper.hpp"
 
 using namespace std;
 using namespace nlohmann;
@@ -31,6 +31,7 @@ class SensorNetManager {
     void saveConfiguration();
     bool deleteSensor(long sensorId);
     bool addSensor(shared_ptr<PhysicalSensor> sensor);
+    shared_ptr<PhysicalSensor> getSensorById(long id);
   private:
     PhysicalSensorList    sensors;
     mutex                 managerMutex;

@@ -1,15 +1,15 @@
 #include <thread>
-#include "HttpServer.hpp"
-#include "LogHelper.hpp"
+#include "http/HttpServer.hpp"
+#include "misc/LogHelper.hpp"
 
 static const int POOL_TIMEOUT = 1000;
 static const struct mg_str METHOD_GET = MG_MK_STR("GET");
 static const struct mg_str METHOD_POST = MG_MK_STR("POST");
 static const struct mg_str METHOD_DELETE = MG_MK_STR("DELETE");
 
-static int hasPrefix(const struct mg_str *uri, const struct mg_str *prefix) {
-  return uri->len > prefix->len && memcmp(uri->p, prefix->p, prefix->len) == 0;
-}
+//static int hasPrefix(const struct mg_str *uri, const struct mg_str *prefix) {
+//  return uri->len > prefix->len && memcmp(uri->p, prefix->p, prefix->len) == 0;
+//}
 
 static int isEqual(const struct mg_str *s1, const struct mg_str *s2) {
   return s1->len == s2->len && memcmp(s1->p, s2->p, s2->len) == 0;
@@ -39,7 +39,7 @@ void restApiHanlder(struct mg_connection *c, int event, void *data) {
 }
 
 HttpServer::HttpServer(shared_ptr<Storage> stor, int port)
-: httpPort(port), stopLoop(false), storage(stor) {
+: httpPort(port), stopLoop(false), runLoopDone(false), storage(stor) {
   
 }
 

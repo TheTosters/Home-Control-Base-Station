@@ -6,12 +6,16 @@
 //  Copyright © 2016 Imagination Systems. All rights reserved.
 //
 
-#include "SensorValue.hpp"
+#include "entities/SensorValue.hpp"
 
 #define SERIALIZER_SENSOR_VALUE_ID  3
 
 SensorValue::SensorValue()
-: Entity(SERIALIZER_SENSOR_VALUE_ID), value(0), timestamp(0) {
+: Entity(SERIALIZER_SENSOR_VALUE_ID),
+  physicalSensorId(-1),
+  value(0),
+  timestamp(0),
+  valueType(svtUndefined) {
   
 }
 

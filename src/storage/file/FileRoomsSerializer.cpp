@@ -7,8 +7,8 @@
 //
 
 #include <fstream>
-#include "FileRoomsSerializer.hpp"
-#include "JSONHelper.hpp"
+#include "storage/file/FileRoomsSerializer.hpp"
+#include "misc/JSONHelper.hpp"
 
 const string FILE_NAME = "homePlan.json";
 

@@ -11,7 +11,7 @@
 
 #include <stdio.h>
 #include <string>
-#include "PhysicalSensor.hpp"
+#include "entities/PhysicalSensor.hpp"
 
 using namespace std;
 

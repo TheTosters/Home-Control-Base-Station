@@ -6,7 +6,7 @@
 //  Copyright © 2017 Imagination Systems. All rights reserved.
 //
 
-#include "MeasurementTask.hpp"
+#include "logic/MeasurementTask.hpp"
 
 MeasurementTask::MeasurementTask(shared_ptr<PhysicalSensor> sens)
 : nextMeasurementTime(sens->getDesiredFetchDelay() + time(nullptr)), sensor(sens) {

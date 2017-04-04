@@ -8,9 +8,9 @@
 
 #include <fstream>
 #include <sstream>
-#include "SensorNetManager.hpp"
-#include "JSONHelper.hpp"
-#include "CommunicationLink.hpp"
+#include "sensor-net/SensorNetManager.hpp"
+#include "misc/JSONHelper.hpp"
+#include "sensor-net/CommunicationLink.hpp"
 
 const string FILE_NAME = "sensors-default.json";
 
@@ -69,7 +69,7 @@ bool SensorNetManager::deleteSensor(long sensorId) {
 }
 
 bool SensorNetManager::addSensor(shared_ptr<PhysicalSensor> sensor) {
-  //whole metod is critical section
+  //whole method is critical section
   unique_lock<mutex> lock(managerMutex);
   
   //fail if sensor with used id is registered
@@ -86,8 +86,16 @@ bool SensorNetManager::addSensor(shared_ptr<PhysicalSensor> sensor) {
   return true;
 }
 
+shared_ptr<PhysicalSensor> SensorNetManager::getSensorById(long id) {
+  auto posIter = find_if(sensors->begin(), sensors->end(), PhysicalSensorByIdComparator(id));
+  if (posIter != sensors->end()) {
+    return nullptr;
+  }
+  return *posIter;
+}
+
 PhysicalSensorVector SensorNetManager::getSensors() {
-  //whole metod is critical section
+  //whole method is critical section
   unique_lock<mutex> lock(managerMutex);
   
   return *sensors;

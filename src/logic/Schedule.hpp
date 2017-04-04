@@ -12,9 +12,9 @@
 #include <stdio.h>
 #include <vector>
 #include <string>
-#include "ScheduleItem.hpp"
-#include "TemperatureIdentifier.hpp"
-#include "json.hpp"
+#include "logic/ScheduleItem.hpp"
+#include "logic/TemperatureIdentifier.hpp"
+#include "json/json.hpp"
 
 using namespace std;
 using namespace nlohmann;

@@ -13,7 +13,7 @@
 #include <time.h>
 #include <unordered_map>
 #include <vector>
-#include "Entity.hpp"
+#include "entities/Entity.hpp"
 
 enum SensorValueType {
   svtUndefined,

@@ -6,9 +6,16 @@
 //  Copyright © 2017 Imagination Systems. All rights reserved.
 //
 
-#include "StoveControlRule.hpp"
+#include "logic/rules/StoveControlRule.hpp"
+#include "SharedStatesConsts.h"
 
-StoveControlRule::StoveControlRule(shared_ptr<Logic> _logic)
-: logic(_logic) {
+StoveControlRule::StoveControlRule(SharedState state)
+: sharedState(state) {
   
+}
+
+void StoveControlRule::execute(){
+  if ((*sharedState)[STATE_WANT_HEATING] != 0) {
+    //todo: transfer info to stove that we want heat!
+  }
 }

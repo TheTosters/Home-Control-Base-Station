@@ -6,12 +6,12 @@
 //  Copyright © 2016 Imagination Systems. All rights reserved.
 //
 
-#include "Sensor.hpp"
+#include "entities/Sensor.hpp"
 
 #define SERIALIZER_SENSOR_ID  2
 
 Sensor::Sensor(long _id)
-: Entity(_id, SERIALIZER_SENSOR_ID), posX(0), posY(0), name(""), physicalSensorId(-1) {
+: Entity(_id, SERIALIZER_SENSOR_ID), posX(0), posY(0), name(""), physicalSensorId(-1), roomId(-1) {
 }
 
 string Sensor::getName() {

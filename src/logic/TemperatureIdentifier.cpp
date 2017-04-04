@@ -6,7 +6,7 @@
 //  Copyright © 2016 Imagination Systems. All rights reserved.
 //
 
-#include "TemperatureIdentifier.hpp"
+#include "logic/TemperatureIdentifier.hpp"
 
 TemperatureIdentifier::TemperatureIdentifier(string _name, double temp)
 : name(_name), temperature(temp){

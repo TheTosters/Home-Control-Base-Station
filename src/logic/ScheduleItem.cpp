@@ -6,7 +6,7 @@
 //  Copyright © 2016 Imagination Systems. All rights reserved.
 //
 
-#include "ScheduleItem.hpp"
+#include "logic/ScheduleItem.hpp"
 
 ScheduleItem::ScheduleItem(shared_ptr<TemperatureIdentifier> tempId, tm time)
 : temperatureIdentifier(tempId), startTime(time) {

@@ -6,8 +6,8 @@
 //  Copyright © 2016 Imagination Systems. All rights reserved.
 //
 
-#include "JSONHelper.hpp"
-#include "LogHelper.hpp"
+#include "misc/JSONHelper.hpp"
+#include "misc/LogHelper.hpp"
 
 const long PHYSICAL_SENSOR_DEFAULT_FETCH_DELAY = 600;
 

@@ -7,14 +7,14 @@
 //
 
 #include <time.h>
-#include "MeasurementsRestApiHandler.hpp"
+#include "http/MeasurementsRestApiHandler.hpp"
 
-#include "json.hpp"
-#include "SensorNetManager.hpp"
-#include "JSONHelper.hpp"
-#include "SimpleCriteria.hpp"
-#include "Storage.hpp"
-#include "SQLiteSensorValueSerializer.hpp"
+#include "json/json.hpp"
+#include "sensor-net/SensorNetManager.hpp"
+#include "misc/JSONHelper.hpp"
+#include "storage/SimpleCriteria.hpp"
+#include "storage/Storage.hpp"
+#include "storage/sqlite/SQLiteSensorValueSerializer.hpp"
 
 using namespace std;
 using namespace nlohmann;

@@ -6,7 +6,7 @@
 //  Copyright © 2016 Imagination Systems. All rights reserved.
 //
 
-#include "RestApiHandler.hpp"
+#include "http/RestApiHandler.hpp"
 
 void RestApiHandler::methodNotSupported(struct mg_connection* conn, string const& supports) {
   string msg("Wrong method type, it must be one of listed here:");
@@ -15,7 +15,7 @@ void RestApiHandler::methodNotSupported(struct mg_connection* conn, string const
   mg_printf(conn,
             "HTTP/1.0 405 Method Not Allowed\r\n"
             "Content-Length: %lu\r\n\r\n"
-            "%s", msg.length(), msg.c_str());
+            "%s", (unsigned long)msg.length(), msg.c_str());
   
 }
 
@@ -35,7 +35,7 @@ void RestApiHandler::sendHttpOk(struct mg_connection* conn, string const& body) 
   mg_printf(conn,
             "HTTP/1.0 200 OK\r\n"
             "Content-Length: %lu\r\n\r\n"
-            "%s", body.length(), body.c_str());
+            "%s", (unsigned long)body.length(), body.c_str());
 }
 
 void RestApiHandler::conflict(struct mg_connection* conn) {
@@ -51,7 +51,7 @@ void RestApiHandler::missingQueryVariable(struct mg_connection* conn, string con
   mg_printf(conn,
             "HTTP/1.0 400 Bad Request\r\n"
             "Content-Length: %lu\r\n\r\n"
-            "%s", msg.length(), msg.c_str());
+            "%s", (unsigned long)msg.length(), msg.c_str());
 }
 
 void RestApiHandler::bodyExpected(struct mg_connection* conn) {
@@ -60,7 +60,7 @@ void RestApiHandler::bodyExpected(struct mg_connection* conn) {
   mg_printf(conn,
             "HTTP/1.0 400 Bad Request\r\n"
             "Content-Length: %lu\r\n\r\n"
-            "%s", msg.length(), msg.c_str());
+            "%s", (unsigned long)msg.length(), msg.c_str());
 }
 
 void RestApiHandler::badRequest(struct mg_connection* conn) {

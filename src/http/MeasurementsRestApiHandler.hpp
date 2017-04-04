@@ -11,8 +11,8 @@
 
 #include <stdio.h>
 #include <memory>
-#include "RestApiHandler.hpp"
-#include "Logic.hpp"
+#include "http/RestApiHandler.hpp"
+#include "logic/Logic.hpp"
 
 using namespace std;
 
@@ -21,6 +21,7 @@ class SimpleCriteria;
 class MeasurementsRestApiHandler : public RestApiHandler {
   public:
     MeasurementsRestApiHandler(shared_ptr<Logic> logic);
+    virtual ~MeasurementsRestApiHandler() = default;
     
     virtual void onGetRequest(struct mg_connection *c, void *data) override;
     virtual void onPostRequest(struct mg_connection *c, void *data) override;

@@ -8,6 +8,7 @@
 
 #ifndef Entity_h
 #define Entity_h
+#include <memory>
 
 class Entity {
   public:

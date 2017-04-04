@@ -11,7 +11,7 @@
 
 #include <stdio.h>
 #include <time.h>
-#include "TemperatureIdentifier.hpp"
+#include "logic/TemperatureIdentifier.hpp"
 
 using namespace std;
 

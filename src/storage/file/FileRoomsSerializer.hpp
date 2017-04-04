@@ -11,8 +11,8 @@
 
 #include <stdio.h>
 #include <vector>
-#include "Room.hpp"
-#include "EntitySerializer.hpp"
+#include "entities/Room.hpp"
+#include "storage/EntitySerializer.hpp"
 
 class FileRoomsSerializer : public EntitySerializer {
   public:
