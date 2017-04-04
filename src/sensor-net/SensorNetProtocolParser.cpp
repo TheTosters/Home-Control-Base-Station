@@ -66,6 +66,7 @@ void SensorNetProtocolParser::requestMeasurement(MeasurementMap& result, int cou
     builder->addArgument(count);
     shared_ptr<string> response = link->sendCommand(builder->buildCommand());
     delete builder;
+
     shared_ptr<RemoteCommand> command = inParser->parse(response);
 
     detectResponseCommand(*command, sensorType);

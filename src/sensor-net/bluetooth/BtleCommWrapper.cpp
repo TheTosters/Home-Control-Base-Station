@@ -86,6 +86,8 @@ BtleCommWrapper::BtleCommWrapper()
   notificationBuffer(make_shared<std::vector<uint8_t>>()),
   notificationReceived(false) {
 
+  printf("New thread\n");
+
     if(btleCommWrapper != nullptr) {
         throw std::logic_error("btleCommWrapper is already created!");
     }
@@ -97,6 +99,7 @@ BtleCommWrapper::~BtleCommWrapper() {
     disconnect();
     g_main_loop_quit(eventLoop);
     g_main_loop_unref(eventLoop);
+    printf("Stop thread\n");
     g_thread_join(eventLoopThread); //this also do unref inside!
     g_mutex_clear(&mutex);
 
@@ -161,7 +164,7 @@ void BtleCommWrapper::connectCallback(GIOChannel *io, GError *err, gpointer user
     if (err != nullptr) {
         //g_message("%s", err->message);
         g_warning("BTLE connection failed, reason: %s\n", err->message);
-        g_error_free(err);
+        //g_error_free(err);
         btleCommWrapper->onConnectionFailed(io);
 
     } else {
@@ -170,8 +173,12 @@ void BtleCommWrapper::connectCallback(GIOChannel *io, GError *err, gpointer user
     }
 }
 
-void BtleCommWrapper::onConnectionSuccess(GIOChannel* channel) {
+bool BtleCommWrapper::isConnected() {
+  //TODO: think if this is sufficient?
+  return (btleAttribute != nullptr) && (btleChannel != nullptr);
+}
 
+void BtleCommWrapper::onConnectionSuccess(GIOChannel* channel) {
     btleChannel = channel;  //store this object
     g_info("Discovering characteristic.\n");
     btleAttribute = g_attrib_new(channel);
@@ -227,7 +234,7 @@ void BtleCommWrapper::onDiscoveryFailed() {
     onConnectionFailed(btleChannel);
 }
 
-bool BtleCommWrapper::connectTo(const string& address) {
+bool BtleCommWrapper::connectTo(const string& address, int timeout) {
     if (isConnectingInProgress() == true) {
         g_warning("Already in connecting state\n");
         return false;
@@ -248,14 +255,19 @@ bool BtleCommWrapper::connectTo(const string& address) {
     }
 
     //wait until we connect
-    g_info("Waiting for connection\n");
-    while(true) {
+    g_info("Waiting for connection");
+    while(timeout > 0) {
         if (isConnectingInProgress() == false) {
             break;
         }
-        usleep(30000);
+        usleep(30 * 1000);
+        timeout -= 30;
     }
-
+    if (timeout <= 0) {
+      g_warning("Unable to connect to %s", address.c_str());
+      g_io_channel_shutdown(tmp, false, nullptr);
+      BluetoothGuard::unlockBluetooth(this);
+    }
     return btleValueHandle != 0;
 }
 
@@ -295,7 +307,7 @@ void BtleCommWrapper::writeValueCallback(guint8 status, const guint8 *pdu, guint
 
 bool BtleCommWrapper::send(const string& dataToSend, int timeoutInMs) {
     if (btleAttribute == nullptr || btleValueHandle == 0) {
-        printf("Not connected!");
+        g_warning("Not connected!");
         return false;
     }
 
@@ -393,6 +405,5 @@ string BtleCommWrapper::readLine(int timeoutInMs, bool useNotifications) {
         usleep(sleepTimeMs * 1000);
         timeoutInMs -= sleepTimeMs;
     }
-
     return data.resultSize == 0 ? "" : string((char*)data.result, 0, data.resultSize);
 }

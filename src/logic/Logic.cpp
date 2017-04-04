@@ -101,10 +101,12 @@ void Logic::execute() {
       }
       
       MeasurementMap data = sensorNetManager->fetchMeasurements(sensor);
-      sensor->setLastFetchTime(time(nullptr));
-      sensor->setLastMeasurements(data);
-      storeMeasurements(sensor->getId(), data);
-            
+      if (data != nullptr) {
+        sensor->setLastFetchTime(time(nullptr));
+        sensor->setLastMeasurements(data);
+        storeMeasurements(sensor->getId(), data);
+      }
+
       task = make_shared<MeasurementTask>(sensor);
       {//critical section
         unique_lock<mutex> lock(logicLock);

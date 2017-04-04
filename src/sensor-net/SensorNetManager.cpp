@@ -38,11 +38,13 @@ void SensorNetManager::setSensorsList(PhysicalSensorList sensorsList) {
 MeasurementMap SensorNetManager::fetchMeasurements(shared_ptr<PhysicalSensor> sensor, int count) {
   MeasurementMap result = nullptr;
   try {
-    CommunicationLink link(cltBluetooth, sensor);
-    SensorNetProtocolParser parser(&link);
-    parser.sendPreamble();
-    result = make_shared<unordered_map<string, MeasurementList>>();
-    parser.requestMeasurement(result, count);
+    CommunicationLink link(cltBluetooth, sensor, logger);
+    if (link.isConnected()) {
+      SensorNetProtocolParser parser(&link);
+      parser.sendPreamble();
+      result = make_shared<unordered_map<string, MeasurementList>>();
+      parser.requestMeasurement(result, count);
+    }
   } catch(std::exception const& e) {
     logger->error("Exception at fetchMeasurements:");
     logger->error(e.what());

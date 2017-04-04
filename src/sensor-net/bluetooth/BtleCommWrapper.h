@@ -25,10 +25,11 @@ class BtleCommWrapper {
         BtleCommWrapper();
         virtual ~BtleCommWrapper();
 
-        bool    connectTo(const string& address);
+        bool    connectTo(const string& address, int timeout);
         void    disconnect();
         bool    send(const string& data, int timeoutInMs = 3000);
         string  readLine(int timeoutInMs = 3000, bool useNotifications = false);
+        bool    isConnected();
     private:
         GMainLoop*      eventLoop;
         GThread*        eventLoopThread;
