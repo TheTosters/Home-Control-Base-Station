@@ -94,6 +94,7 @@ BtleCommWrapper::BtleCommWrapper()
 }
 
 BtleCommWrapper::~BtleCommWrapper() {
+    disconnect();
     g_main_loop_quit(eventLoop);
     g_main_loop_unref(eventLoop);
     g_thread_join(eventLoopThread); //this also do unref inside!
@@ -164,7 +165,7 @@ void BtleCommWrapper::connectCallback(GIOChannel *io, GError *err, gpointer user
         btleCommWrapper->onConnectionFailed(io);
 
     } else {
-        printf("BTLE connection established\n");
+        //printf("BTLE connection established\n");
         btleCommWrapper->onConnectionSuccess(io);
     }
 }
@@ -345,31 +346,35 @@ bool isItEnter(int i) {
 }
 
 string BtleCommWrapper::readLineFromNotificationBuffer(int timeoutInMs) {
-    string result;
-    const int sleepTimeMs = 30;
-    while(true)
-    {
-        {//critical section
-            std::lock_guard<std::mutex> guard(notificationMutex);
-            if (notificationReceived == false) {
-                continue;
-            }
-            std::vector<uint8_t>::iterator it = std::find_if(notificationBuffer->begin(), notificationBuffer->end(),
-                    isItEnter);
-            if (it == notificationBuffer->end()) {
-                continue;
-            }
-            it++;
-            uint8_t* startAddress = &((*notificationBuffer)[0]);
-            size_t size = it - notificationBuffer->begin();
-            result.append((const char*)startAddress, size);
-            notificationBuffer->erase(notificationBuffer->begin(), it);
-            break;
-        }
-        usleep(sleepTimeMs * 1000);
-        timeoutInMs -= sleepTimeMs;
+  string result = "";
+  const int sleepTimeMs = 30;
+  while (timeoutInMs > 0) {
+    usleep(sleepTimeMs * 1000);
+    timeoutInMs -= sleepTimeMs;
+    { //critical section
+      std::lock_guard<std::mutex> guard(notificationMutex);
+      if (notificationReceived == false) {
+        continue;
+      }
+      std::vector<uint8_t>::iterator it = std::find_if(notificationBuffer->begin(), notificationBuffer->end(),
+          isItEnter);
+      if (it == notificationBuffer->end()) {
+        continue;
+      }
+      it++;
+      uint8_t* startAddress = &((*notificationBuffer)[0]);
+      size_t size = it - notificationBuffer->begin();
+      while (startAddress[size - 1] == '\r') {
+        size--;
+      }
+      if (size > 0) {
+        result.append((const char*) startAddress, size);
+      }
+      notificationBuffer->erase(notificationBuffer->begin(), it);
+      break;
     }
-    return result;
+  }
+  return result;
 }
 
 string BtleCommWrapper::readLine(int timeoutInMs, bool useNotifications) {

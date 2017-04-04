@@ -24,9 +24,9 @@ const string MEASUREMENT_COMMAND = "RDR";
 SensorNetProtocolParser::SensorNetProtocolParser(CommunicationLink* _link)
 : link(_link), inParser(new InParser()),
   responseCmdToSensorType({
-    {"VTH", svtTemperature},
-    {"VHH", svtHumidity},
-    {"VPH", svtPowerConsumption}
+    {"VTM", svtTemperature},
+    {"VHM", svtHumidity},
+    {"VPM", svtPowerConsumption}
   }),
   logger(spdlog::get(COMMUNICATION_LOGGER_NAME)) {
 
@@ -69,9 +69,11 @@ void SensorNetProtocolParser::requestMeasurement(MeasurementMap& result, int cou
     shared_ptr<RemoteCommand> command = inParser->parse(response);
 
     detectResponseCommand(*command, sensorType);
-    MeasurementList measurements = parseValueWithTimestamp(*command, sensorType, now);
-    if (measurements != nullptr) {
-      (*result)[*(command->getCommand())] = measurements;
+    if (sensorType != svtUndefined) {
+      MeasurementList measurements = parseValueWithTimestamp(*command, sensorType, now);
+      if (measurements != nullptr) {
+        (*result)[*(command->getCommand())] = measurements;
+      }
     }
   }
 }
@@ -103,7 +105,7 @@ MeasurementList SensorNetProtocolParser::parseValueWithTimestamp(RemoteCommand& 
 
     int tmpInt = (*sequence)[0].asUInt64();
     time_t timeStamp = now - static_cast<time_t>(tmpInt);
-    double value = (*sequence)[0].asDouble();
+    double value = (*sequence)[1].asDouble();
 
     result->push_back(make_shared<Measurement>(type, value, timeStamp));
   }

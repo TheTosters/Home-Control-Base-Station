@@ -1,8 +1,8 @@
 {
-    "heatingPlan" : "heatingPlan-default.json",
-    "homePlan" : "homePlan-default.json",
-    "sensors" : "sensors-default.json",
-    "dbFile" : "storage.sqlite",
+    "heatingPlan" : "/root/homeControl/heatingPlan-default.json",
+    "homePlan" : "/root/homeControl/homePlan-default.json",
+    "sensors" : "/root/homeControl/sensors-default.json",
+    "dbFile" : "/root/homeControl/storage.sqlite",
     "webServer" : {
         "port" : 8000
     },

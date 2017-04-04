@@ -19,15 +19,19 @@ enum CommunicationLinkType {
   cltBluetooth
 };
 
+class BtleCommWrapper;
+
 class CommunicationLink {
   public:
     CommunicationLink(CommunicationLinkType type, shared_ptr<PhysicalSensor> device);
-  
+    virtual ~CommunicationLink();
+
     shared_ptr<string> sendCommand(string cmd);
     shared_ptr<PhysicalSensor>& getDevice();
   private:
     CommunicationLinkType       type;
     shared_ptr<PhysicalSensor>  device;
+    BtleCommWrapper*            btleWrapper;
 };
 
 #endif /* ComunicationLink_hpp */

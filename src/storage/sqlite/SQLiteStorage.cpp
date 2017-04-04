@@ -16,9 +16,6 @@ SQLiteStorage::SQLiteStorage(string _dbFilePath)
 }
 
 bool SQLiteStorage::open() {
-  //todo: for debug we don't want db
-  return true;
-
   int rc = sqlite3_open_v2(dbFilePath.c_str(), &db, SQLITE_OPEN_CREATE|SQLITE_OPEN_READWRITE|SQLITE_OPEN_FULLMUTEX, NULL);
   if ( rc ){
     //todo: proper logs not fprint

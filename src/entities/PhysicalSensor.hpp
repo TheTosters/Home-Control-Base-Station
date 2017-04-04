@@ -37,13 +37,12 @@ enum PhysicalSensorPowerSaveActivity {
 class PhysicalSensorMetaData {
   public:
     string softwareVersion;
-    string nodeName;
 
     PhysicalSensorPowerSaveMode powerMode;
     PhysicalSensorPowerSaveActivity powerActivity;
     int powerPeroid;
 
-    int    temperatureResolution;
+    int temperatureResolution;
 
     uint64_t nodeSystemTime;
 };
