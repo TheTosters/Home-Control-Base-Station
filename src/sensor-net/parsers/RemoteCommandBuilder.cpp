@@ -10,7 +10,9 @@
 #include <iomanip>
 #include <sstream>
 
+const string REMOTE_CMD_GET_SYSTEM_CAPABILITIES = "CSC";
 const string REMOTE_CMD_READ_TEMP_HISTORY = "RTH";
+const string REMOTE_CMD_GET_SOFTWARE_VERSION = "AVI";
 
 RemoteCommandBuilder::RemoteCommandBuilder(const string& cmd)
 : outCmd(cmd), elementsType(UNKNOWN), isSequenceOpen(false), needComa(false), expectedNextSubsequence(false) {

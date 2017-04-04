@@ -27,8 +27,15 @@ struct PhysicalSensorByIdComparator : public std::unary_function<std::string, bo
 };
 
 SensorNetManager::SensorNetManager()
-: logger(spdlog::get(COMMUNICATION_LOGGER_NAME)) {
-  
+: logger(spdlog::get(COMMUNICATION_LOGGER_NAME)), scannedSensors(nullptr), hciWrapper(nullptr) {
+
+}
+
+SensorNetManager::~SensorNetManager() {
+  if (hciWrapper != nullptr) {
+    delete hciWrapper;
+    hciWrapper = nullptr;
+  }
 }
 
 void SensorNetManager::setSensorsList(PhysicalSensorList sensorsList) {
@@ -110,4 +117,38 @@ PhysicalSensorVector SensorNetManager::getSensors() {
   unique_lock<mutex> lock(managerMutex);
   
   return *sensors;
+}
+
+SensorNetManagerScanResult SensorNetManager::scanForSensors() {
+  //whole method is critical section
+  unique_lock<mutex> lock(managerMutex);
+
+  if (hciWrapper != nullptr) {
+    return SensorNetManagerScanResult_ALREADY_IN_PROGRESS;
+  }
+  hciWrapper = new HciWrapper(this);
+
+  if (hciWrapper->startScan() == true) {
+    return SensorNetManagerScanResult_START;
+
+  } else {
+    delete hciWrapper;
+    hciWrapper = nullptr;
+    scannedSensors = nullptr;
+    return SensorNetManagerScanResult_FAILED;
+  }
+}
+
+void SensorNetManager::onScanStart() {
+  logger->info("Start BTLE scan for physical sensors");
+  scannedDevices.clear();
+}
+
+void SensorNetManager::onScanStop() {
+  logger->info("BTLE scan for physical sensors finished, now resolving devices {} devices", scannedDevices.size());
+  scannedSensors = make_shared<PhysicalSensorVector>();
+}
+
+void SensorNetManager::onNewDeviceFound(const BTLEDevice& device) {
+  scannedDevices.push_back(device);
 }

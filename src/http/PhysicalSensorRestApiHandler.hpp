@@ -26,6 +26,8 @@ class PhysicalSensorRestApiHandler : public RestApiHandler {
     virtual void onDeleteRequest(struct mg_connection *c, void *data) override;
   private:
     shared_ptr<Logic> logic;
+    void handleScanRequest(struct mg_connection *c);
+    void handleLastScan(struct mg_connection *c);
 };
 
 #endif /* PhysicalSensorRestApiHandler_hpp */

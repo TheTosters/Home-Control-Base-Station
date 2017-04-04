@@ -12,7 +12,9 @@
 
 using namespace std;
 
+extern const string REMOTE_CMD_GET_SYSTEM_CAPABILITIES;
 extern const string REMOTE_CMD_READ_TEMP_HISTORY;
+extern const string REMOTE_CMD_GET_SOFTWARE_VERSION;
 
 class RemoteCommandBuilder {
     public:

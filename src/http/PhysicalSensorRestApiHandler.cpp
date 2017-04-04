@@ -19,7 +19,51 @@ PhysicalSensorRestApiHandler::PhysicalSensorRestApiHandler(shared_ptr<Logic> _lo
   
 }
 
+void PhysicalSensorRestApiHandler::handleScanRequest(struct mg_connection *c) {
+  shared_ptr<SensorNetManager> mgr = logic->getSensorsNetManager();
+  SensorNetManagerScanResult result = mgr->scanForSensors();
+  string status;
+  switch(result) {
+    case SensorNetManagerScanResult_START:
+      status = "started";
+      break;
+
+    case SensorNetManagerScanResult_ALREADY_IN_PROGRESS:
+      status = "inProgress";
+      break;
+
+    default:
+    case SensorNetManagerScanResult_FAILED:
+      status = "failed";
+      break;
+  }
+  json outJson = {
+    {"status", status}
+  };
+  sendHttpOk(c, outJson.dump());
+}
+
+void PhysicalSensorRestApiHandler::handleLastScan(struct mg_connection *c) {
+
+}
+
 void PhysicalSensorRestApiHandler::onGetRequest(struct mg_connection *c, void *data) {
+
+  //Possible commands:
+  //none - http://server/physicalSensors - returns sensors in current use (visible for logic)
+  //scan - /physicalSensors?cmd=scan - scans for physical sensors
+  //lastScan - /physicalSensors?cmd=scan - list all found physical sensors (both visible and invisible for logic)
+  string cmd;
+  if (getQueryVariable(data, "cmd", &cmd) == true) {
+    if (cmd == "scan") {
+      handleScanRequest(c);
+
+    } else if (cmd == "lastScan") {
+      handleLastScan(c);
+    }
+    return;
+  }
+
   shared_ptr<SensorNetManager> mgr = logic->getSensorsNetManager();
   PhysicalSensorList list = make_shared<PhysicalSensorVector>(mgr->getSensors());
   

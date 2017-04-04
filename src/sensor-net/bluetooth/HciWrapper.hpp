@@ -32,7 +32,7 @@ class BTLEDevice {
 };
 
 class HciWrapperListener {
-    public:
+    protected:
         virtual ~HciWrapperListener() = default;
         virtual void onScanStart() = 0;
         virtual void onScanStop() = 0;
