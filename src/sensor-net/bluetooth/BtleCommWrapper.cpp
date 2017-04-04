@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <algorithm>
+#include "BluetoothGuard.h"
 
 extern "C" {
     #include "libgatt/att.h"
@@ -231,6 +232,7 @@ bool BtleCommWrapper::connectTo(const string& address) {
         return false;
     }
     setConnectingInProgress(true);
+    BluetoothGuard::lockBluetooth(this);
 
     GError* error;
     //NOTE: this channel will be stored to btleChannel in callback on success connection. Otherwise it will be destroyed
@@ -240,6 +242,7 @@ bool BtleCommWrapper::connectTo(const string& address) {
         g_warning("Failed to connect with error: %s", error->message);
         g_error_free(error);
         setConnectingInProgress(false);
+        BluetoothGuard::unlockBluetooth(this);
         return false;
     }
 
@@ -264,6 +267,7 @@ void BtleCommWrapper::disconnect() {
         g_io_channel_shutdown(btleChannel, false, nullptr);
         g_io_channel_unref(btleChannel);
         btleChannel = nullptr;
+        BluetoothGuard::unlockBluetooth(this);
     }
 }
 

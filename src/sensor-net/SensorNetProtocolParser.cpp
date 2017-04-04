@@ -15,12 +15,14 @@
 #include <unordered_map>
 #include "sensor-net/CommunicationLink.hpp"
 #include "misc/LogHelper.hpp"
+#include "parsers/RemoteCommandBuilder.hpp"
+#include "parsers/InParser.hpp"
 
 const string SINGLE_MEASUREMENT_REQUEST = "RDR0001";
 const string MEASUREMENT_COMMAND = "RDR";
 
 SensorNetProtocolParser::SensorNetProtocolParser(CommunicationLink* _link)
-: link(_link),
+: link(_link), inParser(new InParser()),
   responseCmdToSensorType({
     {"VTH", svtTemperature},
     {"VHH", svtHumidity},
@@ -30,124 +32,83 @@ SensorNetProtocolParser::SensorNetProtocolParser(CommunicationLink* _link)
 
 }
 
-bool SensorNetProtocolParser::parseInt(string const& str, int& result) {
-  char* p;
-  long tmp = strtol( str.c_str(), &p, 16 );
-  if ( *p != 0) {
-    return false;
-  }
-  if (tmp > 0x7fff) {
-    tmp -= 0x10000;
-  }
-  result = static_cast<int>(tmp);
-  return true;
-}
-
-bool SensorNetProtocolParser::parseDouble(string const& str, double &result) {
-  char* p;
-  long tmp = strtol( str.c_str(), &p, 16 );
-  if ( *p != 0) {
-    return false;
-  }
-  if (tmp > 0x7fff) {
-    tmp -= 0x10000;
-  }
-  int integral = static_cast<int>(tmp >> 4);
-  int frac = static_cast<int>(tmp & 0b1111);
-  result = integral + frac / 16.0f;
-  return true;
+void SensorNetProtocolParser::sendPreamble() {
+  link->sendCommand("!!!!#");
 }
 
 void SensorNetProtocolParser::requestMeasurement(MeasurementMap& result, int count) {
-  
-  shared_ptr<string> response;
-  
-  if (count <= 1) {
-    response = link->sendCommand(SINGLE_MEASUREMENT_REQUEST);
-    
-  } else {
-    stringstream stream;
-    stream << MEASUREMENT_COMMAND << std::nouppercase << std::setfill('0') << std::setw(4) << std::hex << count;
-    response = link->sendCommand(stream.str());
-  }
 
-  parseMeasurementsRespons(*response, result);
+  count = count <= 1 ? 1 : count;
+  time_t now = time(nullptr);
+  SensorValueType sensorType;
+
+  for(int mesType = PhysicalSensorType_BEGIN; mesType < PhysicalSensorType_END; mesType ++) {
+
+    if (link->getDevice()->isType((PhysicalSensorType)mesType) == false) {
+      continue;
+    }
+
+    RemoteCommandBuilder* builder;
+    switch(mesType) {
+      case PhysicalSensorType_TEMPERATURE:
+        builder = new RemoteCommandBuilder(REMOTE_CMD_READ_TEMP_HISTORY);
+        break;
+
+      case PhysicalSensorType_HUMIDITY:
+      case PhysicalSensorType_POWER_CONSUMPTION:
+        logger->error("Not implemented!");
+        break;
+
+      default:
+        continue;
+    }
+
+    builder->addArgument(count);
+    shared_ptr<string> response = link->sendCommand(builder->buildCommand());
+    delete builder;
+    shared_ptr<RemoteCommand> command = inParser->parse(response);
+
+    detectResponseCommand(*command, sensorType);
+    MeasurementList measurements = parseValueWithTimestamp(*command, sensorType, now);
+    if (measurements != nullptr) {
+      (*result)[*(command->getCommand())] = measurements;
+    }
+  }
 }
 
-bool SensorNetProtocolParser::detectResponseCommand(string const& data, size_t& startIndex, string& cmd, SensorValueType& sensorType) {
-  if (data.length() < 4 || data.length() <= startIndex + 3) {
+void SensorNetProtocolParser::detectResponseCommand(RemoteCommand& command, SensorValueType& sensorType) {
+  sensorType = svtUndefined;
+  shared_ptr<string> cmd = command.getCommand();
+  if (responseCmdToSensorType.find(*cmd) == responseCmdToSensorType.end()) {
     sensorType = svtUndefined;
-    cmd.clear();
-    startIndex = data.length();
-    return false;
-  }
-  
-  cmd = data.substr(startIndex, 3);
-  startIndex += 3;
-  
-  if (responseCmdToSensorType.find(cmd) == responseCmdToSensorType.end()) {
-    sensorType = svtUndefined;
-    
+
   } else {
-    sensorType = responseCmdToSensorType[cmd];
+    sensorType = responseCmdToSensorType[*cmd];
   }
-  
-  return true;
 }
 
-MeasurementList SensorNetProtocolParser::parseValueWithTimestamp(string const& data, size_t& startIndex, SensorValueType type, time_t now) {
+MeasurementList SensorNetProtocolParser::parseValueWithTimestamp(RemoteCommand& command, SensorValueType type, time_t now) {
   MeasurementList result = make_shared<vector<shared_ptr<Measurement>>>();
-  
-  while (startIndex < data.length() && data[startIndex] == '(') {
-    
-    startIndex++;
-    size_t comaPos = data.find(",", startIndex);
-    if (comaPos == string::npos) {
-      logParseError(data, "Expected ',' character after this column.", startIndex);
-      break;
+  if (command.getArgType() != RemoteCommandArgumentType_DIGIT_MULTI_SEQUENCE) {
+    logger->warn("Expected RemoteCommandArgumentType_DIGIT_MULTI_SEQUENCE type");
+    return nullptr;
+  }
+
+  for(unsigned int t = 0; t < command.getArgumentsCount(); t++) {
+    shared_ptr<vector<Number> > sequence = command.getDigitSequence(t);
+    if (sequence->size() != 2) {
+      logger->warn("Expected 2 elements in sequence");
+      continue;
     }
-    
-    int tmpInt;
-    bool tmp = parseInt( data.substr(startIndex, comaPos - startIndex), tmpInt );
-    if (tmp == false) {
-      logParseError(data, "Can't convert this string into int.", startIndex);
-      break;
-    }
+
+    int tmpInt = (*sequence)[0].asUInt64();
     time_t timeStamp = now - static_cast<time_t>(tmpInt);
-    
-    size_t endPos = data.find(")", comaPos);
-    if (endPos == string::npos) {
-      logParseError(data, "Expected ')' character after this column.", startIndex);
-      break;
-    }
-    
-    comaPos++;
-    double value;
-    tmp = parseDouble( data.substr(comaPos, endPos - comaPos), value );
-    if (tmp == false) {
-      logParseError(data, "Can't convert this string into double.", startIndex);
-      break;
-    }
-    
-    startIndex = endPos + 1;
+    double value = (*sequence)[0].asDouble();
+
     result->push_back(make_shared<Measurement>(type, value, timeStamp));
   }
   
   return result;
-}
-
-void SensorNetProtocolParser::parseMeasurementsRespons(string const& data, MeasurementMap& result) {
-  size_t startIndex = 0;
-  string cmd;
-  SensorValueType sensorType;
-  time_t now = time(nullptr);
-  
-  while(detectResponseCommand(data, startIndex, cmd, sensorType)) {
-    MeasurementList measurements = parseValueWithTimestamp(data, startIndex, sensorType, now);
-    if (measurements != nullptr) {
-      (*result)[cmd] = measurements;
-    }
-  }
 }
 
 void SensorNetProtocolParser::logParseError(string const& data, string const& msg, size_t const& column) {

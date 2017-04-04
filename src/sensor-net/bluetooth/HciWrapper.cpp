@@ -7,6 +7,7 @@
 #include "HciWrapper.hpp"
 #include <system_error>
 #include <algorithm>
+#include "BluetoothGuard.h"
 
 #define HCI_STATE_NONE       0
 #define HCI_STATE_OPEN       2
@@ -33,11 +34,6 @@ bool BTLEDevice::operator ==(const BTLEDevice& rhs) {
 
 HciWrapper::HciWrapper(HciWrapperListener& delegate)
 : device_id(0), device_handle(0), state(0), has_error(0), delegate(delegate) {
-    open_default_hci_device();
-    if (has_error) {
-        printf("ERROR: %s\n", error_message);
-        throw std::system_error();
-    }
 }
 
 HciWrapper::~HciWrapper() {
@@ -49,7 +45,15 @@ void HciWrapper::dumpError() {
         printf("%s\n", error_message);
     }
 }
+
 bool HciWrapper::startScan() {
+    open_default_hci_device();
+
+    if (has_error) {
+        printf("ERROR: %s\n", error_message);
+        return false;
+    }
+
     if (hci_le_set_scan_parameters(device_handle, 0x01, htobs(0x0010), htobs(0x0010), 0x00, 0x00, 1000) < 0) {
         has_error = TRUE;
         snprintf(error_message, sizeof(error_message), "Failed to set scan parameters: %s", strerror(errno));
@@ -207,16 +211,18 @@ void HciWrapper::stopScan() {
         snprintf(error_message, sizeof(error_message), "Disable scan failed: %s", strerror(errno));
     }
 
-    state = HCI_STATE_OPEN;
+    close_hci_device();
     delegate.onScanStop();
 }
 
 void HciWrapper::open_default_hci_device() {
+    BluetoothGuard::lockBluetooth(this);
     device_id = hci_get_route(NULL);
 
     if ((device_handle = hci_open_dev(device_id)) < 0) {
         has_error = TRUE;
         snprintf(error_message, sizeof(error_message), "Could not open device: %s", strerror(errno));
+        BluetoothGuard::unlockBluetooth(this);
         return;
     }
 
@@ -226,6 +232,7 @@ void HciWrapper::open_default_hci_device() {
         has_error = TRUE;
         snprintf(error_message, sizeof(error_message),
                 "Could set device to non-blocking: %s", strerror(errno));
+        BluetoothGuard::unlockBluetooth(this);
         return;
     }
 
@@ -237,6 +244,10 @@ void HciWrapper::close_hci_device()
   if(state == HCI_STATE_OPEN) {
     hci_close_dev(device_handle);
   }
+  if (state != HCI_STATE_NONE && BluetoothGuard::isBluetoothLocked(this)) {
+    BluetoothGuard::unlockBluetooth(this);
+  }
+  state = HCI_STATE_NONE;
 }
 
 void HciWrapper::clearFoundDevices() {

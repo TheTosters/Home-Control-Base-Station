@@ -1,0 +1,18 @@
+{
+    "heatingPlan" : "heatingPlan-default.json",
+    "homePlan" : "homePlan-default.json",
+    "sensors" : "sensors-default.json",
+    "dbFile" : "storage.sqlite",
+    "webServer" : {
+        "port" : 8000
+    },
+    "logging" : {
+        "console" : true,
+        "file" : "logs",
+        "level" : 1,
+        "format": "[%n][%t]%M:%S:%e %L: %v",
+        "logic" : {
+          "level" : 2
+        }
+    }
+}

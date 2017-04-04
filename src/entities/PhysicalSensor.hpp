@@ -12,17 +12,41 @@
 #include <stdio.h>
 #include <string>
 #include <vector>
+#include <inttypes.h>
 #include "entities/Entity.hpp"
 #include "entities/SensorValue.hpp"
 
 using namespace std;
 
 enum PhysicalSensorType {
-  TEMPERATURE,
-  HUMIDITY,
-  POWER_CONSUMPTION
+  PhysicalSensorType_BEGIN,
+  PhysicalSensorType_TEMPERATURE,
+  PhysicalSensorType_HUMIDITY,
+  PhysicalSensorType_POWER_CONSUMPTION,
+  PhysicalSensorType_END
 };
 
+enum PhysicalSensorPowerSaveMode {
+  PhysicalSensorPowerSaveMode_1
+};
+
+enum PhysicalSensorPowerSaveActivity {
+  PhysicalSensorPowerSaveActivity_1
+};
+
+class PhysicalSensorMetaData {
+  public:
+    string softwareVersion;
+    string nodeName;
+
+    PhysicalSensorPowerSaveMode powerMode;
+    PhysicalSensorPowerSaveActivity powerActivity;
+    int powerPeroid;
+
+    int    temperatureResolution;
+
+    uint64_t nodeSystemTime;
+};
 /**
  * This class is for having instance of other physical device which we can contact to get measurements.
  * It's not this same as Sensor, which is more like logical representation of Physical sensor in rooms.
@@ -69,6 +93,8 @@ class PhysicalSensor : public Entity {
 
     /** List with the newest values fetch from physical device */
     MeasurementList     lastMeasurements;
+
+    PhysicalSensorMetaData* metaData;
   
     void updateLastMeasurement(SensorValueType valType, double value, time_t time);
 };

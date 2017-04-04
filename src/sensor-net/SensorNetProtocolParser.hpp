@@ -17,15 +17,19 @@
 
 using namespace std;
 
+class InParser;
 class CommunicationLink;
+class RemoteCommand;
 
 class SensorNetProtocolParser {
   public:
     SensorNetProtocolParser(CommunicationLink* link);
   
     void requestMeasurement(MeasurementMap& result, int count = 1);
+    void sendPreamble();
   private:
-    CommunicationLink*   link;
+    CommunicationLink* link;
+    InParser* inParser;
     unordered_map<string, SensorValueType> responseCmdToSensorType;
     shared_ptr<spdlog::logger> logger;
   
@@ -34,8 +38,8 @@ class SensorNetProtocolParser {
   
     void logParseError(string const& data, string const& msg, size_t const& column);
   
-    MeasurementList parseValueWithTimestamp(string const& data, size_t& startIndex, SensorValueType type, time_t now);
-    bool detectResponseCommand(string const& data, size_t& startIndex, string& cmd, SensorValueType& sensorType);
+    MeasurementList parseValueWithTimestamp(RemoteCommand& command, SensorValueType type, time_t now);
+    void detectResponseCommand(RemoteCommand& command, SensorValueType& sensorType);
     void parseMeasurementsRespons(string const& data, MeasurementMap& result);
 };
 

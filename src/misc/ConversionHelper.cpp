@@ -12,13 +12,13 @@
 PhysicalSensorType toPhysicalSensorType(SensorValueType value) {
   switch (value) {
     case svtTemperature:
-      return TEMPERATURE;
+      return PhysicalSensorType_TEMPERATURE;
       
     case svtHumidity:
-      return HUMIDITY;
+      return PhysicalSensorType_HUMIDITY;
       
     case svtPowerConsumption:
-      return POWER_CONSUMPTION;
+      return PhysicalSensorType_POWER_CONSUMPTION;
       
     default:
       throw std::invalid_argument("Can't map SensorValueType into PhysicalSensorType.");
@@ -27,13 +27,13 @@ PhysicalSensorType toPhysicalSensorType(SensorValueType value) {
 
 SensorValueType toSensorValueType(PhysicalSensorType value) {
   switch (value) {
-    case TEMPERATURE:
+    case PhysicalSensorType_TEMPERATURE:
       return svtTemperature;
       
-    case HUMIDITY:
+    case PhysicalSensorType_HUMIDITY:
       return svtHumidity;
       
-    case POWER_CONSUMPTION:
+    case PhysicalSensorType_POWER_CONSUMPTION:
       return svtPowerConsumption;
       
     default:
