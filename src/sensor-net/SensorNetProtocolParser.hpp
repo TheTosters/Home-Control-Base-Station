@@ -14,12 +14,12 @@
 #include <string>
 #include "entities/SensorValue.hpp"
 #include "misc/LogHelper.hpp"
+#include "sensor-net/parsers/InParser.hpp"
+#include "entities/PhysicalSensor.hpp"
 
 using namespace std;
 
-class InParser;
 class CommunicationLink;
-class RemoteCommand;
 
 class SensorNetProtocolParser {
   public:
@@ -27,6 +27,7 @@ class SensorNetProtocolParser {
   
     void requestMeasurement(MeasurementMap& result, int count = 1);
     void sendPreamble();
+    bool requestSensorSpec();
   private:
     CommunicationLink* link;
     InParser* inParser;
@@ -41,6 +42,9 @@ class SensorNetProtocolParser {
     MeasurementList parseValueWithTimestamp(RemoteCommand& command, SensorValueType type, time_t now);
     void detectResponseCommand(RemoteCommand& command, SensorValueType& sensorType);
     void parseMeasurementsRespons(string const& data, MeasurementMap& result);
+    shared_ptr<RemoteCommand> executeSimpleCommand(const string& cmd);
+    void handleSensorCapabilities( shared_ptr<PhysicalSensor> sensor, shared_ptr<RemoteCommand> command);
+    bool verifyCommand(shared_ptr<RemoteCommand> command, const string& expected, RemoteCommandArgumentType expectedType);
 };
 
 #endif /* SensorNetProtocolParser_hpp */

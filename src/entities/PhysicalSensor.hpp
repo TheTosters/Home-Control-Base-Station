@@ -43,8 +43,11 @@ class PhysicalSensorMetaData {
     int powerPeroid;
 
     int temperatureResolution;
+    int temperaturePeriod;
 
     uint64_t nodeSystemTime;
+
+    PhysicalSensorMetaData();
 };
 /**
  * This class is for having instance of other physical device which we can contact to get measurements.
@@ -57,6 +60,7 @@ class PhysicalSensorMetaData {
 class PhysicalSensor : public Entity {
   public:
     PhysicalSensor();
+    virtual ~PhysicalSensor();
   
     void    setName(string const& name);
     string& getName();
@@ -78,6 +82,7 @@ class PhysicalSensor : public Entity {
   
     bool    isType(PhysicalSensorType type);
     shared_ptr<Measurement> getLastMeasurement(PhysicalSensorType type);
+    PhysicalSensorMetaData* getMetadata();
   protected:
     string              name;
     string              address;    //it can be MAC, Bluetooth address, or other protocol dependent

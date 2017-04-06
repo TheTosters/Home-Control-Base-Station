@@ -10,9 +10,17 @@
 #include <iomanip>
 #include <sstream>
 
-const string REMOTE_CMD_GET_SYSTEM_CAPABILITIES = "CSC";
 const string REMOTE_CMD_READ_TEMP_HISTORY = "RTH";
 const string REMOTE_CMD_GET_SOFTWARE_VERSION = "AVI";
+const string REMOTE_CMD_CONFIGURE_TEMPERATURE_RESOLUTION = "CTR";
+const string REMOTE_CMD_CONFIGURE_TEMPERATURE_PERIOD = "CTP";
+const string REMOTE_CMD_CONFIGURE_POWER_PERIOD = "CPP";
+const string REMOTE_CMD_CONFIGURE_SYSTEM_TIME = "CST";
+const string REMOTE_CMD_GET_SYSTEM_CAPABILITIES = "CSC";
+const string REMOTE_CMD_CONFIGURE_NODE_NAME = "CNN";
+const string REMOTE_CMD_CONFIGURE_RESET_SYSTEM = "CRS";
+const string REMOTE_CMD_CONFIGURE_SAVING_MODE = "CSM";
+const string REMOTE_CMD_CONFIGURE_SAVING_ACTIVITY = "CSA";
 
 RemoteCommandBuilder::RemoteCommandBuilder(const string& cmd)
 : outCmd(cmd), elementsType(UNKNOWN), isSequenceOpen(false), needComa(false), expectedNextSubsequence(false) {

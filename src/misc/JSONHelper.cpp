@@ -78,12 +78,25 @@ json toJSON(PhysicalSensorList const& list) {
       types += *iter2;
     }
     
+    PhysicalSensorMetaData* tmpMeta = (*iter)->getMetadata();
+
+    json meta = {
+        {"swVersion", tmpMeta->softwareVersion},
+        {"powerMode", static_cast<int>(tmpMeta->powerMode)},
+        {"powerActivity", static_cast<int>(tmpMeta->powerActivity)},
+        {"powerPeroid", tmpMeta->powerPeroid},
+        {"temperatureResolution", tmpMeta->temperatureResolution},
+        {"temperaturePeriod", tmpMeta->temperaturePeriod},
+        {"nodeSystemTime", tmpMeta->nodeSystemTime}
+    };
+
     json item = {
       {"id", (*iter)->getId()},
       {"name", (*iter)->getName()},
       {"address", (*iter)->getAddress()},
       {"fetchDelay", (*iter)->getDesiredFetchDelay()},
-      {"type", types}
+      {"type", types},
+      {"meta", meta}
     };
     
     result += item;

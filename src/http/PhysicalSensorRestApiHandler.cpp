@@ -21,19 +21,19 @@ PhysicalSensorRestApiHandler::PhysicalSensorRestApiHandler(shared_ptr<Logic> _lo
 
 void PhysicalSensorRestApiHandler::handleScanRequest(struct mg_connection *c) {
   shared_ptr<SensorNetManager> mgr = logic->getSensorsNetManager();
-  SensorNetManagerScanResult result = mgr->scanForSensors();
+  SensorNetManagerStartScanResult result = mgr->scanForSensors();
   string status;
   switch(result) {
-    case SensorNetManagerScanResult_START:
+    case SensorNetManagerStartScanResult_START:
       status = "started";
       break;
 
-    case SensorNetManagerScanResult_ALREADY_IN_PROGRESS:
+    case SensorNetManagerStartScanResult_ALREADY_IN_PROGRESS:
       status = "inProgress";
       break;
 
     default:
-    case SensorNetManagerScanResult_FAILED:
+    case SensorNetManagerStartScanResult_FAILED:
       status = "failed";
       break;
   }
@@ -44,7 +44,31 @@ void PhysicalSensorRestApiHandler::handleScanRequest(struct mg_connection *c) {
 }
 
 void PhysicalSensorRestApiHandler::handleLastScan(struct mg_connection *c) {
+  shared_ptr<SensorNetManager> mgr = logic->getSensorsNetManager();
+  SensorNetManagerScanStatus result = mgr->getCurrentScanStatus();
+  string status;
+  json list = {};
+  switch(result) {
+    case SensorNetManagerScanStatus_IN_PROGRESS:
+      status = "inProgress";
+      break;
 
+    case SensorNetManagerScanStatus_FINISHED_WITH_RESULT:
+      status = "done";
+      list = toJSON(mgr->getScannedPhysicalSensors());
+      break;
+
+    default:
+    case SensorNetManagerScanStatus_NO_RESULT:
+      status = "empty";
+      break;
+  }
+
+  json outJson = {
+    {"status", status},
+    {"sensors", list}
+  };
+  sendHttpOk(c, outJson.dump());
 }
 
 void PhysicalSensorRestApiHandler::onGetRequest(struct mg_connection *c, void *data) {
