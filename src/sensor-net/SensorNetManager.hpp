@@ -62,7 +62,7 @@ class SensorNetManager : public HciWrapperListener {
 
     void resolverThreadMain();
     void scanningThreadMain();
-
+    void finalizeScanningThread();
   protected:
     virtual void onScanStart() override;
     virtual void onScanStop() override;

@@ -177,6 +177,11 @@ void SensorNetManager::onScanStop() {
   if (scannedDevices.size() > 0) {
     logger->info("Starting thread to resolve nodes informations.");
     resolverThread = new thread(&SensorNetManager::resolverThreadMain, this);
+
+  } else {
+    finalizeScanningThread();
+    delete hciWrapper;
+    hciWrapper = nullptr;
   }
 }
 
@@ -217,13 +222,17 @@ void SensorNetManager::scanningThreadMain() {
   logger->info("Scanning thread finished.");
 }
 
+void SensorNetManager::finalizeScanningThread() {
+  if (scanningThread != nullptr) {
+      scanningThread->detach();
+      delete scanningThread;
+      scanningThread = nullptr;
+    }
+}
+
 void SensorNetManager::resolverThreadMain() {
   logger->info("Resolver thread started.");
-  if (scanningThread != nullptr) {
-    scanningThread->join();
-    delete scanningThread;
-    scanningThread = nullptr;
-  }
+  finalizeScanningThread();
 
   while (true) {
     shared_ptr<PhysicalSensor> sensor = make_shared<PhysicalSensor>();

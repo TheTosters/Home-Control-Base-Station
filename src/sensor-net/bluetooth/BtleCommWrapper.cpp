@@ -132,10 +132,13 @@ void BtleCommWrapper::notificationEventsHandler(const uint8_t *pdu, uint16_t len
     switch (pdu[0]) {
         case ATT_OP_HANDLE_NOTIFY:
             {
+              printf("--> NOTIF\n>>");
                 std::lock_guard<std::mutex> guard(wrapper->notificationMutex);
                 for (i = 3; i < len; i++) {
                     wrapper->notificationBuffer->push_back(pdu[i]);
+                    printf("%c", pdu[i]);
                 }
+                printf("<</n");
                 wrapper->notificationReceived = true;
             }
             break;

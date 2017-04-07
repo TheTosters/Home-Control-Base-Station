@@ -28,6 +28,7 @@ class PhysicalSensorRestApiHandler : public RestApiHandler {
     shared_ptr<Logic> logic;
     void handleScanRequest(struct mg_connection *c);
     void handleLastScan(struct mg_connection *c);
+    void handleMeasurements(struct mg_connection *c, void *data);
 };
 
 #endif /* PhysicalSensorRestApiHandler_hpp */

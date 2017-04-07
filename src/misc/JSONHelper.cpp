@@ -8,6 +8,8 @@
 
 #include "misc/JSONHelper.hpp"
 #include "misc/LogHelper.hpp"
+#include <tuple>
+#include "entities/SensorValue.hpp"
 
 const long PHYSICAL_SENSOR_DEFAULT_FETCH_DELAY = 600;
 
@@ -66,6 +68,28 @@ json toJSON(shared_ptr<Room> room) {
   };
 
   return jsonRoom;
+}
+
+json measurementsToJSON(PhysicalSensorList const& list) {
+  json result = json::array();
+  for (auto iter = list->begin(); iter != list->end(); iter++) {
+    MeasurementList mList = (*iter)->getLastMeasurements();
+
+    for (auto mIter : *mList) {
+      SensorValueType type = std::get<0>(*(mIter));
+      double value = std::get<1>(*(mIter));
+      time_t timestamp = std::get<2>(*(mIter));
+      json item = {
+          { "id", (*iter)->getId() },
+          { "type", static_cast<int>(type) },
+          { "value", value },
+          { "timestamp", timestamp }
+      };
+
+      result += item;
+    }
+  }
+  return result;
 }
 
 json toJSON(PhysicalSensorList const& list) {

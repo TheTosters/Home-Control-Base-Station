@@ -167,14 +167,14 @@ bool SensorNetProtocolParser::verifyCommand(shared_ptr<RemoteCommand> command, c
 bool SensorNetProtocolParser::requestSensorSpec() {
   shared_ptr<PhysicalSensor> sensor = link->getDevice();
   //parameters: REMOTE_CMD_GET_SYSTEM_CAPABILITIES and REMOTE_CMD_GET_SOFTWARE_VERSION are mandatory!
-
+/*
   shared_ptr<RemoteCommand> command = executeSimpleCommand(REMOTE_CMD_GET_SOFTWARE_VERSION);
   if (verifyCommand(command, REMOTE_CMD_GET_SOFTWARE_VERSION, RemoteCommandArgumentType_STRING) ) {
     sensor->getMetadata()->softwareVersion = *(command->stringArgument());
 
   } else {
     return false;
-  }
+  }*/
 /* TODO: enable when it will start to work
   command = executeSimpleCommand(REMOTE_CMD_GET_SYSTEM_CAPABILITIES);
   if (verifyCommand(command, REMOTE_CMD_GET_SYSTEM_CAPABILITIES, RemoteCommandArgumentType_DIGIT_SEQUENCE) ) {
@@ -185,7 +185,7 @@ bool SensorNetProtocolParser::requestSensorSpec() {
     return false;
   }
 */
-  command = executeSimpleCommand(REMOTE_CMD_CONFIGURE_TEMPERATURE_RESOLUTION);
+  shared_ptr<RemoteCommand> command = executeSimpleCommand(REMOTE_CMD_CONFIGURE_TEMPERATURE_RESOLUTION);
   if (verifyCommand(command, REMOTE_CMD_CONFIGURE_TEMPERATURE_RESOLUTION, RemoteCommandArgumentType_DIGIT) ) {
     sensor->getMetadata()->temperatureResolution = command->argumentAsInt();
   }

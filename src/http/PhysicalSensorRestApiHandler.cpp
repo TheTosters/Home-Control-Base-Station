@@ -71,12 +71,31 @@ void PhysicalSensorRestApiHandler::handleLastScan(struct mg_connection *c) {
   sendHttpOk(c, outJson.dump());
 }
 
+void PhysicalSensorRestApiHandler::handleMeasurements(struct mg_connection *c, void *data) {
+  shared_ptr<SensorNetManager> mgr = logic->getSensorsNetManager();
+  PhysicalSensorList list = make_shared<PhysicalSensorVector>(mgr->getSensors());
+
+  string cmd;
+  if (getQueryVariable(data, "match", &cmd) == true) {
+    const int filterId = atoi(cmd.c_str());
+    list->erase(
+        std::remove_if(list->begin(), list->end(),
+            [=](shared_ptr<PhysicalSensor>& o) { return o->getId() == filterId; }),
+        list->end()
+    );
+  }
+
+  json outJson = measurementsToJSON(list);
+  sendHttpOk(c, outJson.dump());
+}
+
 void PhysicalSensorRestApiHandler::onGetRequest(struct mg_connection *c, void *data) {
 
   //Possible commands:
   //none - http://server/physicalSensors - returns sensors in current use (visible for logic)
   //scan - /physicalSensors?cmd=scan - scans for physical sensors
   //lastScan - /physicalSensors?cmd=scan - list all found physical sensors (both visible and invisible for logic)
+  //measurements - list of last measured values for all sensors, unles &match=idOfSensor is specified
   string cmd;
   if (getQueryVariable(data, "cmd", &cmd) == true) {
     if (cmd == "scan") {
@@ -84,6 +103,12 @@ void PhysicalSensorRestApiHandler::onGetRequest(struct mg_connection *c, void *d
 
     } else if (cmd == "lastScan") {
       handleLastScan(c);
+
+    } else if (cmd == "measurements") {
+      handleMeasurements(c, data);
+
+    } else {
+      badRequest(c);
     }
     return;
   }
