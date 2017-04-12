@@ -137,7 +137,9 @@ RoomsList Logic::getRooms() {
 }
 
 void Logic::storeMeasurements(long sensorId, MeasurementMap data) {
-  return; //TODO: this is for debug, remove this return
+  if (storage == nullptr) {
+    return;
+  }
   SQLiteSensorValueSerializer* serializer = storage->requestSerializer<SQLiteSensorValueSerializer>(SensorValue());
   
   for(auto iter = data->begin(); iter != data->end(); iter++) {
