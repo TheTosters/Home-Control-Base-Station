@@ -32,8 +32,10 @@ SensorNetProtocolParser::SensorNetProtocolParser(CommunicationLink* _link)
 
 }
 
-void SensorNetProtocolParser::sendPreamble() {
-  link->sendCommand("!!!!#");
+bool SensorNetProtocolParser::sendPreamble() {
+  bool success;
+  link->sendCommand("!!!!#", &success);
+  return success;
 }
 
 void SensorNetProtocolParser::requestMeasurement(MeasurementMap& result, int count) {
@@ -124,6 +126,7 @@ void SensorNetProtocolParser::logParseError(string const& data, string const& ms
 }
 
 shared_ptr<RemoteCommand> SensorNetProtocolParser::executeSimpleCommand(const string& cmd) {
+  sendPreamble();
   RemoteCommandBuilder builder(cmd);
   shared_ptr<string> response = link->sendCommand(builder.buildCommand());
   return inParser->parse(response);

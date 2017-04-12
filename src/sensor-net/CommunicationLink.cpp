@@ -19,7 +19,9 @@ CommunicationLink::CommunicationLink(CommunicationLinkType _type, shared_ptr<Phy
   if (_type == cltBluetooth) {
     btleWrapper = new BtleCommWrapper();
     btleWrapper->connectTo(_device->getAddress(), BTLE_TIMEOUT);
-    logger->debug("Connected to {}", _device->getAddress().c_str());
+    if (btleWrapper->isConnected()) {
+      logger->debug("Connected to {}", _device->getAddress().c_str());
+    }
   }
 }
 
@@ -31,20 +33,28 @@ bool CommunicationLink::isConnected() {
 }
 
 CommunicationLink::~CommunicationLink() {
-
   if (btleWrapper != nullptr) {
-    logger->debug("Disconnected from {}",device->getAddress().c_str());
+    if (btleWrapper->isConnected()) {
+      logger->debug("Disconnected from {}",device->getAddress().c_str());
+    }
     delete btleWrapper;
   }
 }
 
-shared_ptr<string> CommunicationLink::sendCommand(string cmd) {
+shared_ptr<string> CommunicationLink::sendCommand(string cmd, bool* success) {
   if (btleWrapper != nullptr) {
     logger->debug("Sending {} to {}", cmd.c_str(), device->getAddress().c_str());
-    btleWrapper->send(cmd, BTLE_TIMEOUT);
-    string result = btleWrapper->readLine(BTLE_TIMEOUT, true);
-    logger->debug("response {}", result.c_str());
-    return make_shared<string>(result);
+    if (btleWrapper->send(cmd, BTLE_TIMEOUT) == true) {
+      string result = btleWrapper->readLine(BTLE_TIMEOUT);
+      logger->debug("response {}", result.c_str());
+      if (success != nullptr) {
+        *success = true;
+      }
+      return make_shared<string>(result);
+    }
+  }
+  if (success != nullptr) {
+    *success = false;
   }
   return make_shared<string>("");
 }

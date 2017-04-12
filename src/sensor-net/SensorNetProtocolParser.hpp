@@ -26,7 +26,7 @@ class SensorNetProtocolParser {
     SensorNetProtocolParser(CommunicationLink* link);
   
     void requestMeasurement(MeasurementMap& result, int count = 1);
-    void sendPreamble();
+    bool sendPreamble();
     bool requestSensorSpec();
   private:
     CommunicationLink* link;

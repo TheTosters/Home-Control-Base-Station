@@ -27,7 +27,7 @@ class CommunicationLink {
     CommunicationLink(CommunicationLinkType type, shared_ptr<PhysicalSensor> device, shared_ptr<spdlog::logger> logger);
     virtual ~CommunicationLink();
 
-    shared_ptr<string> sendCommand(string cmd);
+    shared_ptr<string> sendCommand(string cmd, bool* success = nullptr);
     shared_ptr<PhysicalSensor>& getDevice();
     bool isConnected();
   private:

@@ -68,9 +68,10 @@ MeasurementMap SensorNetManager::fetchMeasurements(shared_ptr<PhysicalSensor> se
     CommunicationLink link(cltBluetooth, sensor, logger);
     if (link.isConnected()) {
       SensorNetProtocolParser parser(&link);
-      parser.sendPreamble();
-      result = make_shared<unordered_map<string, MeasurementList>>();
-      parser.requestMeasurement(result, count);
+      if (parser.sendPreamble() == true) {
+        result = make_shared<unordered_map<string, MeasurementList>>();
+        parser.requestMeasurement(result, count);
+      }
     }
   } catch(std::exception const& e) {
     logger->error("Exception at fetchMeasurements:");
