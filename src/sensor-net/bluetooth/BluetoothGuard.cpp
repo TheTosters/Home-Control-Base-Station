@@ -12,6 +12,7 @@ std::mutex BluetoothGuard::innerMutex;
 void* BluetoothGuard::owner = nullptr;
 
 void BluetoothGuard::lockBluetooth(void* owner) {
+  printf("%s\n", __func__);
   while(true) {
     //critical section
     std::unique_lock<std::mutex> lock(BluetoothGuard::innerMutex);
@@ -24,6 +25,7 @@ void BluetoothGuard::lockBluetooth(void* owner) {
       return;
     }
   }
+  printf("%s END\n", __func__);
 }
 
 void BluetoothGuard::unlockBluetooth(void* owner) {

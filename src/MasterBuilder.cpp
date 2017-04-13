@@ -148,6 +148,7 @@ void MasterBuilder::buildSensors() {
   sensorNetManager = make_shared<SensorNetManager>();
   
   string configFile = masterConfig[KEY_SENSORS_CONFIG_FILE];
+  sensorNetManager->setSensorsConfigFile(configFile);
   spdlog::get(MISC_LOGGER_NAME)->info("Building Sensors Net...");
   spdlog::get(MISC_LOGGER_NAME)->info("  Config:{}", configFile);
   std::ifstream inputFileStream(configFile);

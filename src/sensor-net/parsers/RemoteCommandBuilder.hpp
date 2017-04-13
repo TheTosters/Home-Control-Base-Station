@@ -26,7 +26,7 @@ extern const string REMOTE_CMD_CONFIGURE_SAVING_ACTIVITY;
 
 class RemoteCommandBuilder {
     public:
-        RemoteCommandBuilder(const string& cmd);
+        RemoteCommandBuilder(const string& cmd, bool includePreamble = true);
 
         void addArgument(int64_t value);
         void addArgument(int value);
@@ -42,6 +42,7 @@ class RemoteCommandBuilder {
         bool isSequenceOpen;
         bool needComa;
         bool expectedNextSubsequence;
+        bool includePreamble;
 };
 
 #endif /* RemoteCommandBuilder_hpp */

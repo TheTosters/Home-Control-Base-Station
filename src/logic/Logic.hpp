@@ -59,6 +59,7 @@ class Logic {
   
     void execute();
     void storeMeasurements(long sensorId, MeasurementMap data);
+    void executeMeasurements();
 };
 
 #endif /* Logic_hpp */

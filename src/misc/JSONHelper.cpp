@@ -236,6 +236,21 @@ shared_ptr<PhysicalSensor> physicalSensorFromJSON(json const& data) {
   tmpLong = tmpLong < 0 ? PHYSICAL_SENSOR_DEFAULT_FETCH_DELAY : tmpLong;
   result->setDesiredFetchDelay(static_cast<time_t>(tmpLong));
   
+  //Meta data
+  if (data.find("meta") != data.end()) {
+    PhysicalSensorMetaData* tmpMeta = result->getMetadata();
+    json metaJson = data["meta"];
+
+    tmp = getOptionalJSONString(metaJson, "name");
+    tmpMeta->softwareVersion = tmp != nullptr ? *tmp : nullptr;
+    tmpMeta->powerMode = static_cast<PhysicalSensorPowerSaveMode>(getOptionalJSONLong(metaJson, "powerMode"));
+    tmpMeta->powerActivity = static_cast<PhysicalSensorPowerSaveActivity>(getOptionalJSONLong(metaJson, "powerActivity"));
+    tmpMeta->powerPeroid = static_cast<int>(getOptionalJSONLong(metaJson, "powerPeroid"));
+    tmpMeta->temperatureResolution = static_cast<int>(getOptionalJSONLong(metaJson, "temperatureResolution"));
+    tmpMeta->temperaturePeriod = static_cast<int>(getOptionalJSONLong(metaJson, "temperaturePeriod"));
+    tmpMeta->nodeSystemTime = getOptionalJSONLong(metaJson, "nodeSystemTime");
+  }
+
   return result;
 }
 

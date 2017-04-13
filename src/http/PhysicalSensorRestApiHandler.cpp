@@ -76,7 +76,7 @@ void PhysicalSensorRestApiHandler::handleMeasurements(struct mg_connection *c, v
   PhysicalSensorList list = make_shared<PhysicalSensorVector>(mgr->getSensors());
 
   string cmd;
-  if (getQueryVariable(data, "match", &cmd) == true) {
+  if (getQueryVariable(data, "sensorId", &cmd) == true) {
     const int filterId = atoi(cmd.c_str());
     list->erase(
         std::remove_if(list->begin(), list->end(),
@@ -89,13 +89,52 @@ void PhysicalSensorRestApiHandler::handleMeasurements(struct mg_connection *c, v
   sendHttpOk(c, outJson.dump());
 }
 
+void PhysicalSensorRestApiHandler::handleAddScanned(struct mg_connection *c, void *data) {
+  long scanId, newId;
+  if ((getOrDieQueryVariable(c, data, "scanId", &scanId) == false) ||
+      (getOrDieQueryVariable(c, data, "newId", &newId) == false) ){
+    return;
+  }
+
+  shared_ptr<SensorNetManager> mgr = logic->getSensorsNetManager();
+  PhysicalSensorList list = mgr->getScannedPhysicalSensors();
+
+  //check for newId conflict
+  if (mgr->getSensorById(newId) != nullptr) {
+    conflict(c);
+    return;
+  }
+
+  //find scanned sensor
+  auto item = std::find_if(list->begin(), list->end(), [=](shared_ptr<PhysicalSensor>& o) {
+    return o->getId() == scanId;
+  });
+  if (item == list->end()) {
+    notFound(c);
+    return;
+  }
+
+  //add sensor
+  if (mgr->addSensor(*item)) {
+    mgr->saveConfiguration();
+    logic->rebuildListOfMeasurementTasks();
+    sendHttpOk(c);
+
+  } else {
+    conflict(c);
+  }
+}
+
 void PhysicalSensorRestApiHandler::onGetRequest(struct mg_connection *c, void *data) {
 
   //Possible commands:
-  //none - http://server/physicalSensors - returns sensors in current use (visible for logic)
+  //none - http://server/physicalSensors - returns sensors in current use (visible for logic), result can be filtered by
+  //        ?sensorId=idOfSensor is specified
   //scan - /physicalSensors?cmd=scan - scans for physical sensors
-  //lastScan - /physicalSensors?cmd=scan - list all found physical sensors (both visible and invisible for logic)
-  //measurements - list of last measured values for all sensors, unles &match=idOfSensor is specified
+  //lastScan - /physicalSensors?cmd=lastScan - list all found physical sensors (both visible and invisible for logic)
+  //addScanned - cmd=addScanned&scanId=xxx&newId=xxx adds to logic sensor which was detected during scan.
+  //              scanId = sensor id in scan list, newId -id which will be used in logic after addition
+  //measurements - list of last measured values for all sensors, unless &sensorId=idOfSensor is specified
   string cmd;
   if (getQueryVariable(data, "cmd", &cmd) == true) {
     if (cmd == "scan") {
@@ -107,6 +146,9 @@ void PhysicalSensorRestApiHandler::onGetRequest(struct mg_connection *c, void *d
     } else if (cmd == "measurements") {
       handleMeasurements(c, data);
 
+    } else if (cmd == "addScanned") {
+      handleAddScanned(c, data);
+
     } else {
       badRequest(c);
     }
@@ -116,6 +158,13 @@ void PhysicalSensorRestApiHandler::onGetRequest(struct mg_connection *c, void *d
   shared_ptr<SensorNetManager> mgr = logic->getSensorsNetManager();
   PhysicalSensorList list = make_shared<PhysicalSensorVector>(mgr->getSensors());
   
+  if (getQueryVariable(data, "sensorId", &cmd) == true) {
+    const int filterId = atoi(cmd.c_str());
+    list->erase(
+        std::remove_if(list->begin(), list->end(), [=](shared_ptr<PhysicalSensor>& o) {return o->getId() == filterId;}),
+        list->end());
+  }
+
   json result = toJSON(list);
   string response = result.dump().c_str();
   mg_printf(c,

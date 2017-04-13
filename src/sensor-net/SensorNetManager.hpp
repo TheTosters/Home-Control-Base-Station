@@ -50,6 +50,7 @@ class SensorNetManager : public HciWrapperListener {
     SensorNetManagerStartScanResult scanForSensors();
     SensorNetManagerScanStatus getCurrentScanStatus();
     PhysicalSensorList getScannedPhysicalSensors();
+    void setSensorsConfigFile(const string& filename);
   private:
     PhysicalSensorList    sensors;
     mutex                 managerMutex;
@@ -59,6 +60,8 @@ class SensorNetManager : public HciWrapperListener {
     HciWrapper*           hciWrapper;
     thread*               resolverThread;
     thread*               scanningThread;
+    int                   nextScanId;
+    string                sensorsConfigFile;
 
     void resolverThreadMain();
     void scanningThreadMain();
@@ -67,5 +70,6 @@ class SensorNetManager : public HciWrapperListener {
     virtual void onScanStart() override;
     virtual void onScanStop() override;
     virtual void onNewDeviceFound(const BTLEDevice& device) override;
+    bool probeSensor(shared_ptr<PhysicalSensor> sensor);
 };
 #endif /* SensorNetManager_hpp */

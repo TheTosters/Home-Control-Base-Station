@@ -29,7 +29,8 @@ struct PhysicalSensorByIdComparator : public std::unary_function<std::string, bo
 };
 
 SensorNetManager::SensorNetManager()
-: logger(spdlog::get(COMMUNICATION_LOGGER_NAME)), scannedSensors(nullptr), hciWrapper(nullptr), resolverThread(nullptr) {
+: logger(spdlog::get(COMMUNICATION_LOGGER_NAME)), scannedSensors(nullptr), hciWrapper(nullptr), resolverThread(nullptr),
+  sensorsConfigFile(FILE_NAME) {
 
 }
 
@@ -58,6 +59,10 @@ SensorNetManager::~SensorNetManager() {
   }
 }
 
+void SensorNetManager::setSensorsConfigFile(const string& filename) {
+  sensorsConfigFile = filename;
+}
+
 void SensorNetManager::setSensorsList(PhysicalSensorList sensorsList) {
   sensors = sensorsList;
 }
@@ -68,11 +73,10 @@ MeasurementMap SensorNetManager::fetchMeasurements(shared_ptr<PhysicalSensor> se
     CommunicationLink link(cltBluetooth, sensor, logger);
     if (link.isConnected()) {
       SensorNetProtocolParser parser(&link);
-      if (parser.sendPreamble() == true) {
-        result = make_shared<unordered_map<string, MeasurementList>>();
-        parser.requestMeasurement(result, count);
-      }
+      result = make_shared<unordered_map<string, MeasurementList>>();
+      parser.requestMeasurement(result, count);
     }
+
   } catch(std::exception const& e) {
     logger->error("Exception at fetchMeasurements:");
     logger->error(e.what());
@@ -88,7 +92,7 @@ void SensorNetManager::saveConfiguration() {
   {//critical section
     unique_lock<mutex> lock(managerMutex);
     json data = toJSON(sensors);
-    std::ofstream outputStream(FILE_NAME);
+    std::ofstream outputStream(sensorsConfigFile);
     outputStream << std::setw(4) << data << std::endl;
   }
 }
@@ -127,7 +131,7 @@ bool SensorNetManager::addSensor(shared_ptr<PhysicalSensor> sensor) {
 
 shared_ptr<PhysicalSensor> SensorNetManager::getSensorById(long id) {
   auto posIter = find_if(sensors->begin(), sensors->end(), PhysicalSensorByIdComparator(id));
-  if (posIter != sensors->end()) {
+  if (posIter == sensors->end()) {
     return nullptr;
   }
   return *posIter;
@@ -151,6 +155,7 @@ SensorNetManagerStartScanResult SensorNetManager::scanForSensors() {
     return SensorNetManagerStartScanResult_ALREADY_IN_PROGRESS;
   }
   hciWrapper = new HciWrapper(*this);
+  nextScanId = 20000;
 
   if (hciWrapper->startScan() == true) {
     //start thread
@@ -173,13 +178,14 @@ void SensorNetManager::onScanStart() {
 void SensorNetManager::onScanStop() {
   //whole method is critical section
   unique_lock<mutex> lock(managerMutex);
-  logger->info("BTLE scan for physical sensors finished, now resolving {} devices", scannedDevices.size());
   scannedSensors = make_shared<PhysicalSensorVector>();
   if (scannedDevices.size() > 0) {
+    logger->info("BTLE scan for physical sensors finished, now resolving {} devices", scannedDevices.size());
     logger->info("Starting thread to resolve nodes informations.");
     resolverThread = new thread(&SensorNetManager::resolverThreadMain, this);
 
   } else {
+    logger->info("BTLE scan for physical sensors finished, nothing to resolve.");
     finalizeScanningThread();
     delete hciWrapper;
     hciWrapper = nullptr;
@@ -225,10 +231,40 @@ void SensorNetManager::scanningThreadMain() {
 
 void SensorNetManager::finalizeScanningThread() {
   if (scanningThread != nullptr) {
-      scanningThread->detach();
-      delete scanningThread;
-      scanningThread = nullptr;
+    scanningThread->detach();
+    delete scanningThread;
+    scanningThread = nullptr;
+  }
+  if (hciWrapper != nullptr) {
+    delete hciWrapper;
+    hciWrapper = nullptr;
+  }
+}
+
+bool SensorNetManager::probeSensor(shared_ptr<PhysicalSensor> sensor) {
+  try {
+    CommunicationLink link(cltBluetooth, sensor, logger);
+    if (link.isConnected()) {
+      SensorNetProtocolParser parser(&link);
+      if (parser.requestSensorSpec() == true) {
+        unique_lock<mutex> lock(managerMutex);
+        scannedSensors->push_back(sensor);
+        return true;
+      }
+    } else {
+      logger->warn("Connection attempt failed to resolved device: {}", sensor->getAddress());
     }
+    return false;//false -> repeat
+
+  } catch (std::exception const& e) {
+    //those might occur if trying to connect to some btle devices which are not nodes
+    logger->error("Exception at resolverThreadMain:");
+    logger->error(e.what());
+
+  } catch (...) {
+    logger->error("Undefined exception at resolverThreadMain");
+  }
+  return false; //false -> repeat
 }
 
 void SensorNetManager::resolverThreadMain() {
@@ -251,27 +287,19 @@ void SensorNetManager::resolverThreadMain() {
     }
 
     logger->info("Resolving: {}", sensor->getAddress());
-    try {
-      CommunicationLink link(cltBluetooth, sensor, logger);
-      if (link.isConnected()) {
-        SensorNetProtocolParser parser(&link);
-        parser.sendPreamble();
-        if (parser.requestSensorSpec() == true) {
-          unique_lock<mutex> lock(managerMutex);
-          scannedSensors->push_back(sensor);
-        } else {
-          logger->warn("Looks like device {} is not compatible node.", sensor->getAddress());
-        }
-      } else {
-        logger->warn("Connection attempt failed to resolved device: {}", sensor->getAddress());
-      }
-    } catch (std::exception const& e) {
-      //those might occur if trying to connect to some btle devices which are not nodes
-      logger->error("Exception at resolverThreadMain:");
-      logger->error(e.what());
+    sensor->setId(nextScanId);
+    nextScanId ++;
 
-    } catch (...) {
-      logger->error("Undefined exception at resolverThreadMain");
+    const int attemptCount = 5;
+    bool result = false;
+    for(int t = 0; (result == false) && (t < attemptCount); t++) {
+      logger->info("Probe {}\{}", t, attemptCount);
+      result = probeSensor(sensor);
+    }
+    if (result == false) {
+      logger->warn("Unable to resolve device {}.", sensor->getAddress());
+    } else {
+      logger->info("{} resolved.", sensor->getAddress());
     }
   }
 
@@ -281,9 +309,6 @@ void SensorNetManager::resolverThreadMain() {
     resolverThread->detach();
     delete resolverThread;
     resolverThread = nullptr;
-
-    delete hciWrapper;
-    hciWrapper = nullptr;
   }
   logger->info("Resolver thread done.");
 }

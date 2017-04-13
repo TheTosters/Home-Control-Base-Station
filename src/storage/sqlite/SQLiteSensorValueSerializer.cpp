@@ -83,6 +83,9 @@ SensorValueList SQLiteSensorValueSerializer::loadMatching(SimpleCriteria const& 
   append(sql, criteria.type >= 0, "(valueType == ?)", andRequired);
   append(sql, criteria.helperId >= 0, "(physicalSensorId == ?)", andRequired);
   
+  //sort by timestamp
+  sql += " ORDER BY timestamp DESC";
+
   andRequired = false;
   append(sql, criteria.count > 0, " LIMIT ?", andRequired);
   

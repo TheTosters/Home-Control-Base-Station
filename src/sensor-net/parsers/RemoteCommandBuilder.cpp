@@ -22,8 +22,10 @@ const string REMOTE_CMD_CONFIGURE_RESET_SYSTEM = "CRS";
 const string REMOTE_CMD_CONFIGURE_SAVING_MODE = "CSM";
 const string REMOTE_CMD_CONFIGURE_SAVING_ACTIVITY = "CSA";
 
-RemoteCommandBuilder::RemoteCommandBuilder(const string& cmd)
-: outCmd(cmd), elementsType(UNKNOWN), isSequenceOpen(false), needComa(false), expectedNextSubsequence(false) {
+RemoteCommandBuilder::RemoteCommandBuilder(const string& cmd, bool includePreamble)
+: outCmd(cmd), elementsType(UNKNOWN), isSequenceOpen(false), needComa(false), expectedNextSubsequence(false),
+  includePreamble(includePreamble) {
+
     for (auto c = outCmd.begin() ; c < outCmd.end(); c++) {
         if (*c < 'A' || *c > 'Z') {
             throw invalid_argument("Only capital letters allowed!");
@@ -112,7 +114,8 @@ string RemoteCommandBuilder::buildCommand() {
     if (isSequenceOpen == true) {
         throw invalid_argument("Last sequence is still open, call endSequence()!");
     }
-    string tmp(outCmd);
+    string tmp = includePreamble ? "!!!#" : "";
+    tmp += outCmd;
     tmp += "\r";
     return tmp;
 }
