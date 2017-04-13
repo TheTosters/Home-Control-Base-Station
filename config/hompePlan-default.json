@@ -17,43 +17,5 @@
         {"id":3,"x":10,"y":10},
         {"id":4,"x":0,"y":10}
         ]
-    },
-    {"floor":1,
-    "id":2,
-    "name":"Bedroom",
-    "sensors":[
-        {
-            "id" : 202,
-            "x" : 15,
-            "y" : 5,
-            "name" : "Bedroom sensor",
-            "physicalSensorId" : 102
-        }        
-    ],
-    "shape":[
-        {"id":11,"x":10,"y":0},
-        {"id":12,"x":20,"y":0},
-        {"id":13,"x":20,"y":10},
-        {"id":14,"x":10,"y":10}
-        ]
-    },
-    {"floor":1,
-    "id":3,
-    "name":"Living room",
-    "sensors":[
-        {
-            "id" : 203,
-            "x" : 5,
-            "y" : 5,
-            "name" : "Living room sensor",
-            "physicalSensorId" : 103
-        }
-    ],
-    "shape":[
-        {"id":21,"x":20,"y":0},
-        {"id":22,"x":30,"y":0},
-        {"id":23,"x":30,"y":10},
-        {"id":24,"x":20,"y":10}
-        ]
     }
 ]

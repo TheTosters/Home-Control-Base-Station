@@ -8,6 +8,8 @@
 
 #include "misc/JSONHelper.hpp"
 #include "misc/LogHelper.hpp"
+#include <tuple>
+#include "entities/SensorValue.hpp"
 
 const long PHYSICAL_SENSOR_DEFAULT_FETCH_DELAY = 600;
 
@@ -68,6 +70,28 @@ json toJSON(shared_ptr<Room> room) {
   return jsonRoom;
 }
 
+json measurementsToJSON(PhysicalSensorList const& list) {
+  json result = json::array();
+  for (auto iter = list->begin(); iter != list->end(); iter++) {
+    MeasurementList mList = (*iter)->getLastMeasurements();
+
+    for (auto mIter : *mList) {
+      SensorValueType type = std::get<0>(*(mIter));
+      double value = std::get<1>(*(mIter));
+      time_t timestamp = std::get<2>(*(mIter));
+      json item = {
+          { "id", (*iter)->getId() },
+          { "type", static_cast<int>(type) },
+          { "value", value },
+          { "timestamp", timestamp }
+      };
+
+      result += item;
+    }
+  }
+  return result;
+}
+
 json toJSON(PhysicalSensorList const& list) {
   json result = json::array();
   for(auto iter = list->begin(); iter != list->end(); iter++) {
@@ -78,12 +102,25 @@ json toJSON(PhysicalSensorList const& list) {
       types += *iter2;
     }
     
+    PhysicalSensorMetaData* tmpMeta = (*iter)->getMetadata();
+
+    json meta = {
+        {"swVersion", tmpMeta->softwareVersion},
+        {"powerMode", static_cast<int>(tmpMeta->powerMode)},
+        {"powerActivity", static_cast<int>(tmpMeta->powerActivity)},
+        {"powerPeroid", tmpMeta->powerPeroid},
+        {"temperatureResolution", tmpMeta->temperatureResolution},
+        {"temperaturePeriod", tmpMeta->temperaturePeriod},
+        {"nodeSystemTime", tmpMeta->nodeSystemTime}
+    };
+
     json item = {
       {"id", (*iter)->getId()},
       {"name", (*iter)->getName()},
       {"address", (*iter)->getAddress()},
       {"fetchDelay", (*iter)->getDesiredFetchDelay()},
-      {"type", types}
+      {"type", types},
+      {"meta", meta}
     };
     
     result += item;
@@ -199,6 +236,21 @@ shared_ptr<PhysicalSensor> physicalSensorFromJSON(json const& data) {
   tmpLong = tmpLong < 0 ? PHYSICAL_SENSOR_DEFAULT_FETCH_DELAY : tmpLong;
   result->setDesiredFetchDelay(static_cast<time_t>(tmpLong));
   
+  //Meta data
+  if (data.find("meta") != data.end()) {
+    PhysicalSensorMetaData* tmpMeta = result->getMetadata();
+    json metaJson = data["meta"];
+
+    tmp = getOptionalJSONString(metaJson, "name");
+    tmpMeta->softwareVersion = tmp != nullptr ? *tmp : nullptr;
+    tmpMeta->powerMode = static_cast<PhysicalSensorPowerSaveMode>(getOptionalJSONLong(metaJson, "powerMode"));
+    tmpMeta->powerActivity = static_cast<PhysicalSensorPowerSaveActivity>(getOptionalJSONLong(metaJson, "powerActivity"));
+    tmpMeta->powerPeroid = static_cast<int>(getOptionalJSONLong(metaJson, "powerPeroid"));
+    tmpMeta->temperatureResolution = static_cast<int>(getOptionalJSONLong(metaJson, "temperatureResolution"));
+    tmpMeta->temperaturePeriod = static_cast<int>(getOptionalJSONLong(metaJson, "temperaturePeriod"));
+    tmpMeta->nodeSystemTime = getOptionalJSONLong(metaJson, "nodeSystemTime");
+  }
+
   return result;
 }
 

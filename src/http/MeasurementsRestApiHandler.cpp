@@ -34,6 +34,11 @@ void MeasurementsRestApiHandler::onGetRequest(struct mg_connection *c, void *dat
     return;
   }
   
+  if (logic->getStorage() == nullptr) {
+    badRequest(c);
+    return;
+  }
+
   SimpleCriteria criteria;
   parseCriteria(data, criteria, true);
   
@@ -72,7 +77,11 @@ void MeasurementsRestApiHandler::onDeleteRequest(struct mg_connection *c, void *
   //two kinds of requests:
   //sensorId, resultType[optional], from[optional, timestamp], to[optional, timestamp]
   //measurementId
-  
+  if (logic->getStorage() == nullptr) {
+    badRequest(c);
+    return;
+  }
+
   SimpleCriteria criteria;
   if (getQueryVariable(data, "sensorId", &criteria.helperId)) {
     parseCriteria(data, criteria, false);

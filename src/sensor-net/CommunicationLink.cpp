@@ -9,32 +9,54 @@
 #include "sensor-net/CommunicationLink.hpp"
 #include <stdlib.h> 
 #include <sstream>
+#include "bluetooth/BtleCommWrapper.h"
 
-CommunicationLink::CommunicationLink(CommunicationLinkType _type, shared_ptr<PhysicalSensor> _device)
-:type(_type), device(_device) {
-  
+static const int BTLE_TIMEOUT = 3000;
+
+CommunicationLink::CommunicationLink(CommunicationLinkType _type, shared_ptr<PhysicalSensor> _device,
+    shared_ptr<spdlog::logger> logger)
+:type(_type), device(_device), btleWrapper(nullptr), logger(logger) {
+  if (_type == cltBluetooth) {
+    btleWrapper = new BtleCommWrapper();
+    btleWrapper->connectTo(_device->getAddress(), BTLE_TIMEOUT);
+    if (btleWrapper->isConnected()) {
+      logger->debug("Connected to {}", _device->getAddress().c_str());
+    }
+  }
 }
 
-shared_ptr<string> CommunicationLink::sendCommand(string cmd) {
-  int timeOffset = rand() % 30;
-  int value = rand() % 100;
-  stringstream tmp;
-  if (device->getAddress() == "aa:ff:22:99") {
-    tmp << "VTH(" << hex << timeOffset << "," << value << ")";
-    
-  } else if (device->getAddress() == "bb:ff:22:99") {
-    tmp << "VHH(" << hex << timeOffset << "," << value << ")";
-    
-  } else if (device->getAddress() == "cc:ff:22:99") {
-    tmp << "VPH(" << hex << timeOffset << "," << value << ")";
-    
-  } else {
-    tmp << "VTH(" << hex << timeOffset << "," << value << ")";
-    value = rand() % 100;
-    tmp << "VHH(" << hex << timeOffset << "," << value << ")";
+bool CommunicationLink::isConnected() {
+  if (btleWrapper != nullptr) {
+    return btleWrapper->isConnected();
   }
-  
-  return make_shared<string>(tmp.str());
+  return false;
+}
+
+CommunicationLink::~CommunicationLink() {
+  if (btleWrapper != nullptr) {
+    if (btleWrapper->isConnected()) {
+      logger->debug("Disconnected from {}",device->getAddress().c_str());
+    }
+    delete btleWrapper;
+  }
+}
+
+shared_ptr<string> CommunicationLink::sendCommand(string cmd, bool* success) {
+  if (btleWrapper != nullptr) {
+    logger->debug("Sending {} to {}", cmd.c_str(), device->getAddress().c_str());
+    if (btleWrapper->send(cmd, BTLE_TIMEOUT) == true) {
+      string result = btleWrapper->readLine(BTLE_TIMEOUT);
+      logger->debug("response {}", result.c_str());
+      if (success != nullptr) {
+        *success = true;
+      }
+      return make_shared<string>(result);
+    }
+  }
+  if (success != nullptr) {
+    *success = false;
+  }
+  return make_shared<string>("");
 }
 
 shared_ptr<PhysicalSensor>& CommunicationLink::getDevice() {

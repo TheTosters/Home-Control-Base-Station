@@ -15,139 +15,99 @@
 #include <unordered_map>
 #include "sensor-net/CommunicationLink.hpp"
 #include "misc/LogHelper.hpp"
+#include "parsers/RemoteCommandBuilder.hpp"
+#include "parsers/InParser.hpp"
 
 const string SINGLE_MEASUREMENT_REQUEST = "RDR0001";
 const string MEASUREMENT_COMMAND = "RDR";
 
 SensorNetProtocolParser::SensorNetProtocolParser(CommunicationLink* _link)
-: link(_link),
+: link(_link), inParser(new InParser()),
   responseCmdToSensorType({
-    {"VTH", svtTemperature},
-    {"VHH", svtHumidity},
-    {"VPH", svtPowerConsumption}
+    {"VTM", svtTemperature},
+    {"VHM", svtHumidity},
+    {"VPM", svtPowerConsumption}
   }),
   logger(spdlog::get(COMMUNICATION_LOGGER_NAME)) {
 
 }
 
-bool SensorNetProtocolParser::parseInt(string const& str, int& result) {
-  char* p;
-  long tmp = strtol( str.c_str(), &p, 16 );
-  if ( *p != 0) {
-    return false;
-  }
-  if (tmp > 0x7fff) {
-    tmp -= 0x10000;
-  }
-  result = static_cast<int>(tmp);
-  return true;
-}
-
-bool SensorNetProtocolParser::parseDouble(string const& str, double &result) {
-  char* p;
-  long tmp = strtol( str.c_str(), &p, 16 );
-  if ( *p != 0) {
-    return false;
-  }
-  if (tmp > 0x7fff) {
-    tmp -= 0x10000;
-  }
-  int integral = static_cast<int>(tmp >> 4);
-  int frac = static_cast<int>(tmp & 0b1111);
-  result = integral + frac / 16.0f;
-  return true;
-}
-
 void SensorNetProtocolParser::requestMeasurement(MeasurementMap& result, int count) {
-  
-  shared_ptr<string> response;
-  
-  if (count <= 1) {
-    response = link->sendCommand(SINGLE_MEASUREMENT_REQUEST);
-    
-  } else {
-    stringstream stream;
-    stream << MEASUREMENT_COMMAND << std::nouppercase << std::setfill('0') << std::setw(4) << std::hex << count;
-    response = link->sendCommand(stream.str());
-  }
 
-  parseMeasurementsRespons(*response, result);
+  count = count <= 1 ? 1 : count;
+  time_t now = time(nullptr);
+  SensorValueType sensorType;
+
+  for(int mesType = PhysicalSensorType_BEGIN; mesType < PhysicalSensorType_END; mesType ++) {
+
+    if (link->getDevice()->isType((PhysicalSensorType)mesType) == false) {
+      continue;
+    }
+
+    RemoteCommandBuilder* builder;
+    switch(mesType) {
+      case PhysicalSensorType_TEMPERATURE:
+        builder = new RemoteCommandBuilder(REMOTE_CMD_READ_TEMP_HISTORY);
+        break;
+
+      case PhysicalSensorType_HUMIDITY:
+      case PhysicalSensorType_POWER_CONSUMPTION:
+        logger->error("Not implemented!");
+        break;
+
+      default:
+        continue;
+    }
+
+    builder->addArgument(count);
+    shared_ptr<string> response = link->sendCommand(builder->buildCommand());
+    delete builder;
+
+    shared_ptr<RemoteCommand> command = inParser->parse(response);
+
+    detectResponseCommand(*command, sensorType);
+    if (sensorType != svtUndefined) {
+      MeasurementList measurements = parseValueWithTimestamp(*command, sensorType, now);
+      if (measurements != nullptr) {
+        (*result)[*(command->getCommand())] = measurements;
+      }
+    }
+  }
 }
 
-bool SensorNetProtocolParser::detectResponseCommand(string const& data, size_t& startIndex, string& cmd, SensorValueType& sensorType) {
-  if (data.length() < 4 || data.length() <= startIndex + 3) {
+void SensorNetProtocolParser::detectResponseCommand(RemoteCommand& command, SensorValueType& sensorType) {
+  sensorType = svtUndefined;
+  shared_ptr<string> cmd = command.getCommand();
+  if (responseCmdToSensorType.find(*cmd) == responseCmdToSensorType.end()) {
     sensorType = svtUndefined;
-    cmd.clear();
-    startIndex = data.length();
-    return false;
-  }
-  
-  cmd = data.substr(startIndex, 3);
-  startIndex += 3;
-  
-  if (responseCmdToSensorType.find(cmd) == responseCmdToSensorType.end()) {
-    sensorType = svtUndefined;
-    
+
   } else {
-    sensorType = responseCmdToSensorType[cmd];
+    sensorType = responseCmdToSensorType[*cmd];
   }
-  
-  return true;
 }
 
-MeasurementList SensorNetProtocolParser::parseValueWithTimestamp(string const& data, size_t& startIndex, SensorValueType type, time_t now) {
+MeasurementList SensorNetProtocolParser::parseValueWithTimestamp(RemoteCommand& command, SensorValueType type, time_t now) {
   MeasurementList result = make_shared<vector<shared_ptr<Measurement>>>();
-  
-  while (startIndex < data.length() && data[startIndex] == '(') {
-    
-    startIndex++;
-    size_t comaPos = data.find(",", startIndex);
-    if (comaPos == string::npos) {
-      logParseError(data, "Expected ',' character after this column.", startIndex);
-      break;
+  if (command.getArgType() != RemoteCommandArgumentType_DIGIT_MULTI_SEQUENCE) {
+    logger->warn("Expected RemoteCommandArgumentType_DIGIT_MULTI_SEQUENCE type");
+    return nullptr;
+  }
+
+  for(unsigned int t = 0; t < command.getArgumentsCount(); t++) {
+    shared_ptr<vector<Number> > sequence = command.getDigitSequence(t);
+    if (sequence->size() != 2) {
+      logger->warn("Expected 2 elements in sequence");
+      continue;
     }
-    
-    int tmpInt;
-    bool tmp = parseInt( data.substr(startIndex, comaPos - startIndex), tmpInt );
-    if (tmp == false) {
-      logParseError(data, "Can't convert this string into int.", startIndex);
-      break;
-    }
+
+    int tmpInt = (*sequence)[0].asUInt64();
     time_t timeStamp = now - static_cast<time_t>(tmpInt);
-    
-    size_t endPos = data.find(")", comaPos);
-    if (endPos == string::npos) {
-      logParseError(data, "Expected ')' character after this column.", startIndex);
-      break;
-    }
-    
-    comaPos++;
-    double value;
-    tmp = parseDouble( data.substr(comaPos, endPos - comaPos), value );
-    if (tmp == false) {
-      logParseError(data, "Can't convert this string into double.", startIndex);
-      break;
-    }
-    
-    startIndex = endPos + 1;
+    double value = (*sequence)[1].asDouble();
+
     result->push_back(make_shared<Measurement>(type, value, timeStamp));
   }
   
   return result;
-}
-
-void SensorNetProtocolParser::parseMeasurementsRespons(string const& data, MeasurementMap& result) {
-  size_t startIndex = 0;
-  string cmd;
-  SensorValueType sensorType;
-  time_t now = time(nullptr);
-  
-  while(detectResponseCommand(data, startIndex, cmd, sensorType)) {
-    MeasurementList measurements = parseValueWithTimestamp(data, startIndex, sensorType, now);
-    if (measurements != nullptr) {
-      (*result)[cmd] = measurements;
-    }
-  }
 }
 
 void SensorNetProtocolParser::logParseError(string const& data, string const& msg, size_t const& column) {
@@ -157,4 +117,104 @@ void SensorNetProtocolParser::logParseError(string const& data, string const& ms
   string tmp = string(column + 14, ' ');
   tmp.append("^");
   logger->warn("{}", tmp);
+}
+
+shared_ptr<RemoteCommand> SensorNetProtocolParser::executeSimpleCommand(const string& cmd) {
+  RemoteCommandBuilder builder(cmd);
+  shared_ptr<string> response = link->sendCommand(builder.buildCommand());
+  return inParser->parse(response);
+}
+
+void SensorNetProtocolParser::handleSensorCapabilities( shared_ptr<PhysicalSensor> sensor,
+    shared_ptr<RemoteCommand> command) {
+
+  //expected values as sequence
+  for(unsigned int t = 0; t < command->getArgumentsCount(); t++) {
+    PhysicalSensorType type = PhysicalSensorType_BEGIN;
+    switch(command->argumentAsInt(t)) {
+      case 1:
+        type = PhysicalSensorType_TEMPERATURE;
+        break;
+
+      default:
+        break;
+    }
+    if (type != PhysicalSensorType_BEGIN) {
+      sensor->addType(type);
+    }
+  }
+}
+
+bool SensorNetProtocolParser::verifyCommand(shared_ptr<RemoteCommand> command, const string& expected,
+    RemoteCommandArgumentType expectedType) {
+
+  if (expectedType == RemoteCommandArgumentType_DIGIT_SEQUENCE) {
+    bool isOk = (command.get() != nullptr) && (*command == expected) && (command->getArgumentsCount() > 0);
+    if (isOk == true) {
+      isOk &= (command->getArgType() == expectedType) || (command->getArgType() == RemoteCommandArgumentType_DIGIT);
+    }
+    return isOk;
+  }
+
+  return (command.get() != nullptr) && (*command == expected) && (command->getArgType() == expectedType) &&
+      (command->getArgumentsCount() > 0);
+}
+
+bool SensorNetProtocolParser::requestSensorSpec() {
+  shared_ptr<PhysicalSensor> sensor = link->getDevice();
+  //parameters: REMOTE_CMD_GET_SYSTEM_CAPABILITIES and REMOTE_CMD_GET_SOFTWARE_VERSION are mandatory!
+
+  shared_ptr<RemoteCommand> command = executeSimpleCommand(REMOTE_CMD_GET_SOFTWARE_VERSION);
+  if (verifyCommand(command, REMOTE_CMD_GET_SOFTWARE_VERSION, RemoteCommandArgumentType_STRING) ) {
+    sensor->getMetadata()->softwareVersion = *(command->stringArgument());
+
+  } else {
+    return false;
+  }
+
+  command = executeSimpleCommand(REMOTE_CMD_GET_SYSTEM_CAPABILITIES);
+  if (verifyCommand(command, REMOTE_CMD_GET_SYSTEM_CAPABILITIES, RemoteCommandArgumentType_DIGIT_SEQUENCE) ) {
+    //typy sensorow obslugiwanych w
+    handleSensorCapabilities(sensor, command);
+
+  } else {
+    return false;
+  }
+
+  command = executeSimpleCommand(REMOTE_CMD_CONFIGURE_TEMPERATURE_RESOLUTION);
+  if (verifyCommand(command, REMOTE_CMD_CONFIGURE_TEMPERATURE_RESOLUTION, RemoteCommandArgumentType_DIGIT) ) {
+    sensor->getMetadata()->temperatureResolution = command->argumentAsInt();
+  }
+
+  command = executeSimpleCommand(REMOTE_CMD_CONFIGURE_TEMPERATURE_PERIOD);
+  if (verifyCommand(command, REMOTE_CMD_CONFIGURE_TEMPERATURE_PERIOD, RemoteCommandArgumentType_DIGIT) ) {
+    sensor->getMetadata()->temperaturePeriod = command->argumentAsInt();
+  }
+
+  command = executeSimpleCommand(REMOTE_CMD_CONFIGURE_POWER_PERIOD);
+  if (verifyCommand(command, REMOTE_CMD_CONFIGURE_POWER_PERIOD, RemoteCommandArgumentType_DIGIT) ) {
+    sensor->getMetadata()->powerPeroid = command->argumentAsInt();
+  }
+
+  command = executeSimpleCommand(REMOTE_CMD_CONFIGURE_SYSTEM_TIME);
+  if (verifyCommand(command, REMOTE_CMD_CONFIGURE_SYSTEM_TIME, RemoteCommandArgumentType_DIGIT) ) {
+    sensor->getMetadata()->nodeSystemTime = command->argumentAsUInt();
+  }
+
+  command = executeSimpleCommand(REMOTE_CMD_CONFIGURE_NODE_NAME);
+  if (verifyCommand(command, REMOTE_CMD_CONFIGURE_NODE_NAME, RemoteCommandArgumentType_STRING) ) {
+    sensor->setName( *(command->stringArgument()) );
+  }
+
+  command = executeSimpleCommand(REMOTE_CMD_CONFIGURE_SAVING_MODE);
+  if (verifyCommand(command, REMOTE_CMD_CONFIGURE_SAVING_MODE, RemoteCommandArgumentType_DIGIT) ) {
+    sensor->getMetadata()->powerMode = static_cast<PhysicalSensorPowerSaveMode>(command->argumentAsInt());
+  }
+
+  command = executeSimpleCommand(REMOTE_CMD_CONFIGURE_SAVING_ACTIVITY);
+  if (verifyCommand(command, REMOTE_CMD_CONFIGURE_SAVING_ACTIVITY, RemoteCommandArgumentType_DIGIT) ) {
+    sensor->getMetadata()->powerActivity = static_cast<PhysicalSensorPowerSaveActivity>(command->argumentAsInt());
+  }
+
+  return true;
 }

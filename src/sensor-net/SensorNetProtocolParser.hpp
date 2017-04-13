@@ -14,6 +14,8 @@
 #include <string>
 #include "entities/SensorValue.hpp"
 #include "misc/LogHelper.hpp"
+#include "sensor-net/parsers/InParser.hpp"
+#include "entities/PhysicalSensor.hpp"
 
 using namespace std;
 
@@ -24,8 +26,10 @@ class SensorNetProtocolParser {
     SensorNetProtocolParser(CommunicationLink* link);
   
     void requestMeasurement(MeasurementMap& result, int count = 1);
+    bool requestSensorSpec();
   private:
-    CommunicationLink*   link;
+    CommunicationLink* link;
+    InParser* inParser;
     unordered_map<string, SensorValueType> responseCmdToSensorType;
     shared_ptr<spdlog::logger> logger;
   
@@ -34,9 +38,12 @@ class SensorNetProtocolParser {
   
     void logParseError(string const& data, string const& msg, size_t const& column);
   
-    MeasurementList parseValueWithTimestamp(string const& data, size_t& startIndex, SensorValueType type, time_t now);
-    bool detectResponseCommand(string const& data, size_t& startIndex, string& cmd, SensorValueType& sensorType);
+    MeasurementList parseValueWithTimestamp(RemoteCommand& command, SensorValueType type, time_t now);
+    void detectResponseCommand(RemoteCommand& command, SensorValueType& sensorType);
     void parseMeasurementsRespons(string const& data, MeasurementMap& result);
+    shared_ptr<RemoteCommand> executeSimpleCommand(const string& cmd);
+    void handleSensorCapabilities( shared_ptr<PhysicalSensor> sensor, shared_ptr<RemoteCommand> command);
+    bool verifyCommand(shared_ptr<RemoteCommand> command, const string& expected, RemoteCommandArgumentType expectedType);
 };
 
 #endif /* SensorNetProtocolParser_hpp */

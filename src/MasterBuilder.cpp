@@ -22,6 +22,7 @@ static const string KEY_HEATING_CONFIG_FILE = "heatingPlan";
 static const string KEY_HOME_PLAN_CONFIG_FILE = "homePlan";
 static const string KEY_SENSORS_CONFIG_FILE = "sensors";
 static const string KEY_STORAGE_DB_FILE = "dbFile";
+static const string KEY_USE_DB = "useDb";
 
 static const string KEY_WEB_SERVER_CONFIG = "webServer";
 static const string KEY_WEB_PORT = "port";
@@ -128,6 +129,12 @@ shared_ptr<HttpServer> MasterBuilder::getHttpServer() {
 }
 
 void MasterBuilder::buildStorage() {
+  bool useDb = true;
+  getOptionalJSONBool(masterConfig, KEY_USE_DB, useDb);
+  if (useDb == false) {
+    spdlog::get(MISC_LOGGER_NAME)->info("Usage of DB is disabled.");
+    return;
+  }
   string dbFile = masterConfig[KEY_STORAGE_DB_FILE];
   spdlog::get(MISC_LOGGER_NAME)->info("Building SQLite storage...");
   spdlog::get(MISC_LOGGER_NAME)->info("  DB File:{}", dbFile);
@@ -141,6 +148,7 @@ void MasterBuilder::buildSensors() {
   sensorNetManager = make_shared<SensorNetManager>();
   
   string configFile = masterConfig[KEY_SENSORS_CONFIG_FILE];
+  sensorNetManager->setSensorsConfigFile(configFile);
   spdlog::get(MISC_LOGGER_NAME)->info("Building Sensors Net...");
   spdlog::get(MISC_LOGGER_NAME)->info("  Config:{}", configFile);
   std::ifstream inputFileStream(configFile);

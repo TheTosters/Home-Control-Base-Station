@@ -10,12 +10,32 @@
 #include "entities/PhysicalSensor.hpp"
 #include "misc/ConversionHelper.hpp"
 
+PhysicalSensorMetaData::PhysicalSensorMetaData()
+: softwareVersion(""),
+  powerMode(PhysicalSensorPowerSaveMode_1),
+  powerActivity(PhysicalSensorPowerSaveActivity_1),
+  powerPeroid(0),
+  temperatureResolution(12),
+  temperaturePeriod(0), nodeSystemTime(0) {
+
+}
+
 PhysicalSensor::PhysicalSensor()
 : Entity(-1),
   lastFetchTime(0),
   desiredFetchDelay(0),
-  lastMeasurements(make_shared<vector<shared_ptr<Measurement>>>()) {
+  lastMeasurements(make_shared<vector<shared_ptr<Measurement>>>()),
+  metaData(new PhysicalSensorMetaData()){
   
+}
+
+PhysicalSensor::~PhysicalSensor() {
+  delete metaData;
+  metaData = nullptr;
+}
+
+PhysicalSensorMetaData* PhysicalSensor::getMetadata() {
+  return metaData;
 }
 
 void PhysicalSensor::setName(string const& name) {

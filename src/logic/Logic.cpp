@@ -17,6 +17,7 @@
 #include "misc/StringHelper.hpp"
 
 static const time_t LOGIC_THREAD_SLEEP_TIME = 100; //in ms
+static const int MINIMUM_FETCH_DELAY = 5; //in seconds
 
 Logic::Logic(shared_ptr<Storage> store, shared_ptr<SensorNetManager> sensors)
 : storage(store),
@@ -62,6 +63,50 @@ void Logic::run() {
   }
 }
 
+void Logic::executeMeasurements() {
+
+  shared_ptr<MeasurementTask> task;
+  { //critical section
+    unique_lock<mutex> lock(logicLock);
+    if (measurementTasks.size() == 0) {
+      return;
+    }
+    task = measurementTasks.top();
+  }
+  //TODO: reimplement to async pattern, rules can be time based not only sensors-based
+  time_t sleepTime = LOGIC_THREAD_SLEEP_TIME;
+  time_t timeToMeasure = task->getTimeToMeasure() * 1000;
+  sleepTime = sleepTime > timeToMeasure ? timeToMeasure : sleepTime;
+
+  this_thread::sleep_for(chrono::milliseconds(sleepTime));
+
+  //fetch measurement
+  while (task->getTimeToMeasure() == 0) {
+    shared_ptr<PhysicalSensor> sensor = task->getSensor();
+    { //critical section
+      unique_lock<mutex> lock(logicLock);
+
+      measurementTasks.pop();
+    }
+
+    MeasurementMap data = sensorNetManager->fetchMeasurements(sensor);
+    if (data != nullptr) {
+      sensor->setLastFetchTime(time(nullptr));
+      sensor->setLastMeasurements(data);
+      storeMeasurements(sensor->getId(), data);
+    }
+
+    task = make_shared<MeasurementTask>(sensor);
+    { //critical section
+      unique_lock<mutex> lock(logicLock);
+
+      measurementTasks.push(task);
+
+      task = measurementTasks.top();
+    }
+  }
+}
+
 //this is main loop for thread
 void Logic::execute() {
   logger->info("*** Entering main logic loop ***");
@@ -77,43 +122,7 @@ void Logic::execute() {
       }
     }
     
-    //Sleep if there is nothing to do
-    time_t sleepTime = LOGIC_THREAD_SLEEP_TIME;
-    
-    shared_ptr<MeasurementTask> task;
-    {//critical section
-      unique_lock<mutex> lock(logicLock);
-      
-      task = measurementTasks.top();
-    }
-    time_t timeToMeasure = task->getTimeToMeasure() * 1000;
-    sleepTime = sleepTime > timeToMeasure ? timeToMeasure : sleepTime;
-    
-    this_thread::sleep_for(chrono::milliseconds(sleepTime));
-    
-    //fetch measurement
-    while(task->getTimeToMeasure() == 0) {
-      shared_ptr<PhysicalSensor> sensor = task->getSensor();
-      {//critical section
-        unique_lock<mutex> lock(logicLock);
-        
-        measurementTasks.pop();
-      }
-      
-      MeasurementMap data = sensorNetManager->fetchMeasurements(sensor);
-      sensor->setLastFetchTime(time(nullptr));
-      sensor->setLastMeasurements(data);
-      storeMeasurements(sensor->getId(), data);
-            
-      task = make_shared<MeasurementTask>(sensor);
-      {//critical section
-        unique_lock<mutex> lock(logicLock);
-        
-        measurementTasks.push(task);
-        
-        task = measurementTasks.top();
-      }
-    }
+    executeMeasurements();
     
     //execute rules
     for(auto iter = rules->begin(); iter != rules->end(); iter ++) {
@@ -135,6 +144,9 @@ RoomsList Logic::getRooms() {
 }
 
 void Logic::storeMeasurements(long sensorId, MeasurementMap data) {
+  if (storage == nullptr) {
+    return;
+  }
   SQLiteSensorValueSerializer* serializer = storage->requestSerializer<SQLiteSensorValueSerializer>(SensorValue());
   
   for(auto iter = data->begin(); iter != data->end(); iter++) {
@@ -167,6 +179,11 @@ void Logic::rebuildListOfMeasurementTasks() {
     
     for(auto iter = list.begin(); iter != list.end(); iter++) {
       shared_ptr<PhysicalSensor> sensor = *iter;
+      if (sensor->getDesiredFetchDelay() < MINIMUM_FETCH_DELAY) {
+        sensor->setDesiredFetchDelay(MINIMUM_FETCH_DELAY);
+        logger->warn("Fetch delay for {} was to small, increased to minimum allowed {}",
+            sensor->getName(), MINIMUM_FETCH_DELAY);
+      }
       measurementTasks.push( make_shared<MeasurementTask>(sensor));
     }
   }

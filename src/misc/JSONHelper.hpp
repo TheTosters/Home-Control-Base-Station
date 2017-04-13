@@ -23,6 +23,7 @@ json toJSON(shared_ptr<SensorValue> sensorValue, bool includeSensorId);
 json toJSON(RoomsList roomsList);
 json toJSON(PhysicalSensorList const& list);
 json toJSON(SensorValueList const& list, bool includeSensorId);
+json measurementsToJSON(PhysicalSensorList const& list);
 
 shared_ptr<Point> pointFromJSON(string const& data);
 shared_ptr<Sensor> sensorFromJSON(string const& data);

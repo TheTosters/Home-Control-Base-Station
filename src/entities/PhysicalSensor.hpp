@@ -12,17 +12,43 @@
 #include <stdio.h>
 #include <string>
 #include <vector>
+#include <inttypes.h>
 #include "entities/Entity.hpp"
 #include "entities/SensorValue.hpp"
 
 using namespace std;
 
 enum PhysicalSensorType {
-  TEMPERATURE,
-  HUMIDITY,
-  POWER_CONSUMPTION
+  PhysicalSensorType_BEGIN,
+  PhysicalSensorType_TEMPERATURE,
+  PhysicalSensorType_HUMIDITY,
+  PhysicalSensorType_POWER_CONSUMPTION,
+  PhysicalSensorType_END
 };
 
+enum PhysicalSensorPowerSaveMode {
+  PhysicalSensorPowerSaveMode_1
+};
+
+enum PhysicalSensorPowerSaveActivity {
+  PhysicalSensorPowerSaveActivity_1
+};
+
+class PhysicalSensorMetaData {
+  public:
+    string softwareVersion;
+
+    PhysicalSensorPowerSaveMode powerMode;
+    PhysicalSensorPowerSaveActivity powerActivity;
+    int powerPeroid;
+
+    int temperatureResolution;
+    int temperaturePeriod;
+
+    uint64_t nodeSystemTime;
+
+    PhysicalSensorMetaData();
+};
 /**
  * This class is for having instance of other physical device which we can contact to get measurements.
  * It's not this same as Sensor, which is more like logical representation of Physical sensor in rooms.
@@ -34,6 +60,7 @@ enum PhysicalSensorType {
 class PhysicalSensor : public Entity {
   public:
     PhysicalSensor();
+    virtual ~PhysicalSensor();
   
     void    setName(string const& name);
     string& getName();
@@ -55,6 +82,7 @@ class PhysicalSensor : public Entity {
   
     bool    isType(PhysicalSensorType type);
     shared_ptr<Measurement> getLastMeasurement(PhysicalSensorType type);
+    PhysicalSensorMetaData* getMetadata();
   protected:
     string              name;
     string              address;    //it can be MAC, Bluetooth address, or other protocol dependent
@@ -69,6 +97,8 @@ class PhysicalSensor : public Entity {
 
     /** List with the newest values fetch from physical device */
     MeasurementList     lastMeasurements;
+
+    PhysicalSensorMetaData* metaData;
   
     void updateLastMeasurement(SensorValueType valType, double value, time_t time);
 };
