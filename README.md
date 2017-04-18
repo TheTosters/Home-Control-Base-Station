@@ -6,7 +6,7 @@
 This project uses following libraries:
 * [Mongoose](https://github.com/cesanta/mongoose)
 * [JSON](https://github.com/nlohmann/json)
-* [LibGatt] (https://github.com/jacklund/libgatt)
-* [gLib] (https://developer.gnome.org/glib)
+* [LibGatt](https://github.com/jacklund/libgatt)
+* [gLib](https://developer.gnome.org/glib)
 
 I would like to thanks their creators & contributors. Such people make live of other programmers much easier. Again thanks a lot!
