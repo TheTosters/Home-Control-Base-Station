@@ -31,6 +31,7 @@ void DataAcquisitor::stopThread() {
 
   if (tmp != nullptr) {
     tmp->join();
+    delete tmp;
   }
 }
 
@@ -77,8 +78,6 @@ void DataAcquisitor::workerThreadMain() {
   //release thread memory
   //NOTE: we should be already in locked mutex state here!
   threadPtr->detach();  //don't use workerThread here, it might be nullptr
-  delete threadPtr;
-  workerThread = nullptr;
   lock.unlock();
 
   logger->info("{} Worker thread done.", __func__);

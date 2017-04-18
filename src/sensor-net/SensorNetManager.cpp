@@ -54,9 +54,6 @@ SensorNetManager::~SensorNetManager() {
     unique_lock<mutex> lock(managerMutex);
     resolverThread = nullptr; //this is check in resolverThreadMain
     lock.unlock();
-
-    tmp->join();
-    delete tmp;
   }
 
   delete acquisitor;
@@ -259,7 +256,7 @@ bool SensorNetManager::probeSensor(shared_ptr<PhysicalSensor> sensor) {
 void SensorNetManager::resolverThreadMain() {
   logger->info("Resolver thread started.");
   finalizeScanningThread();
-
+  thread* threadPtr = resolverThread;
   while (true) {
     shared_ptr<PhysicalSensor> sensor = make_shared<PhysicalSensor>();
     {
@@ -295,8 +292,8 @@ void SensorNetManager::resolverThreadMain() {
   {
     //critical section
     unique_lock<mutex> lock(managerMutex);
-    resolverThread->detach();
-    delete resolverThread;
+    threadPtr->detach();
+    delete threadPtr;
     resolverThread = nullptr;
   }
   logger->info("Resolver thread done.");

@@ -73,7 +73,7 @@ void Logic::executeMeasurements() {
     }
     task = measurementTasks.top();
   }
-  //TODO: reimplement to async pattern, rules can be time based not only sensors-based
+
   time_t sleepTime = LOGIC_THREAD_SLEEP_TIME;
   time_t timeToMeasure = task->getTimeToMeasure() * 1000;
   sleepTime = sleepTime > timeToMeasure ? timeToMeasure : sleepTime;
@@ -115,6 +115,8 @@ void Logic::onSensorData(shared_ptr<PhysicalSensor> sensor, MeasurementMap measu
 void Logic::execute() {
   logger->info("*** Entering main logic loop ***");
   rebuildListOfMeasurementTasks();
+  thread* threadPtr = logicThread;
+
   while(true) {
     //Check if thread should finish
     {//critical section
@@ -136,6 +138,8 @@ void Logic::execute() {
     }
   }
   
+  threadPtr->detach();  //don't use logicThread here, it might be nullptr
+
   logger->info("*** Leaving main logic loop ***");
 }
 
