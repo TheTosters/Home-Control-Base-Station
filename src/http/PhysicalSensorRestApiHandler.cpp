@@ -200,7 +200,7 @@ void PhysicalSensorRestApiHandler::onPostRequest(struct mg_connection *c, void *
 
 void PhysicalSensorRestApiHandler::onDeleteRequest(struct mg_connection *c, void *data) {
   long id;
-  if (getOrDieQueryVariable(c, data, "id", &id) == false) {
+  if (getOrDieQueryVariable(c, data, "sensorId", &id) == false) {
     return;
   }
   
