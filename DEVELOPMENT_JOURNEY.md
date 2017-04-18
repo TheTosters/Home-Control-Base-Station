@@ -19,6 +19,8 @@ I'm not a c / c++ developer, so many parts of coda can be done better. Also deci
 
 * I still struggle between raw pointers and smart pointers and copies of objects. You can notice it in many places.
 
+* LibGatt code used as a BTLE layer is not reliable, I put several layers of abstraction on this. I believe this need to be "Nuked from Orbit" and used some other BTLE library prefferable in c++. 
+
 # Breaking decisions
 
 1. C++ is not Java... Especially templates/generics. This hit me heavy when working on Storage and serializers interface. I believe this need to be revisited but at this moment (30-12-2016) I don't know what is best approach here.
