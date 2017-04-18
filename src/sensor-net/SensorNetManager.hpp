@@ -18,6 +18,7 @@
 #include "sensor-net/SensorNetProtocolParser.hpp"
 #include "misc/LogHelper.hpp"
 #include "bluetooth/HciWrapper.hpp"
+#include "sensor-net/SensorDataListener.hpp"
 
 using namespace std;
 using namespace nlohmann;
@@ -35,22 +36,27 @@ enum SensorNetManagerScanStatus {
 };
 
 class PhysicalSensor;
+class DataAcquisitor;
 
 class SensorNetManager : public HciWrapperListener {
   public:
     SensorNetManager();
     virtual ~SensorNetManager();
-    PhysicalSensorVector getSensors();
-    void setSensorsList(PhysicalSensorList sensorsList);
-    MeasurementMap fetchMeasurements(shared_ptr<PhysicalSensor> sensor, int count = 1);
+
+    void fetchMeasurements(shared_ptr<PhysicalSensor> sensor, SensorDataListener* listener, int count = 1);
+
+    void setSensorsConfigFile(const string& filename);
     void saveConfiguration();
-    bool deleteSensor(long sensorId);
+
     bool addSensor(shared_ptr<PhysicalSensor> sensor);
+    bool deleteSensor(long sensorId);
+    PhysicalSensorVector getSensors();
     shared_ptr<PhysicalSensor> getSensorById(long id);
+    void setSensorsList(PhysicalSensorList sensorsList);
+
     SensorNetManagerStartScanResult scanForSensors();
     SensorNetManagerScanStatus getCurrentScanStatus();
     PhysicalSensorList getScannedPhysicalSensors();
-    void setSensorsConfigFile(const string& filename);
   private:
     PhysicalSensorList    sensors;
     mutex                 managerMutex;
@@ -62,6 +68,7 @@ class SensorNetManager : public HciWrapperListener {
     thread*               scanningThread;
     int                   nextScanId;
     string                sensorsConfigFile;
+    DataAcquisitor*       acquisitor;
 
     void resolverThreadMain();
     void scanningThreadMain();

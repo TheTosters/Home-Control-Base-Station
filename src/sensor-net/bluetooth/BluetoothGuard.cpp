@@ -29,6 +29,7 @@ void BluetoothGuard::lockBluetooth(void* owner) {
 }
 
 void BluetoothGuard::unlockBluetooth(void* owner) {
+  printf("%s\n", __func__);
   std::unique_lock<std::mutex> lock(BluetoothGuard::innerMutex);
   if (owner != BluetoothGuard::owner) {
     printf("Wrong owner of bluetooth guard, expected %p but got %p", BluetoothGuard::owner, owner);

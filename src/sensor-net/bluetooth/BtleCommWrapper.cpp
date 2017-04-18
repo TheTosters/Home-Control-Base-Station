@@ -61,6 +61,8 @@ BtleCommWrapper::BtleCommWrapper()
   btleChannel(nullptr),
   btleAttribute(nullptr),
   btleValueHandle(0),
+  btleHandleNotifyRegisterId(0),
+  btleHandleIndRegisterId(0),
   notificationReceived(false),
   btleError(0),
   notificationBuffer(make_shared<std::vector<uint8_t>>()) {
@@ -171,6 +173,12 @@ NextAction BtleCommWrapper::handleBtleError() {
 void BtleCommWrapper::deleteBtleAttrib() {
   g_mutex_lock(&mutex);
   if (btleAttribute != nullptr) {
+    if (btleHandleIndRegisterId != 0) {
+      g_attrib_unregister(btleAttribute, btleHandleIndRegisterId);
+    }
+    if (btleHandleNotifyRegisterId != 0) {
+      g_attrib_unregister(btleAttribute, btleHandleNotifyRegisterId);
+    }
     g_attrib_unref(btleAttribute);
     printf("1: %s btleAttribute=null\n", __func__);
     btleAttribute = nullptr;
@@ -250,10 +258,11 @@ void BtleCommWrapper::discoverCharacteristicCallback(GSList *characteristics, ui
     g_mutex_lock(&callbackData->btleCom->mutex);
     callbackData->btleCom->btleValueHandle = characteristic->value_handle;
 
-    g_attrib_register(callbackData->btleAttribute, ATT_OP_HANDLE_NOTIFY, GATTRIB_ALL_HANDLES,
-        BtleCommWrapper::notificationEventsHandler, callbackData->btleCom, NULL);
-    g_attrib_register(callbackData->btleAttribute, ATT_OP_HANDLE_IND, GATTRIB_ALL_HANDLES,
-        BtleCommWrapper::notificationEventsHandler, callbackData->btleCom, NULL);
+    callbackData->btleCom->btleHandleNotifyRegisterId = g_attrib_register(callbackData->btleAttribute,
+        ATT_OP_HANDLE_NOTIFY, GATTRIB_ALL_HANDLES, BtleCommWrapper::notificationEventsHandler, callbackData->btleCom,
+        NULL);
+    callbackData->btleCom->btleHandleIndRegisterId = g_attrib_register(callbackData->btleAttribute, ATT_OP_HANDLE_IND,
+        GATTRIB_ALL_HANDLES, BtleCommWrapper::notificationEventsHandler, callbackData->btleCom, NULL);
     g_mutex_unlock(&callbackData->btleCom->mutex);
 
     callbackData->btleCom->setState(cssConnectionEstablished);
@@ -348,17 +357,28 @@ void BtleCommWrapper::executeConnect(const string& address) {
 
   } else {
     //watch this channel
-    g_io_add_watch(btleChannel, static_cast<GIOCondition>(G_IO_ERR | G_IO_HUP), BtleCommWrapper::channelWatch, this);
+    printf("watch channel, this=%p, channel = %p\n", this, btleChannel);
+    //g_io_add_watch(btleChannel, static_cast<GIOCondition>(G_IO_ERR | G_IO_HUP), BtleCommWrapper::channelWatch, this);
     setBtleError(0);
     setState(cssConnect);
   }
 }
 
-void BtleCommWrapper::executeDiscovery(int timeoutInMs, gint64 startTime) {
+void BtleCommWrapper::executeDiscovery(int timeoutInMicro, gint64 startTime) {
   g_info("Discovering characteristic.\n");
   if (btleChannel != nullptr) {
-    btleAttribute = g_attrib_new(btleChannel);
-    printf("1: %s btleAttribute=%p\n", __func__, btleAttribute);
+    while(btleAttribute == nullptr) {
+      if (g_get_monotonic_time() - startTime > timeoutInMicro) {
+        g_warning("%s: timeout\n", __func__);
+        setState(cssFailedToConnect);
+        return;
+      }
+      btleAttribute = g_attrib_new(btleChannel);
+      printf("1: %s btleAttribute=%p, btleChannel=%p\n", __func__, btleAttribute, btleChannel);
+      if (btleAttribute == nullptr) {
+        usleep(150 * 1000);
+      }
+    }
 
     bt_uuid_t uuid;
     if (bt_string_to_uuid(&uuid, CHAR_UUID) < 0) {
