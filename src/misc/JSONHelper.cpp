@@ -233,7 +233,7 @@ shared_ptr<PhysicalSensor> physicalSensorFromJSON(json const& data) {
   result->setName(*tmp);
   
   tmpLong = getOptionalJSONLong(data, "fetchDelay");
-  tmpLong = tmpLong < 0 ? PHYSICAL_SENSOR_DEFAULT_FETCH_DELAY : tmpLong;
+  tmpLong = tmpLong <= 0 ? PHYSICAL_SENSOR_DEFAULT_FETCH_DELAY : tmpLong;
   result->setDesiredFetchDelay(static_cast<time_t>(tmpLong));
   
   //Meta data
@@ -241,8 +241,8 @@ shared_ptr<PhysicalSensor> physicalSensorFromJSON(json const& data) {
     PhysicalSensorMetaData* tmpMeta = result->getMetadata();
     json metaJson = data["meta"];
 
-    tmp = getOptionalJSONString(metaJson, "name");
-    tmpMeta->softwareVersion = tmp != nullptr ? *tmp : nullptr;
+    tmp = getOptionalJSONString(metaJson, "softwareVersion");
+    tmpMeta->softwareVersion = tmp ? *tmp : "";
     tmpMeta->powerMode = static_cast<PhysicalSensorPowerSaveMode>(getOptionalJSONLong(metaJson, "powerMode"));
     tmpMeta->powerActivity = static_cast<PhysicalSensorPowerSaveActivity>(getOptionalJSONLong(metaJson, "powerActivity"));
     tmpMeta->powerPeroid = static_cast<int>(getOptionalJSONLong(metaJson, "powerPeroid"));

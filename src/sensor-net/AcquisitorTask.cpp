@@ -31,12 +31,13 @@ bool AcquisitorTask::execute(){
       measurements = make_shared<unordered_map<string, MeasurementList>>();
       parser.requestMeasurement(measurements, measurementsCount);
       listener->onSensorData(sensor, measurements);
+      printf("Exit acquisition task\n");
       return true;
     }
 
   } catch (std::exception const& e) {
-    logger->error("Exception at fetchMeasurements:");
-    logger->error(e.what());
+    logger->error("Exception at fetchMeasurements");
+    //logger->error(e.what());  //hmm this cause thread crash :(
 
   } catch (...) {
     logger->error("Undefined exception at fetchMeasurements");

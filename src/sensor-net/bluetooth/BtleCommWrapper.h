@@ -54,6 +54,8 @@ class BtleCommWrapper {
     GIOChannel* btleChannel;
     GAttrib* btleAttribute;
     guint16 btleValueHandle;
+    guint btleHandleNotifyRegisterId;
+    guint btleHandleIndRegisterId;
     std::mutex notificationMutex;
     bool notificationReceived;
     GMutex mutex;
@@ -78,7 +80,7 @@ class BtleCommWrapper {
     static void writeValueCallback(guint8 status, const guint8 *pdu, guint16 plen, gpointer user_data);
 
     void executeConnect(const string& address);
-    void executeDiscovery(int timeoutInMs, gint64 startTime);
+    void executeDiscovery(int timeoutInMicro, gint64 startTime);
 
 };
 

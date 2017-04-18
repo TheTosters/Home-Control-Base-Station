@@ -50,7 +50,7 @@ void DataAcquisitor::startThread() {
 }
 
 void DataAcquisitor::workerThreadMain() {
-  logger->info("Worker thread main loop.");
+  logger->info("{} Worker thread main loop.", __func__);
 
   unique_lock<mutex> lock(innerMutex);
   thread* threadPtr = workerThread;
@@ -73,7 +73,7 @@ void DataAcquisitor::workerThreadMain() {
       lock.unlock();
     }
   }
-
+  logger->info("{} Worker thread exit main loop.", __func__);
   //release thread memory
   //NOTE: we should be already in locked mutex state here!
   threadPtr->detach();  //don't use workerThread here, it might be nullptr
@@ -81,7 +81,7 @@ void DataAcquisitor::workerThreadMain() {
   workerThread = nullptr;
   lock.unlock();
 
-  logger->info("Worker thread done.");
+  logger->info("{} Worker thread done.", __func__);
 }
 
 void DataAcquisitor::fetch(shared_ptr<PhysicalSensor> sensor, SensorDataListener* listener, int count) {
@@ -112,7 +112,7 @@ void DataAcquisitor::pause(bool waitForPause) {
     paused = true;
   }
   while (waitForPause && (isPaused() == false)) {
-    usleep(50 * 1000000);
+    usleep(50 * 1000);
   }
 }
 
