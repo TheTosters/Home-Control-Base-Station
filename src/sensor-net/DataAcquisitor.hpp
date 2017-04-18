@@ -23,7 +23,7 @@ class DataAcquisitor {
     DataAcquisitor(shared_ptr<spdlog::logger> logger);
     virtual ~DataAcquisitor();
 
-    void fetch(shared_ptr<PhysicalSensor> sensor, shared_ptr<SensorDataListener> listener);
+    void fetch(shared_ptr<PhysicalSensor> sensor, SensorDataListener* listener, int count = 1);
 
     void pause(bool waitForPause = true);
     bool isPaused();

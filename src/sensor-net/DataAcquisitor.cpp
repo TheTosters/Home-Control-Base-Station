@@ -67,8 +67,7 @@ void DataAcquisitor::workerThreadMain() {
     tasksToExecute.erase(tasksToExecute.begin());
     lock.unlock();
 
-    task->execute();
-    if ( task->shouldReschedule() ) {
+    if ( task->execute() == false ) {
       lock.lock();
       tasksToExecute.push_back(task);
       lock.unlock();
@@ -85,7 +84,7 @@ void DataAcquisitor::workerThreadMain() {
   logger->info("Worker thread done.");
 }
 
-void DataAcquisitor::fetch(shared_ptr<PhysicalSensor> sensor, shared_ptr<SensorDataListener> listener) {
+void DataAcquisitor::fetch(shared_ptr<PhysicalSensor> sensor, SensorDataListener* listener, int count) {
   unique_lock<mutex> lock(innerMutex);
   auto item = find_if(tasksToExecute.begin(), tasksToExecute.end(), [=](shared_ptr<AcquisitorTask> task) {
     return task->getSensorId() == sensor->getId();
@@ -97,7 +96,7 @@ void DataAcquisitor::fetch(shared_ptr<PhysicalSensor> sensor, shared_ptr<SensorD
   }
 
   logger->info("Adding sensor {}({}) to fetch queue.", sensor->getName(), sensor->getAddress());
-  tasksToExecute.push_back( make_shared<AcquisitorTask>(sensor, listener));
+  tasksToExecute.push_back( make_shared<AcquisitorTask>(sensor, count, listener, logger));
 
   if (workerThread == nullptr && paused == false) {
     lock.unlock();

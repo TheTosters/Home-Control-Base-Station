@@ -22,6 +22,7 @@
 #include "logic/rules/LogicRule.hpp"
 #include "entities/Entities.hpp"
 #include "misc/LogHelper.hpp"
+#include "sensor-net/SensorDataListener.hpp"
 
 using namespace std;
 using namespace nlohmann;
@@ -29,10 +30,10 @@ using namespace nlohmann;
 typedef unordered_map<string, shared_ptr<Schedule>> ScheduleMap;
 typedef shared_ptr<unordered_map<int, int>> SharedState;
 
-class Logic {
+class Logic : public SensorDataListener {
   public:
     Logic(shared_ptr<Storage> storage, shared_ptr<SensorNetManager> sensorNetManager);
-    ~Logic();
+    virtual ~Logic();
   
     shared_ptr<Storage> getStorage();
     void run();
@@ -44,6 +45,8 @@ class Logic {
     shared_ptr<ScheduleMap> getRoomHeatingPlan();
     SharedState getSharedState();
     RoomsList getRooms();
+
+    virtual void onSensorData(shared_ptr<PhysicalSensor> sensor, MeasurementMap measurements) override;
   private:
     shared_ptr<Storage> storage;
     shared_ptr<SensorNetManager> sensorNetManager;

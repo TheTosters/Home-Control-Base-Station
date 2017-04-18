@@ -58,6 +58,9 @@ SensorNetManager::~SensorNetManager() {
     tmp->join();
     delete tmp;
   }
+
+  delete acquisitor;
+  acquisitor = nullptr;
 }
 
 void SensorNetManager::setSensorsConfigFile(const string& filename) {
@@ -68,24 +71,9 @@ void SensorNetManager::setSensorsList(PhysicalSensorList sensorsList) {
   sensors = sensorsList;
 }
 
-MeasurementMap SensorNetManager::fetchMeasurements(shared_ptr<PhysicalSensor> sensor, int count) {
-  MeasurementMap result = nullptr;
-  try {
-    CommunicationLink link(cltBluetooth, sensor, logger);
-    if (link.isConnected()) {
-      SensorNetProtocolParser parser(&link);
-      result = make_shared<unordered_map<string, MeasurementList>>();
-      parser.requestMeasurement(result, count);
-    }
-
-  } catch(std::exception const& e) {
-    logger->error("Exception at fetchMeasurements:");
-    logger->error(e.what());
-
-  } catch (...) {
-    logger->error("Undefined exception at fetchMeasurements");
-  }
-  return result;
+void SensorNetManager::fetchMeasurements(shared_ptr<PhysicalSensor> sensor, SensorDataListener* listener,
+    int count) {
+  acquisitor->fetch(sensor, listener, count);
 }
 
 void SensorNetManager::saveConfiguration() {

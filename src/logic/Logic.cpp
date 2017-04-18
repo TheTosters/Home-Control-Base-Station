@@ -89,12 +89,7 @@ void Logic::executeMeasurements() {
       measurementTasks.pop();
     }
 
-    MeasurementMap data = sensorNetManager->fetchMeasurements(sensor);
-    if (data != nullptr) {
-      sensor->setLastFetchTime(time(nullptr));
-      sensor->setLastMeasurements(data);
-      storeMeasurements(sensor->getId(), data);
-    }
+    sensorNetManager->fetchMeasurements(sensor, this);
 
     task = make_shared<MeasurementTask>(sensor);
     { //critical section
@@ -104,6 +99,15 @@ void Logic::executeMeasurements() {
 
       task = measurementTasks.top();
     }
+  }
+}
+
+void Logic::onSensorData(shared_ptr<PhysicalSensor> sensor, MeasurementMap measurements) {
+  logger->debug("New measurements for sensor {}({})", sensor->getName(), sensor->getAddress());
+  if (measurements != nullptr) {
+    sensor->setLastFetchTime(time(nullptr));
+    sensor->setLastMeasurements(measurements);
+    storeMeasurements(sensor->getId(), measurements);
   }
 }
 
@@ -147,6 +151,7 @@ void Logic::storeMeasurements(long sensorId, MeasurementMap data) {
   if (storage == nullptr) {
     return;
   }
+  //TODO: think about thread safety on serialization :}
   SQLiteSensorValueSerializer* serializer = storage->requestSerializer<SQLiteSensorValueSerializer>(SensorValue());
   
   for(auto iter = data->begin(); iter != data->end(); iter++) {

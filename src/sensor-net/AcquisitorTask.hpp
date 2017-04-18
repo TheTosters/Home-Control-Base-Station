@@ -16,15 +16,16 @@ using namespace std;
 
 class AcquisitorTask {
   public:
-    AcquisitorTask(shared_ptr<PhysicalSensor> sensor, shared_ptr<SensorDataListener> listener);
-    void execute();
-    bool shouldReschedule();
+    AcquisitorTask(shared_ptr<PhysicalSensor> sensor, int count, SensorDataListener* listener,
+        shared_ptr<spdlog::logger> logger);
+    bool execute();
     int getSensorId();
   private:
     shared_ptr<PhysicalSensor>  sensor;
-    shared_ptr<SensorDataListener> listener;
+    SensorDataListener* listener;
     int attempts;
-    MeasurementMap measurements;
+    int measurementsCount;
+    shared_ptr<spdlog::logger> logger;
 };
 
 #endif /* AcquisitorTask_hpp */
