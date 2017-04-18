@@ -13,6 +13,7 @@
 #include "sensor-net/CommunicationLink.hpp"
 #include "SensorNetProtocolParser.hpp"
 #include "CommunicationLink.hpp"
+#include "sensor-net/DataAcquisitor.hpp"
 
 const string FILE_NAME = "sensors-default.json";
 
@@ -30,7 +31,7 @@ struct PhysicalSensorByIdComparator : public std::unary_function<std::string, bo
 
 SensorNetManager::SensorNetManager()
 : logger(spdlog::get(COMMUNICATION_LOGGER_NAME)), scannedSensors(nullptr), hciWrapper(nullptr), resolverThread(nullptr),
-  sensorsConfigFile(FILE_NAME) {
+  scanningThread(nullptr), nextScanId(20000), sensorsConfigFile(FILE_NAME), acquisitor(new DataAcquisitor(logger)) {
 
 }
 
