@@ -81,11 +81,16 @@ bool BtleCommWrapper::send(const string& data, int timeoutInMs) {
     return false;
   }
   writeDone = false;
+  const long long startTime = current_timestamp();
   try {
     charToUse->write_request((const uint8_t*) data.c_str(), data.length());
     while (isConnected() && writeDone == false) {
       //btle.write_and_process_next();
       btle.read_and_process_next();
+      if (current_timestamp() - startTime > timeoutInMs) {
+        printf("Connection timeout\n");
+        break;
+      }
       usleep(50 * 1000);
     }
   } catch(...) {
@@ -96,6 +101,9 @@ bool BtleCommWrapper::send(const string& data, int timeoutInMs) {
 }
 
 bool BtleCommWrapper::readLineFromBuffer(string& result) {
+  if (notificationBuffer.size() == 0) {
+    return false;
+  }
   std::vector<uint8_t>::iterator it = std::find_if(notificationBuffer.begin(), notificationBuffer.end(),
       [](int i){ return i == 13;});
 
@@ -105,7 +113,11 @@ bool BtleCommWrapper::readLineFromBuffer(string& result) {
 
   it++;
   uint8_t* startAddress = &(notificationBuffer[0]);
-  size_t size = it - notificationBuffer.begin();
+  int size = it - notificationBuffer.begin();
+  if (size < 0) {
+    printf("%s Overflow!\n", __func__);
+    return false;
+  }
   while (size > 0 && startAddress[size - 1] == '\r') {
     size--;
   }
@@ -119,6 +131,7 @@ bool BtleCommWrapper::readLineFromBuffer(string& result) {
 
 string BtleCommWrapper::readLine(int timeoutInMs) {
   if (isConnected() == false) {
+    printf("readLine canceled, not connected\n");
     return "";
   }
 
@@ -127,7 +140,9 @@ string BtleCommWrapper::readLine(int timeoutInMs) {
   string result = "";
   try{
     while (isConnected() && readDone == false) {
+      printf(">>\n");
       btle.read_and_process_next();
+      printf("<<\n");
       if (current_timestamp() - startTime > timeoutInMs) {
         printf("readLine timeout\n");
         break;

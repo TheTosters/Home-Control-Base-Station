@@ -30,7 +30,7 @@
 #include <sys/socket.h>
 
 #include <unistd.h>
-
+#include <sys/time.h>
 using namespace std;
 
 namespace BLEPP
@@ -151,6 +151,11 @@ namespace BLEPP
 
 	PDUResponse BLEDevice::receive(uint8_t* buf, int max)
 	{
+	  struct timeval tv;
+	  tv.tv_sec = 1;  /* 1 Secs Timeout */
+	  tv.tv_usec = 0;  // Not init'ing this can cause strange errors
+	  setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv,sizeof(struct timeval));
+
 		int len = read(sock, buf, max);
 		test(len, Read);
 		pretty_print(PDUResponse(buf, len));

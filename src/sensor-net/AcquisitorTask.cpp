@@ -22,6 +22,7 @@ int AcquisitorTask::getSensorId() {
 }
 
 bool AcquisitorTask::execute(){
+  printf("[Acquisition task %p] start\n", this);
   attempts ++;
   MeasurementMap measurements = nullptr;
   try {
@@ -31,7 +32,7 @@ bool AcquisitorTask::execute(){
       measurements = make_shared<unordered_map<string, MeasurementList>>();
       parser.requestMeasurement(measurements, measurementsCount);
       listener->onSensorData(sensor, measurements);
-      printf("Exit acquisition task\n");
+      printf("[Acquisition task %p] Exit acquisition task\n", this);
       return true;
     }
 
@@ -42,6 +43,9 @@ bool AcquisitorTask::execute(){
   } catch (...) {
     logger->error("Undefined exception at fetchMeasurements");
   }
-  logger->warn("Acquisition from {}({}) failed, we will retry (probably)", sensor->getName(), sensor->getAddress());
-  return attempts > MAX_RETRY_ATTEMPTS;
+  bool notRetry = attempts > MAX_RETRY_ATTEMPTS;
+  logger->warn("Acquisition from {}({}) failed, we will retry:{}",
+      sensor->getName(), sensor->getAddress(), notRetry ? "NO" : "YES");
+  printf("[Acquisition task %p] exit", this);
+  return notRetry;
 }
