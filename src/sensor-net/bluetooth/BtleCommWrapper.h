@@ -1,87 +1,47 @@
 /*
- * BtleCom.h
+ * BtleCommWrapper.h
  *
- *  Created on: Apr 10, 2017
+ *  Created on: Apr 20, 2017
  *      Author: Zarnowski
  */
 
-#ifndef BtleCom_hpp
-#define BtleCom_hpp
+#ifndef BtleCommWrapper_hpp
+#define BtleCommWrapper_hpp
 
-extern "C" {
-    #include "glib-2.0/glib.h"
-    #include "libgatt/gattrib.h"
-}
 #include <string>
 #include <vector>
 #include <memory>
 #include <mutex>
+#include "blepp/blepp/blestatemachine.h"
+#include <sstream>
 
 using namespace std;
-
-enum ConnectionStatusState {
-  cssNone,
-
-  cssConnect,
-  cssConnected,
-
-  cssDiscover,
-  cssDiscovered,
-
-  cssFailedToConnect,
-  cssConnectionEstablished,
-};
-
-enum NextAction {
-  naContinue,
-  naRepeat,
-  naFatal
-};
+using namespace BLEPP;
 
 class BtleCommWrapper {
   public:
     BtleCommWrapper();
     virtual ~BtleCommWrapper();
-    bool connectTo(const string& address, gint64 timeoutInMs);
+
+    bool connectTo(const string& address, int timeoutInMs = 6000);
     bool isConnected();
     void disconnect();
-    bool send(const string& data, int timeoutInMs = 3000);
-    string readLine(int timeoutInMs);
+    bool send(const string& data, int timeoutInMs = 6000);
+    string readLine(int timeoutInMs = 6000);
   private:
-    ConnectionStatusState state;
-    GMainLoop* eventLoop;
-    GThread* eventLoopThread;
-    GIOChannel* btleChannel;
-    GAttrib* btleAttribute;
-    guint16 btleValueHandle;
-    guint btleHandleNotifyRegisterId;
-    guint btleHandleIndRegisterId;
-    std::mutex notificationMutex;
-    bool notificationReceived;
-    GMutex mutex;
-    int btleError;
-    std::shared_ptr<std::vector<uint8_t>> notificationBuffer;
+    BLEGATTStateMachine btle;
+    Characteristic* charToUse;
+    bool connected;
+    bool readDone;
+    bool writeDone;
+    std::vector<uint8_t> notificationBuffer;
 
-    void setBtleError(int error);
-    bool isBtleError();
-    NextAction handleBtleError();
-
-    void deleteBtleChannel();
-    void deleteBtleAttrib();
-
-    bool isConnectingInProgress();
-    ConnectionStatusState getState();
-    void setState(ConnectionStatusState state);
-
-    static void connectCallback(GIOChannel *io, GError *err, gpointer user_data);
-    static void discoverCharacteristicCallback(GSList *characteristics, uint8_t status, void *user_data);
-    static void notificationEventsHandler(const uint8_t *pdu, uint16_t len, gpointer user_data);
-    static gboolean channelWatch(GIOChannel* source, GIOCondition condition, gpointer data);
-    static void writeValueCallback(guint8 status, const guint8 *pdu, guint16 plen, gpointer user_data);
-
-    void executeConnect(const string& address);
-    void executeDiscovery(int timeoutInMicro, gint64 startTime);
-
+    void onFoundServicesAndCharacteristics();
+    void onDisconnected(BLEGATTStateMachine::Disconnect d);
+    void onCharacteristicNotification(const PDUNotificationOrIndication& notif);
+    void onConnected();
+    bool readLineFromBuffer(string& result);
+    void installCallbacks();
 };
 
-#endif /* BtleCom_hpp */
+#endif /* BtleCommWrapper_hpp */
