@@ -19,7 +19,7 @@ I'm not a c / c++ developer, so many parts of coda can be done better. Also deci
 
 * I still struggle between raw pointers and smart pointers and copies of objects. You can notice it in many places.
 
-* LibGatt code used as a BTLE layer is not reliable, I put several layers of abstraction on this. I believe this need to be "Nuked from Orbit" and used some other BTLE library prefferable in c++. 
+* Libblepp is in very poor state, but it has minimum functionality which I need. So I wrapped this and currently using as a much easier/stable then previous abnomination around libgatt.
 
 # Breaking decisions
 
