@@ -110,15 +110,6 @@ MeasurementList SensorNetProtocolParser::parseValueWithTimestamp(RemoteCommand& 
   return result;
 }
 
-void SensorNetProtocolParser::logParseError(string const& data, string const& msg, size_t const& column) {
-  
-  logger->warn("Parse error near {}: {}", column, msg);
-  logger->warn("Received data:{}", data);
-  string tmp = string(column + 14, ' ');
-  tmp.append("^");
-  logger->warn("{}", tmp);
-}
-
 shared_ptr<RemoteCommand> SensorNetProtocolParser::executeSimpleCommand(const string& cmd) {
   RemoteCommandBuilder builder(cmd);
   shared_ptr<string> response = link->sendCommand(builder.buildCommand());

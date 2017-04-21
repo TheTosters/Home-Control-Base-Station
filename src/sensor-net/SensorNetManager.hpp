@@ -44,7 +44,7 @@ class SensorNetManager : public HciWrapperListener {
     virtual ~SensorNetManager();
 
     void fetchMeasurements(shared_ptr<PhysicalSensor> sensor, SensorDataListener* listener, int count = 1);
-    void sendRelayState(shared_ptr<PhysicalSensor> sensor, int relayId, bool turnedOn, int howLongItShouldBeSustained);
+    int sendRelayState(shared_ptr<PhysicalSensor> sensor, int relayId, bool turnedOn, int howLongItShouldBeSustained);
 
     void setSensorsConfigFile(const string& filename);
     void saveConfiguration();

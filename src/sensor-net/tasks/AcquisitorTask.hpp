@@ -21,12 +21,15 @@ class AcquisitorTask {
 
     bool execute();
     int getSensorId();
+    int getTaskId();
   protected:
     shared_ptr<PhysicalSensor>  sensor;
     shared_ptr<spdlog::logger> logger;
     int attempts;
+    const int taskId;
 
     virtual bool innerExecute() = 0;
+    virtual void giveUp();
 };
 
 #endif /* AcquisitorTask_hpp */

@@ -299,7 +299,7 @@ void SensorNetManager::resolverThreadMain() {
   logger->info("Resolver thread done.");
 }
 
-void SensorNetManager::sendRelayState(shared_ptr<PhysicalSensor> sensor, int relayId, bool turnedOn,
+int SensorNetManager::sendRelayState(shared_ptr<PhysicalSensor> sensor, int relayId, bool turnedOn,
     int howLongItShouldBeSustained) {
 
 }
