@@ -1,1 +1,0 @@
-ADD_LIBRARY(libgatt att.c bluetooth.c btio.c gatt.c gattrib.c hci.c sdp.c uuid.c log.c)

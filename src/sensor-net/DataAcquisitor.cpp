@@ -85,6 +85,12 @@ void DataAcquisitor::fetch(shared_ptr<PhysicalSensor> sensor, SensorDataListener
 
   if (item != tasksToExecute.end()) {
     logger->warn("Sensor {}({}) already in fetch list, not added again.", sensor->getName(), sensor->getAddress());
+    if (workerThread == nullptr && paused == false) {
+      lock.unlock();
+      startThread();
+    } else {
+      logger->warn("Thread already started?");
+    }
     return;
   }
 
