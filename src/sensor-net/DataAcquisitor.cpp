@@ -19,20 +19,8 @@ DataAcquisitor::~DataAcquisitor() {
 
 void DataAcquisitor::stopThread() {
   logger->info("Stopping worker thread");
-  thread* tmp = nullptr;
-  {
-    //critical section
-    unique_lock<mutex> lock(innerMutex);
-    if (workerThread != nullptr) {
-      tmp = workerThread;
-      workerThread = nullptr; //delete inside thread main
-    }
-  }
-
-  if (tmp != nullptr) {
-    tmp->join();
-    delete tmp;
-  }
+  unique_lock<mutex> lock(innerMutex);
+  workerThread = nullptr; //delete inside thread main
 }
 
 void DataAcquisitor::startThread() {
@@ -58,26 +46,32 @@ void DataAcquisitor::workerThreadMain() {
   lock.unlock();
 
   while(true) {
-    //check exit conditions
-    lock.lock();
-    if ((workerThread == nullptr) || (paused == true) || (tasksToExecute.size() == 0)) {
-      //we don't want to release lock here! It will be released after we cleanup workerThread field!
-      break;
-    }
-    shared_ptr<AcquisitorTask> task = tasksToExecute.front();
-    tasksToExecute.erase(tasksToExecute.begin());
-    lock.unlock();
-
-    if ( task->execute() == false ) {
+    try{
+      //check exit conditions
       lock.lock();
-      tasksToExecute.push_back(task);
+      if ((workerThread == nullptr) || (paused == true) || (tasksToExecute.size() == 0)) {
+        //we don't want to release lock here! It will be released after we cleanup workerThread field!
+        break;
+      }
+      shared_ptr<AcquisitorTask> task = tasksToExecute.front();
+      tasksToExecute.erase(tasksToExecute.begin());
       lock.unlock();
+
+      if (task->execute() == false) {
+        lock.lock();
+        tasksToExecute.push_back(task);
+        lock.unlock();
+      }
+    } catch (...) {
+      printf(" --- catch\n");
     }
   }
   logger->info("{} Worker thread exit main loop.", __func__);
   //release thread memory
   //NOTE: we should be already in locked mutex state here!
   threadPtr->detach();  //don't use workerThread here, it might be nullptr
+  delete threadPtr;
+  workerThread = nullptr;
   lock.unlock();
 
   logger->info("{} Worker thread done.", __func__);

@@ -21,6 +21,8 @@ CommunicationLink::CommunicationLink(CommunicationLinkType _type, shared_ptr<Phy
     btleWrapper->connectTo(_device->getAddress(), BTLE_TIMEOUT);
     if (btleWrapper->isConnected()) {
       logger->debug("Connected to {}", _device->getAddress().c_str());
+    } else {
+      logger->debug("NOT connected to {}", _device->getAddress().c_str());
     }
   }
 }
