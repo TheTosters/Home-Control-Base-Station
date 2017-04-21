@@ -10,22 +10,23 @@
 
 #include "entities/PhysicalSensor.hpp"
 #include "misc/LogHelper.hpp"
-#include "SensorDataListener.hpp"
+#include "sensor-net/SensorDataListener.hpp"
 
 using namespace std;
 
 class AcquisitorTask {
   public:
-    AcquisitorTask(shared_ptr<PhysicalSensor> sensor, int count, SensorDataListener* listener,
-        shared_ptr<spdlog::logger> logger);
+    AcquisitorTask(shared_ptr<PhysicalSensor> sensor, shared_ptr<spdlog::logger> logger);
+    virtual ~AcquisitorTask() = default;
+
     bool execute();
     int getSensorId();
-  private:
+  protected:
     shared_ptr<PhysicalSensor>  sensor;
-    SensorDataListener* listener;
-    int attempts;
-    int measurementsCount;
     shared_ptr<spdlog::logger> logger;
+    int attempts;
+
+    virtual bool innerExecute() = 0;
 };
 
 #endif /* AcquisitorTask_hpp */

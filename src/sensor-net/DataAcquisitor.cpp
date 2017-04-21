@@ -6,6 +6,7 @@
  */
 
 #include <sensor-net/DataAcquisitor.hpp>
+#include <sensor-net/tasks/FetchMeasurementTask.hpp>
 #include <algorithm>
 
 DataAcquisitor::DataAcquisitor(shared_ptr<spdlog::logger> logger)
@@ -95,7 +96,7 @@ void DataAcquisitor::fetch(shared_ptr<PhysicalSensor> sensor, SensorDataListener
   }
 
   logger->info("Adding sensor {}({}) to fetch queue.", sensor->getName(), sensor->getAddress());
-  tasksToExecute.push_back( make_shared<AcquisitorTask>(sensor, count, listener, logger));
+  tasksToExecute.push_back( make_shared<FetchMeasurementTask>(sensor, count, listener, logger));
 
   if (workerThread == nullptr && paused == false) {
     lock.unlock();

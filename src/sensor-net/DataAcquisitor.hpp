@@ -14,7 +14,7 @@
 #include "entities/PhysicalSensor.hpp"
 #include "misc/LogHelper.hpp"
 #include "SensorDataListener.hpp"
-#include "sensor-net/AcquisitorTask.hpp"
+#include "sensor-net/tasks/AcquisitorTask.hpp"
 
 using namespace std;
 
