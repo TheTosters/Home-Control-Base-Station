@@ -18,17 +18,24 @@
 #include "parsers/RemoteCommandBuilder.hpp"
 #include "parsers/InParser.hpp"
 
-const string SINGLE_MEASUREMENT_REQUEST = "RDR0001";
-const string MEASUREMENT_COMMAND = "RDR";
-
 SensorNetProtocolParser::SensorNetProtocolParser(CommunicationLink* _link)
 : link(_link), inParser(new InParser()),
   responseCmdToSensorType({
-    {"VTM", svtTemperature},
-    {"VHM", svtHumidity},
-    {"VPM", svtPowerConsumption}
+    {REMOTE_CMD_VALUE_TEMP_HISTORY, svtTemperature},
+    {"VHM", svtHumidity}, //TODO: add to doc or remove
+    {"VPM", svtPowerConsumption} //TODO: add to doc or remove
   }),
   logger(spdlog::get(COMMUNICATION_LOGGER_NAME)) {
+
+}
+
+Number SensorNetProtocolParser::sendSimpleCommand(shared_ptr<string> command, NumbersList arguments, bool* isError) {
+  RemoteCommandBuilder builder(*command);
+  for(auto arg : *arguments) {
+    builder.addArgument(arg);
+  }
+  shared_ptr<string> response = link->sendCommand(builder.buildCommand());
+  shared_ptr<RemoteCommand> retCmd = inParser->parse(response);
 
 }
 

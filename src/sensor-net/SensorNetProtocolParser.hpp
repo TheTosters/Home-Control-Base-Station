@@ -27,6 +27,7 @@ class SensorNetProtocolParser {
   
     void requestMeasurement(MeasurementMap& result, int count = 1);
     bool requestSensorSpec();
+    Number sendSimpleCommand(shared_ptr<string> command, NumbersList arguments, bool* isError);
   private:
     CommunicationLink* link;
     InParser* inParser;

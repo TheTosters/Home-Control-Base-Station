@@ -10,17 +10,27 @@
 #include <iomanip>
 #include <sstream>
 
-const string REMOTE_CMD_READ_TEMP_HISTORY = "RTH";
-const string REMOTE_CMD_GET_SOFTWARE_VERSION = "AVI";
+//config
 const string REMOTE_CMD_CONFIGURE_TEMPERATURE_RESOLUTION = "CTR";
 const string REMOTE_CMD_CONFIGURE_TEMPERATURE_PERIOD = "CTP";
 const string REMOTE_CMD_CONFIGURE_POWER_PERIOD = "CPP";
 const string REMOTE_CMD_CONFIGURE_SYSTEM_TIME = "CST";
 const string REMOTE_CMD_GET_SYSTEM_CAPABILITIES = "CSC";
 const string REMOTE_CMD_CONFIGURE_NODE_NAME = "CNN";
-const string REMOTE_CMD_CONFIGURE_RESET_SYSTEM = "CRS";
 const string REMOTE_CMD_CONFIGURE_SAVING_MODE = "CSM";
 const string REMOTE_CMD_CONFIGURE_SAVING_ACTIVITY = "CSA";
+const string REMOTE_CMD_CONFIGURE_DEFAULT_GPIO_OUTPUT = "COD";
+
+//aux
+const string REMOTE_CMD_REQUEST_SYSTEM_RESET = "ARS";
+const string REMOTE_CMD_GET_SOFTWARE_VERSION = "AVI";
+const string REMOTE_CMD_CHANGE_OUTPUT_GPIO = "AOS";
+
+//read
+const string REMOTE_CMD_READ_TEMP_HISTORY = "RTH";
+
+//values
+const string REMOTE_CMD_VALUE_TEMP_HISTORY = "VTM";
 
 RemoteCommandBuilder::RemoteCommandBuilder(const string& cmd, bool includePreamble)
 : outCmd(cmd), elementsType(UNKNOWN), isSequenceOpen(false), needComa(false), expectedNextSubsequence(false),
@@ -51,6 +61,15 @@ void RemoteCommandBuilder::addArgument(int64_t value) {
     }
     outCmd += to_string(value);
     needComa = true;
+}
+
+void RemoteCommandBuilder::addArgument(Number value) {
+  if (value.getType() == DoubleType) {
+    addArgument(value.asDouble());
+
+  } else {
+    addArgument(value.asInt64());
+  }
 }
 
 void RemoteCommandBuilder::addArgument(double value) {
