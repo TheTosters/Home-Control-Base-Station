@@ -11,6 +11,7 @@
 #include <memory>
 #include "entities/PhysicalSensor.hpp"
 #include <misc/SimpleActionListener.hpp>
+#include <misc/LogHelper.hpp>
 
 using namespace std;
 
@@ -37,13 +38,17 @@ class RelayStateSentCommand {
 
 class RelayState : public SimpleActionListener {
   public:
-    RelayState(int relayId, shared_ptr<PhysicalSensor> sensor, int sensorRelayIndex, bool initialState);
+    RelayState(int relayId, string name, shared_ptr<PhysicalSensor> sensor, int sensorRelayIndex, bool initialState,
+        shared_ptr<spdlog::logger> logger);
     virtual ~RelayState() = default;
     bool isRelayEnabled();
     long long timeToStateChange();
     void setRequestedState(int commandId, bool requestedState, long long duration);
     void setInitialState(int commandId, bool state);
     bool getInitialState();
+    int getRelayId();
+    void setName(const string& name);
+    string getName();
 
     virtual void onActionSuccess(int id) override;
     virtual void onActionError(int id, int error) override;
@@ -57,6 +62,8 @@ class RelayState : public SimpleActionListener {
     bool        requestedState; //this state will be executed for durationOfState seconds
     long long   durationOfState;  //after this time, relay will be moved to opposite state
     vector<RelayStateSentCommand> commandsToTrace;
+    shared_ptr<spdlog::logger> logger;
+    string      name;
 
     void applyCommand(RelayStateSentCommand& cmd);
 };

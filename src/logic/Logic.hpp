@@ -23,6 +23,7 @@
 #include "entities/Entities.hpp"
 #include "misc/LogHelper.hpp"
 #include "sensor-net/SensorDataListener.hpp"
+#include <logic/relays/RelaysStatesMachine.hpp>
 
 using namespace std;
 using namespace nlohmann;
@@ -45,6 +46,7 @@ class Logic : public SensorDataListener {
     shared_ptr<ScheduleMap> getRoomHeatingPlan();
     SharedState getSharedState();
     RoomsList getRooms();
+    RelaysStatesMachine getRelaysStatesMachine();
 
     virtual void onSensorData(shared_ptr<PhysicalSensor> sensor, MeasurementMap measurements) override;
   private:
@@ -59,7 +61,8 @@ class Logic : public SensorDataListener {
     RoomsList         rooms;
     shared_ptr<spdlog::logger> logger;
     SharedState sharedState;   //this is state vector for logic rules
-  
+    RelaysStatesMachine relaysStatesMachine;
+
     void execute();
     void storeMeasurements(long sensorId, MeasurementMap data);
     void executeMeasurements();

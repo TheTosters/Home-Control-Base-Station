@@ -1,23 +1,16 @@
 [
   {
     "id" : 101,
-    "name" : "Kitchen Temp",
+    "name" : "SensorT",
     "type" : [0],
-    "address" : "aa:ff:22:99",
-    "fetchDelay" : 5
-  },
-  {
-    "id" : 102,
-    "name" : "Bedroom Temp",
-    "type" : [0],
-    "address" : "bb:ff:22:99",
+    "address" : "5C:F8:21:F9:80:BD",
     "fetchDelay" : 5
   },
   {
     "id" : 103,
-    "name" : "Living room Temp",
+    "name" : "Relay",
     "type" : [0],
-    "address" : "cc:ff:22:99",
-    "fetchDelay" : 5
+    "address" : "5C:F8:21:F9:80:BD",
+    "fetchDelay" : 1000
   }
 ]

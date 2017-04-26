@@ -28,7 +28,8 @@ Logic::Logic(shared_ptr<Storage> store, shared_ptr<SensorNetManager> sensors)
   rules(make_shared<LogicRulesVector>()),
   rooms(make_shared<RoomsVector>()),
   logger( spdlog::get(LOGIC_LOGGER_NAME) ),
-  sharedState(make_shared<unordered_map<int, int>>()) {
+  sharedState(make_shared<unordered_map<int, int>>()),
+  relaysStatesMachine( RelaysStatesMachine(logger) ){
 
 }
 
@@ -213,4 +214,8 @@ void Logic::terminate() {
     tmp->join();
     delete tmp;
   }
+}
+
+RelaysStatesMachine Logic::getRelaysStatesMachine() {
+  return relaysStatesMachine;
 }

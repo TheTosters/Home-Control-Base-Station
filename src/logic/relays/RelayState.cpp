@@ -19,14 +19,17 @@ RelayStateSentCommand::RelayStateSentCommand(int commandId, bool requestedState,
 
 }
 
-RelayState::RelayState(int relayId, shared_ptr<PhysicalSensor> sensor, int sensorRelayIndex, bool initialState)
+RelayState::RelayState(int relayId, string name, shared_ptr<PhysicalSensor> sensor, int sensorRelayIndex,
+    bool initialState, shared_ptr<spdlog::logger> logger)
 : relayId(relayId),
   sensor(sensor),
   sensorRelayIndex(sensorRelayIndex),
   timeOfChange(0),
   initialState(initialState),
   requestedState(false),
-  durationOfState(0) {
+  durationOfState(0),
+  logger(logger),
+  name(name) {
 
 }
 
@@ -78,11 +81,12 @@ void RelayState::applyCommand(RelayStateSentCommand& cmd) {
 
   } else {
     //this is bad, and I'm sad
-    printf("Unknown command id:%d type:%d", cmd.commandId, cmd.type);
+    logger->error("Unknown command id:{} type:{}", cmd.commandId, cmd.type);
   }
 }
 
 void RelayState::onActionSuccess(int id) {
+  logger->debug("Action id:{}, succeed.", id);
   auto iter = std::find_if(commandsToTrace.begin(), commandsToTrace.end(), [id](RelayStateSentCommand& cmd){
     return cmd.commandId == id;
   });
@@ -94,13 +98,27 @@ void RelayState::onActionSuccess(int id) {
 }
 
 void RelayState::onActionError(int id, int error) {
+  logger->warn("Action id:{}, failed with error code:{}", id, error);
   onActionFailure(id);
 }
 
 void RelayState::onActionFailure(int id) {
   //just drop this command
+  logger->warn("Action id:{}, failed.", id);
   auto iter = std::remove_if(commandsToTrace.begin(), commandsToTrace.end(), [id](RelayStateSentCommand& cmd){
     return cmd.commandId == id;
   });
   commandsToTrace.erase(iter, commandsToTrace.end());
+}
+
+int RelayState::getRelayId() {
+  return relayId;
+}
+
+void RelayState::setName(const string& name) {
+  this->name = name;
+}
+
+string RelayState::getName() {
+  return name;
 }
