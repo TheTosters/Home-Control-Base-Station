@@ -33,7 +33,8 @@ typedef shared_ptr<unordered_map<int, int>> SharedState;
 
 class Logic : public SensorDataListener {
   public:
-    Logic(shared_ptr<Storage> storage, shared_ptr<SensorNetManager> sensorNetManager);
+    Logic(shared_ptr<Storage> storage, shared_ptr<SensorNetManager> sensorNetManager,
+        shared_ptr<RelaysStatesMachine> relaysStatesMachine);
     virtual ~Logic();
   
     shared_ptr<Storage> getStorage();
@@ -46,7 +47,7 @@ class Logic : public SensorDataListener {
     shared_ptr<ScheduleMap> getRoomHeatingPlan();
     SharedState getSharedState();
     RoomsList getRooms();
-    RelaysStatesMachine getRelaysStatesMachine();
+    shared_ptr<RelaysStatesMachine> getRelaysStatesMachine();
 
     virtual void onSensorData(shared_ptr<PhysicalSensor> sensor, MeasurementMap measurements) override;
   private:
@@ -61,7 +62,7 @@ class Logic : public SensorDataListener {
     RoomsList         rooms;
     shared_ptr<spdlog::logger> logger;
     SharedState sharedState;   //this is state vector for logic rules
-    RelaysStatesMachine relaysStatesMachine;
+    shared_ptr<RelaysStatesMachine> relaysStatesMachine;
 
     void execute();
     void storeMeasurements(long sensorId, MeasurementMap data);

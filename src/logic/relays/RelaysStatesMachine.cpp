@@ -9,7 +9,11 @@
 #include <algorithm>
 
 RelaysStatesMachine::RelaysStatesMachine(shared_ptr<spdlog::logger> logger)
-:logger(logger) {
+: logger(logger){
+}
+
+void RelaysStatesMachine::setConfigFile(const string& path) {
+  this->configPath = path;
 }
 
 void RelaysStatesMachine::addRelay(int relayId, string name, shared_ptr<PhysicalSensor> relayDevice, int onDeviceIndex,

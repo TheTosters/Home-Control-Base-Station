@@ -19,7 +19,8 @@
 static const time_t LOGIC_THREAD_SLEEP_TIME = 100; //in ms
 static const int MINIMUM_FETCH_DELAY = 5; //in seconds
 
-Logic::Logic(shared_ptr<Storage> store, shared_ptr<SensorNetManager> sensors)
+Logic::Logic(shared_ptr<Storage> store, shared_ptr<SensorNetManager> sensors,
+    shared_ptr<RelaysStatesMachine> relaysStatesMachine)
 : storage(store),
   sensorNetManager(sensors),
   terminated(false),
@@ -29,7 +30,7 @@ Logic::Logic(shared_ptr<Storage> store, shared_ptr<SensorNetManager> sensors)
   rooms(make_shared<RoomsVector>()),
   logger( spdlog::get(LOGIC_LOGGER_NAME) ),
   sharedState(make_shared<unordered_map<int, int>>()),
-  relaysStatesMachine( RelaysStatesMachine(logger) ){
+  relaysStatesMachine( relaysStatesMachine ){
 
 }
 
@@ -216,6 +217,6 @@ void Logic::terminate() {
   }
 }
 
-RelaysStatesMachine Logic::getRelaysStatesMachine() {
+shared_ptr<RelaysStatesMachine> Logic::getRelaysStatesMachine() {
   return relaysStatesMachine;
 }

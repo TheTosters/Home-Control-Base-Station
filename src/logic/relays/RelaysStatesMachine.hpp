@@ -24,10 +24,11 @@ class RelaysStatesMachine {
     void addRelay(int relayId, string name, shared_ptr<PhysicalSensor> relayDevice, int onDeviceIndex, bool defaultState);
     void removeRelay(int relayId);
     shared_ptr<RelayState> getRelayState(int id);
-
+    void setConfigFile(const string& path);
   private:
     shared_ptr<spdlog::logger> logger;
     vector<shared_ptr<RelayState>> relays;
+    string configPath;
 };
 
 #endif /* RelaysStatesMachine_hpp */

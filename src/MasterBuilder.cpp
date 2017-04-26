@@ -21,6 +21,7 @@
 static const string KEY_HEATING_CONFIG_FILE = "heatingPlan";
 static const string KEY_HOME_PLAN_CONFIG_FILE = "homePlan";
 static const string KEY_SENSORS_CONFIG_FILE = "sensors";
+static const string KEY_RELAYS_CONFIG_FILE = "relays";
 static const string KEY_STORAGE_DB_FILE = "dbFile";
 static const string KEY_USE_DB = "useDb";
 
@@ -164,6 +165,73 @@ void MasterBuilder::buildSensors() {
   spdlog::get(MISC_LOGGER_NAME)->info("Building Sensors Net DONE.");
 }
 
+void MasterBuilder::buildRelays() {
+  relaysStatesMachine = make_shared<RelaysStatesMachine>(spdlog::get(LOGIC_LOGGER_NAME));
+
+  string configFile = masterConfig[KEY_RELAYS_CONFIG_FILE];
+  relaysStatesMachine->setConfigFile(configFile);
+  spdlog::get(MISC_LOGGER_NAME)->info("Building relays Net...");
+  spdlog::get(MISC_LOGGER_NAME)->info("  Config:{}", configFile);
+
+  int count = 0;
+  std::ifstream inputFileStream(configFile);
+  if (inputFileStream.good() == false) {
+    throw invalid_argument("Can't open config:" + configFile);
+  }
+
+  std::stringstream buffer;
+  buffer << inputFileStream.rdbuf();
+  json inJson = json::parse(buffer);
+
+  if (inJson.is_array() == false) {
+    throw invalid_argument("Expected JSON array in:" + configFile);
+  }
+  for (auto iter = inJson.begin(); iter != inJson.end(); iter++) {
+    count++;
+    buildSingleRelay(*iter);
+  }
+
+  spdlog::get(MISC_LOGGER_NAME)->info("  Relays count:{}", count);
+  spdlog::get(MISC_LOGGER_NAME)->info("Building Relays Net DONE.");
+}
+
+void MasterBuilder::buildSingleRelay(json const& data) {
+  long id = getOptionalJSONLong(data, "id");
+  if (id < 0) {
+    spdlog::get(MISC_LOGGER_NAME)->error("Missing mandatory field 'id' in {}", data.dump());
+    return;
+  }
+
+  long sensorId = getOptionalJSONLong(data, "sensorId");
+  if (sensorId < 0) {
+    spdlog::get(MISC_LOGGER_NAME)->error("Missing mandatory field 'sensorId' in {}", data.dump());
+    return;
+  }
+
+  long sensorIndex = getOptionalJSONLong(data, "sensorIndex");
+  if (sensorIndex < 0) {
+    spdlog::get(MISC_LOGGER_NAME)->error("Missing mandatory field 'sensorIndex' in {}", data.dump());
+    return;
+  }
+
+  bool defaultState;
+  getOptionalJSONBool(data, "defaultState", defaultState);
+
+  shared_ptr<string> name = getOptionalJSONString(data, "name");
+  if (name == nullptr) {
+    spdlog::get(MISC_LOGGER_NAME)->error("Missing mandatory field 'name' in {}", data.dump());
+    return;
+  }
+
+  shared_ptr<PhysicalSensor> sensor = sensorNetManager->getSensorById(sensorId);
+  if (sensor == nullptr) {
+    spdlog::get(MISC_LOGGER_NAME)->error("Can't find physical sensor with id:{}, error at:{}", sensorId, data.dump());
+    return;
+  }
+
+  relaysStatesMachine->addRelay(id, *name, sensor, sensorIndex, defaultState);
+}
+
 void MasterBuilder::buildHeatingPlan() {
   
   string configFile = masterConfig[KEY_HEATING_CONFIG_FILE];
@@ -275,8 +343,9 @@ void MasterBuilder::buildLogic() {
   spdlog::get(MISC_LOGGER_NAME)->info("Building logic...");
   buildStorage();
   buildSensors();
+  buildRelays();
   
-  logic = make_shared<Logic>(storage, sensorNetManager);
+  logic = make_shared<Logic>(storage, sensorNetManager, relaysStatesMachine);
   
   buildHeatingPlan();
   spdlog::get(MISC_LOGGER_NAME)->info("Building logic DONE.");
