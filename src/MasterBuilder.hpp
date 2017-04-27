@@ -51,6 +51,7 @@ class MasterBuilder {
     void parseHetingPlans(json const& definition);
     void parseRoomHeating(json const& definition);
     void buildLogicRules();
+    void buildSingleRule(json const& definition);
     void buildSingleRelay(json const& definition);
 };
 

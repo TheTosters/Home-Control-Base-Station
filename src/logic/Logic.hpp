@@ -48,6 +48,7 @@ class Logic : public SensorDataListener {
     shared_ptr<SharedState> getSharedState();
     RoomsList getRooms();
     shared_ptr<RelaysStatesMachine> getRelaysStatesMachine();
+    void setRulesConfigFile(const string& path);
 
     virtual void onSensorData(shared_ptr<PhysicalSensor> sensor, MeasurementMap measurements) override;
   private:
@@ -63,6 +64,7 @@ class Logic : public SensorDataListener {
     shared_ptr<spdlog::logger> logger;
     shared_ptr<SharedState> sharedState;   //this is state vector for logic rules
     shared_ptr<RelaysStatesMachine> relaysStatesMachine;
+    string rulesConfigPath;
 
     void execute();
     void storeMeasurements(long sensorId, MeasurementMap data);

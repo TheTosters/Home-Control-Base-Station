@@ -16,6 +16,8 @@
 class RoomTemperatureRule : public LogicRule {
   public:
     RoomTemperatureRule(shared_ptr<Logic> logic, string stoveStateName);
+
+    void setStoveStateName(const string& name);
     virtual void execute() override;
   private:
     shared_ptr<Logic> logic;

@@ -63,3 +63,7 @@ double RoomTemperatureRule::getTemperatureInRoom(shared_ptr<Room> room, bool& me
   
   return resultCount > 1 ? result / resultCount : result;
 }
+
+void RoomTemperatureRule::setStoveStateName(const string& name) {
+  stoveStateName = name;
+}

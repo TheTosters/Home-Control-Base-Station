@@ -223,3 +223,7 @@ void Logic::terminate() {
 shared_ptr<RelaysStatesMachine> Logic::getRelaysStatesMachine() {
   return relaysStatesMachine;
 }
+
+void Logic::setRulesConfigFile(const string& path) {
+  rulesConfigPath = path;
+}
