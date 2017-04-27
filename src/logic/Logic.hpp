@@ -24,12 +24,12 @@
 #include "misc/LogHelper.hpp"
 #include "sensor-net/SensorDataListener.hpp"
 #include <logic/relays/RelaysStatesMachine.hpp>
+#include <logic/SharedState.h>
 
 using namespace std;
 using namespace nlohmann;
 
 typedef unordered_map<string, shared_ptr<Schedule>> ScheduleMap;
-typedef shared_ptr<unordered_map<int, int>> SharedState;
 
 class Logic : public SensorDataListener {
   public:
@@ -45,7 +45,7 @@ class Logic : public SensorDataListener {
     void rebuildListOfMeasurementTasks();
     LogicRulesList getRules();
     shared_ptr<ScheduleMap> getRoomHeatingPlan();
-    SharedState getSharedState();
+    shared_ptr<SharedState> getSharedState();
     RoomsList getRooms();
     shared_ptr<RelaysStatesMachine> getRelaysStatesMachine();
 
@@ -61,7 +61,7 @@ class Logic : public SensorDataListener {
     LogicRulesList    rules;
     RoomsList         rooms;
     shared_ptr<spdlog::logger> logger;
-    SharedState sharedState;   //this is state vector for logic rules
+    shared_ptr<SharedState> sharedState;   //this is state vector for logic rules
     shared_ptr<RelaysStatesMachine> relaysStatesMachine;
 
     void execute();

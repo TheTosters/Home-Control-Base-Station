@@ -122,3 +122,11 @@ void RelayState::setName(const string& name) {
 string RelayState::getName() {
   return name;
 }
+
+shared_ptr<PhysicalSensor> RelayState::getPhysicalSensor() {
+  return sensor;
+}
+
+int RelayState::getRelayIndex() {
+  return sensorRelayIndex;
+}

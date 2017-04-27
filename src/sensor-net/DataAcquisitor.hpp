@@ -15,6 +15,8 @@
 #include "misc/LogHelper.hpp"
 #include "SensorDataListener.hpp"
 #include "sensor-net/tasks/AcquisitorTask.hpp"
+#include <sensor-net/parsers/Number.hpp>
+#include <misc/SimpleActionListener.hpp>
 
 using namespace std;
 
@@ -24,6 +26,8 @@ class DataAcquisitor {
     virtual ~DataAcquisitor();
 
     void fetch(shared_ptr<PhysicalSensor> sensor, SensorDataListener* listener, int count = 1);
+    int sendSimpleCommand(shared_ptr<PhysicalSensor> sensor, shared_ptr<string> command, NumbersList argList,
+        shared_ptr<SimpleActionListener> listener);
 
     void pause(bool waitForPause = true);
     bool isPaused();

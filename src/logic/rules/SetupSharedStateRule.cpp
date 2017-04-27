@@ -7,33 +7,27 @@
 //
 
 #include "logic/rules/SetupSharedStateRule.hpp"
+#include <algorithm>
 
-SetupSharedStateRule::SetupSharedStateRule(SharedState state)
-: sharedState(state),
-  valuesToSet(make_shared<unordered_map<int, int>>()) {
-  
-}
-
-SetupSharedStateRule::~SetupSharedStateRule() {
+SetupSharedStateRule::SetupSharedStateRule(shared_ptr<SharedState> state)
+: sharedState(state) {
   
 }
 
 void SetupSharedStateRule::execute() {
-  for(auto iter = valuesToSet->begin(); iter != valuesToSet->end(); iter++) {
+  for(auto iter = valuesToSet.begin(); iter != valuesToSet.end(); iter++) {
     (*sharedState)[iter->first] = iter->second;
   }
 }
 
-void SetupSharedStateRule::setValue(int key, int value) {
-  (*valuesToSet)[key] = value;
+void SetupSharedStateRule::setValue(string key, int value) {
+  valuesToSet[key] = value;
 }
 
-void SetupSharedStateRule::removeValue(int key) {
-  valuesToSet->erase(key);
+void SetupSharedStateRule::removeValue(string key) {
+  valuesToSet.erase(key);
 }
 
-SharedState SetupSharedStateRule::getValuesCopy() {
-  auto result = make_shared<unordered_map<int, int>>();
-  result->insert(valuesToSet->begin(), valuesToSet->end());
-  return result;
+unordered_map<string, int> SetupSharedStateRule::getValuesCopy() {
+  return valuesToSet;
 }

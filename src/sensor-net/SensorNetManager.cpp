@@ -14,6 +14,7 @@
 #include "SensorNetProtocolParser.hpp"
 #include "CommunicationLink.hpp"
 #include "sensor-net/DataAcquisitor.hpp"
+#include <sensor-net/parsers/RemoteCommandBuilder.hpp>
 
 const string FILE_NAME = "sensors-default.json";
 
@@ -299,7 +300,11 @@ void SensorNetManager::resolverThreadMain() {
   logger->info("Resolver thread done.");
 }
 
-int SensorNetManager::sendRelayState(shared_ptr<PhysicalSensor> sensor, int relayId, bool turnedOn,
-    int howLongItShouldBeSustained) {
-
+int SensorNetManager::sendRelayState(shared_ptr<PhysicalSensor> sensor, int relayIndex, bool turnedOn,
+    int duration, shared_ptr<SimpleActionListener> listener) {
+  NumbersList args = make_shared<vector<Number>>();
+  args->push_back(Number(relayIndex));
+  args->push_back(Number(turnedOn ? 1 : 0));
+  args->push_back(Number(duration));
+  return acquisitor->sendSimpleCommand(sensor, make_shared<string>(REMOTE_CMD_CHANGE_OUTPUT_GPIO), args, listener);
 }

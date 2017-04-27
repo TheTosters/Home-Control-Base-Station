@@ -10,21 +10,22 @@
 #define SetupSharedStateRule_hpp
 
 #include <stdio.h>
+#include <unordered_map>
 #include "logic/rules/LogicRule.hpp"
 #include "logic/Logic.hpp"
 
 class SetupSharedStateRule : public LogicRule {
   public:
-    SetupSharedStateRule(SharedState state);
-    virtual ~SetupSharedStateRule();
+    SetupSharedStateRule(shared_ptr<SharedState> state);
+    virtual ~SetupSharedStateRule() = default;
   
     virtual void execute() override;
-    void setValue(int key, int value);
-    void removeValue(int key);
-    SharedState getValuesCopy();
+    void setValue(string key, int value);
+    void removeValue(string key);
+    unordered_map<string, int> getValuesCopy();
   private:
-    SharedState sharedState;
-    SharedState valuesToSet;
+    shared_ptr<SharedState> sharedState;
+    unordered_map<string, int> valuesToSet;
 };
 
 #endif /* SetupSharedStateRule_hpp */

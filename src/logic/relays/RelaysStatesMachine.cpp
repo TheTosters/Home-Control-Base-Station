@@ -8,8 +8,8 @@
 #include <logic/relays/RelaysStatesMachine.hpp>
 #include <algorithm>
 
-RelaysStatesMachine::RelaysStatesMachine(shared_ptr<spdlog::logger> logger)
-: logger(logger){
+RelaysStatesMachine::RelaysStatesMachine(shared_ptr<spdlog::logger> logger, shared_ptr<SensorNetManager> sensorNetManager)
+: logger(logger), sensorNetManager(sensorNetManager){
 }
 
 void RelaysStatesMachine::setConfigFile(const string& path) {
@@ -54,4 +54,25 @@ shared_ptr<RelayState> RelaysStatesMachine::getRelayState(int id) {
   } else {
     return *iter;
   }
+}
+
+void RelaysStatesMachine::demandRelayState(int relayId, bool relayState, long long duration) {
+  auto iter = find_if(relays.begin(), relays.end(), [relayId](shared_ptr<RelayState>& item) {
+    return item->getRelayId() == relayId;
+  });
+
+  if (iter != relays.end()) {
+    logger->error("Request to change unknown relay with id:{}", relayId);
+    return;
+  }
+
+  shared_ptr<RelayState> innerState = *iter;
+  auto sensor = innerState->getPhysicalSensor();
+
+  //request state
+  int cmdId = sensorNetManager->sendRelayState(sensor, innerState->getRelayIndex(), relayState, duration, innerState);
+  innerState->setRequestedState(cmdId, relayState, duration);
+
+  logger->debug("Request relay id {} state change to {} ({}s) -> sensor{}({}) relay index:{}", relayId, relayState,
+      duration, sensor->getName(), sensor->getAddress(), innerState->getRelayIndex());
 }

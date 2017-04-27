@@ -29,8 +29,8 @@ Logic::Logic(shared_ptr<Storage> store, shared_ptr<SensorNetManager> sensors,
   rules(make_shared<LogicRulesVector>()),
   rooms(make_shared<RoomsVector>()),
   logger( spdlog::get(LOGIC_LOGGER_NAME) ),
-  sharedState(make_shared<unordered_map<int, int>>()),
-  relaysStatesMachine( relaysStatesMachine ){
+  sharedState(make_shared<SharedState>()),
+  relaysStatesMachine( relaysStatesMachine ) {
 
 }
 
@@ -140,12 +140,14 @@ void Logic::execute() {
     }
   }
   
+  logger->info("*** Detaching thread ***");
   threadPtr->detach();  //don't use logicThread here, it might be nullptr
+  delete threadPtr;
 
   logger->info("*** Leaving main logic loop ***");
 }
 
-SharedState Logic::getSharedState() {
+shared_ptr<SharedState> Logic::getSharedState() {
   return sharedState;
 }
 
@@ -215,6 +217,7 @@ void Logic::terminate() {
     tmp->join();
     delete tmp;
   }
+  logger->error("Exit terminate.");
 }
 
 shared_ptr<RelaysStatesMachine> Logic::getRelaysStatesMachine() {

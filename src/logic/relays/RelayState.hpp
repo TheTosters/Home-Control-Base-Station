@@ -49,6 +49,8 @@ class RelayState : public SimpleActionListener {
     int getRelayId();
     void setName(const string& name);
     string getName();
+    shared_ptr<PhysicalSensor> getPhysicalSensor();
+    int getRelayIndex();
 
     virtual void onActionSuccess(int id) override;
     virtual void onActionError(int id, int error) override;

@@ -21,6 +21,9 @@ class Number {
         Number(uint64_t n) :
             curType(IntType), intVal(n) {
         }
+        Number(int n) :
+            curType(IntType), intVal(n) {
+        }
         Number(float n) :
             curType(DoubleType), doubleVal(n) {
         }

@@ -336,7 +336,7 @@ void MasterBuilder::buildLogicRules() {
   logic->getRules()->push_back( make_shared<RoomTemperatureRule>(logic) );
   
   //this is probably one of last rules, must be after all rules which control sove behavior
-  logic->getRules()->push_back( make_shared<StoveControlRule>(logic->getSharedState()) );
+  logic->getRules()->push_back( make_shared<TransferStateToRelayRule>(logic->getSharedState()) );
 }
 
 void MasterBuilder::buildLogic() {

@@ -8,6 +8,7 @@
 #include <sensor-net/DataAcquisitor.hpp>
 #include <sensor-net/tasks/FetchMeasurementTask.hpp>
 #include <algorithm>
+#include <sensor-net/tasks/SendSimpleCommandTask.hpp>
 
 DataAcquisitor::DataAcquisitor(shared_ptr<spdlog::logger> logger)
 : workerThread(nullptr), logger(logger), paused(false) {
@@ -97,6 +98,22 @@ void DataAcquisitor::fetch(shared_ptr<PhysicalSensor> sensor, SensorDataListener
 
   logger->info("Adding sensor {}({}) to fetch queue.", sensor->getName(), sensor->getAddress());
   tasksToExecute.push_back( make_shared<FetchMeasurementTask>(sensor, count, listener, logger));
+
+  if (workerThread == nullptr && paused == false) {
+    lock.unlock();
+    startThread();
+  }
+}
+
+int DataAcquisitor::sendSimpleCommand(shared_ptr<PhysicalSensor> sensor, shared_ptr<string> command,
+    NumbersList argList, shared_ptr<SimpleActionListener> listener) {
+
+  unique_lock<mutex> lock(innerMutex);
+
+  shared_ptr<SendSimpleCommandTask> task = make_shared<SendSimpleCommandTask>(sensor, command, argList, listener,
+      logger);
+  logger->info("Adding send simple command {} to sensor {}({}).", *command, sensor->getName(), sensor->getAddress());
+  tasksToExecute.push_back(task);
 
   if (workerThread == nullptr && paused == false) {
     lock.unlock();

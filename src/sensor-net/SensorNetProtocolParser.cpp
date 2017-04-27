@@ -36,7 +36,7 @@ Number SensorNetProtocolParser::sendSimpleCommand(shared_ptr<string> command, Nu
   }
   shared_ptr<string> response = link->sendCommand(builder.buildCommand());
   shared_ptr<RemoteCommand> retCmd = inParser->parse(response);
-
+//TODO: dokonczyc
 }
 
 void SensorNetProtocolParser::requestMeasurement(MeasurementMap& result, int count) {

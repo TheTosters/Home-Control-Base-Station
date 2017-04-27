@@ -11,13 +11,13 @@
 #include "SharedStatesConsts.h"
 #include "entities/Entities.hpp"
 
-RoomTemperatureRule::RoomTemperatureRule(shared_ptr<Logic> _logic)
-: logic(_logic) {
+RoomTemperatureRule::RoomTemperatureRule(shared_ptr<Logic> logic, string stoveStateName)
+: logic(logic), stoveStateName(stoveStateName) {
   
 }
 
 void RoomTemperatureRule::execute() {
-  int wantHeating = (*logic->getSharedState())[STATE_WANT_HEATING];
+  int wantHeating = (*logic->getSharedState())[stoveStateName];
   if (wantHeating != 0) {
     return;
   }
@@ -39,7 +39,7 @@ void RoomTemperatureRule::execute() {
     }
   }
   
-  (*logic->getSharedState())[STATE_WANT_HEATING] = wantHeating;
+  (*logic->getSharedState())[stoveStateName] = wantHeating;
 }
 
 double RoomTemperatureRule::getTemperatureInRoom(shared_ptr<Room> room, bool& measured) {
