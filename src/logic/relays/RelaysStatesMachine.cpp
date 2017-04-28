@@ -61,13 +61,17 @@ void RelaysStatesMachine::demandRelayState(int relayId, bool relayState, long lo
     return item->getRelayId() == relayId;
   });
 
-  if (iter != relays.end()) {
+  if (iter == relays.end()) {
     logger->error("Request to change unknown relay with id:{}", relayId);
     return;
   }
 
   shared_ptr<RelayState> innerState = *iter;
+  if (innerState->getRequestedState() == relayState) {
+    return;
+  }
   auto sensor = innerState->getPhysicalSensor();
+  logger->error("Request to change relay id:{} to state:{}", relayId, relayState);
 
   //request state
   int cmdId = sensorNetManager->sendRelayState(sensor, innerState->getRelayIndex(), relayState, duration, innerState);

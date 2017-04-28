@@ -35,6 +35,10 @@ extern const string REMOTE_CMD_READ_TEMP_HISTORY;
 //values
 extern const string REMOTE_CMD_VALUE_TEMP_HISTORY;
 
+//errors
+extern const string REMOTE_CMD_ERROR;
+
+
 class RemoteCommandBuilder {
     public:
         RemoteCommandBuilder(const string& cmd, bool includePreamble = true);

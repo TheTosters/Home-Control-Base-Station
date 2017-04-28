@@ -17,7 +17,7 @@
 class TransferStateToRelayRule : public LogicRule {
   public:
     TransferStateToRelayRule(shared_ptr<SharedState> sharedState, shared_ptr<RelaysStatesMachine> stateMachine,
-        string stateToTransfer, int relayId);
+        string stateToTransfer, int relayId, int duration);
     virtual void execute() override;
   private:
     shared_ptr<SharedState> sharedState;

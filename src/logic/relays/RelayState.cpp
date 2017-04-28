@@ -70,6 +70,17 @@ void RelayState::setRequestedState(int commandId, bool requestedState, long long
   commandsToTrace.push_back(RelayStateSentCommand(commandId, requestedState, duration, rssctRequestState, cdrsWaiting));
 }
 
+bool RelayState::getRequestedState() {
+  bool result = isRelayEnabled();
+  for(auto iter = commandsToTrace.begin(); iter != commandsToTrace.end(); iter++) {
+    if ( (*iter).type == rssctRequestState ) {
+      result = (*iter).requestedState;
+    }
+  }
+
+  return result;
+}
+
 void RelayState::applyCommand(RelayStateSentCommand& cmd) {
   if (cmd.type == rssctRequestState) {
     timeOfChange = Helper::currentTimestamp();
@@ -85,7 +96,7 @@ void RelayState::applyCommand(RelayStateSentCommand& cmd) {
   }
 }
 
-void RelayState::onActionSuccess(int id) {
+void RelayState::onActionSuccess(int id, Number result) {
   logger->debug("Action id:{}, succeed.", id);
   auto iter = std::find_if(commandsToTrace.begin(), commandsToTrace.end(), [id](RelayStateSentCommand& cmd){
     return cmd.commandId == id;

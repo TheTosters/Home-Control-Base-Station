@@ -119,6 +119,7 @@ int DataAcquisitor::sendSimpleCommand(shared_ptr<PhysicalSensor> sensor, shared_
     lock.unlock();
     startThread();
   }
+  return task->getTaskId();
 }
 
 void DataAcquisitor::pause(bool waitForPause) {

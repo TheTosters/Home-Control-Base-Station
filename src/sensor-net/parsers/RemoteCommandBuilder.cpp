@@ -32,6 +32,9 @@ const string REMOTE_CMD_READ_TEMP_HISTORY = "RTH";
 //values
 const string REMOTE_CMD_VALUE_TEMP_HISTORY = "VTM";
 
+//errors
+const string REMOTE_CMD_ERROR = "ERR";
+
 RemoteCommandBuilder::RemoteCommandBuilder(const string& cmd, bool includePreamble)
 : outCmd(cmd), elementsType(UNKNOWN), isSequenceOpen(false), needComa(false), expectedNextSubsequence(false),
   includePreamble(includePreamble) {

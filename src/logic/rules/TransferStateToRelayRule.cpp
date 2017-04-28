@@ -10,8 +10,9 @@
 #include "SharedStatesConsts.h"
 
 TransferStateToRelayRule::TransferStateToRelayRule(shared_ptr<SharedState> sharedState,
-    shared_ptr<RelaysStatesMachine> stateMachine, string stateToTransfer, int relayId)
-: sharedState(sharedState), relayId(relayId), stateToTransfer(stateToTransfer), stateMachine(stateMachine) {
+    shared_ptr<RelaysStatesMachine> stateMachine, string stateToTransfer, int relayId, int duration)
+: sharedState(sharedState), relayId(relayId), duration(duration), stateToTransfer(stateToTransfer),
+  stateMachine(stateMachine) {
   
 }
 

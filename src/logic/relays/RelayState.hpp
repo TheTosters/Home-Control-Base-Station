@@ -41,7 +41,14 @@ class RelayState : public SimpleActionListener {
     RelayState(int relayId, string name, shared_ptr<PhysicalSensor> sensor, int sensorRelayIndex, bool initialState,
         shared_ptr<spdlog::logger> logger);
     virtual ~RelayState() = default;
+    /**
+     * this is current, confirmed as delivered state
+     */
     bool isRelayEnabled();
+    /**
+     * this is state which we requested, but not yet confirmed or if no request then same as isRelayEnabled
+     */
+    bool getRequestedState();
     long long timeToStateChange();
     void setRequestedState(int commandId, bool requestedState, long long duration);
     void setInitialState(int commandId, bool state);
@@ -52,7 +59,7 @@ class RelayState : public SimpleActionListener {
     shared_ptr<PhysicalSensor> getPhysicalSensor();
     int getRelayIndex();
 
-    virtual void onActionSuccess(int id) override;
+    virtual void onActionSuccess(int id, Number result) override;
     virtual void onActionError(int id, int error) override;
     virtual void onActionFailure(int id) override;
   private:

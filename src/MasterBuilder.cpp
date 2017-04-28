@@ -365,7 +365,7 @@ void MasterBuilder::buildLogicRules() {
 
 void MasterBuilder::buildSingleRule(json const& definition) {
   //NOTE: Order DOES matter, change with caution!
-  shared_ptr<string> type = getOptionalJSONString(definition, "type");
+  shared_ptr<string> type = getOptionalJSONString(definition, KEY_RULE_TYPE);
   shared_ptr<LogicRule> rule;
   if (*type == "stateToRelay") {
     string attrib;
@@ -376,7 +376,9 @@ void MasterBuilder::buildSingleRule(json const& definition) {
     }
     shared_ptr<string> state = getOptionalJSONString(definition, KEY_RULE_SHARE_STATE);
     int relayId = getOptionalJSONLong(definition, KEY_RULE_RELAY_ID);
-    rule = make_shared<TransferStateToRelayRule>(logic->getSharedState(), relaysStatesMachine, *state, relayId);
+    int duration = getOptionalJSONLong(definition, KEY_RULE_DURATION);
+    rule = make_shared<TransferStateToRelayRule>(logic->getSharedState(), relaysStatesMachine, *state, relayId,
+        duration);
 
   } else if (*type == "roomTempSchedule") {
     shared_ptr<string> stateName = getOptionalJSONString(definition, KEY_RULE_SHARE_STATE);
