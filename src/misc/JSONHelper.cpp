@@ -273,9 +273,8 @@ shared_ptr<Point> pointFromJSON(string const& data) {
   return pointFromJSON(json);
 }
 
-shared_ptr<Sensor> sensorFromJSON(string const& data) {
-  json json = json::parse(data);
-  if (checkIfKeysExists(json, {"id", "position", "name", "x", "y"}) == false) {
+shared_ptr<Sensor> sensorFromJSON(json const& json) {
+  if (checkIfKeysExists(json, {"id", "name", "physicalSensorId", "x", "y"}) == false) {
     return nullptr;
   }
   
@@ -297,6 +296,11 @@ shared_ptr<Sensor> sensorFromJSON(string const& data) {
   }
   
   return result;
+}
+
+shared_ptr<Sensor> sensorFromJSON(string const& data) {
+  json json = json::parse(data);
+  return sensorFromJSON(json);
 }
 
 shared_ptr<Room> roomFromJSON(json const& inJson) {
@@ -333,7 +337,10 @@ shared_ptr<Room> roomFromJSON(json const& inJson) {
     json sensorsJson = *iter;
     for(auto iter2 = sensorsJson.begin(); iter2 != sensorsJson.end(); iter2++) {
       shared_ptr<Sensor> sensor = sensorFromJSON(*iter2);
-      sensors->push_back( *sensor.get() );
+      if (sensor) {
+        sensor->setRoomId(id);
+        sensors->push_back( *sensor.get() );
+      }
     }
   }
   return result;
@@ -365,7 +372,7 @@ json toJSON(SensorValueList const& list, bool includeSensorId) {
   return result;
 }
 
-shared_ptr<vector<shared_ptr<Room>>> roomListFromJSON(string const& data) {
+RoomsList roomListFromJSON(string const& data) {
   json inJson = json::parse(data);
   auto result = make_shared<vector<shared_ptr<Room>>>();
   

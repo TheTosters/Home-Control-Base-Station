@@ -18,6 +18,7 @@
 #include "json/json.hpp"
 #include "logic/TemperatureIdentifier.hpp"
 #include <logic/relays/RelaysStatesMachine.hpp>
+#include <entities/Entities.hpp>
 
 static const string DEFAULT_CONFIG_FILE = "config-default.json";
 
@@ -53,6 +54,9 @@ class MasterBuilder {
     void buildLogicRules();
     void buildSingleRule(json const& definition);
     void buildSingleRelay(json const& definition);
+    void buildRooms();
+//    void buildSingleRoom(json const& definition);
+//    shared_ptr<Sensor> buildSingleLogicalSensor(json const& definition);
 };
 
 #endif /* MasterBuilder_hpp */

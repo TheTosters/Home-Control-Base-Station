@@ -3,7 +3,7 @@
         "id" : 9001,
         "sensorId" : 103,
         "sensorIndex" : 0,
-        "defaultState" : 0,
+        "defaultState" : false,
         "name" : "piec"
     }
 ]

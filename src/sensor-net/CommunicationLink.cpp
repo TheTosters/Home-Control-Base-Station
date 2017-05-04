@@ -11,7 +11,7 @@
 #include <sstream>
 #include "bluetooth/BtleCommWrapper.h"
 
-static const int BTLE_TIMEOUT = 3000;
+static const int BTLE_TIMEOUT = 6000;
 
 CommunicationLink::CommunicationLink(CommunicationLinkType _type, shared_ptr<PhysicalSensor> _device,
     shared_ptr<spdlog::logger> logger)

@@ -11,6 +11,8 @@
 #include "SharedStatesConsts.h"
 #include "entities/Entities.hpp"
 
+static const string DEFAULT_SCHEDULE_NAME = "all";
+
 RoomTemperatureRule::RoomTemperatureRule(shared_ptr<Logic> logic, string stoveStateName)
 : logic(logic), stoveStateName(stoveStateName) {
   
@@ -28,10 +30,14 @@ void RoomTemperatureRule::execute() {
     string name = (*roomIter)->getName();
     shared_ptr<Schedule> schedule = (*heatingPlan)[name];
     if (schedule == nullptr) {
-      continue;
+      //fall back to "universal rules" if defined
+      schedule = (*heatingPlan)[DEFAULT_SCHEDULE_NAME];
+      if (schedule == nullptr) {
+        continue;
+      }
     }
     
-    bool measured;
+    bool measured = false;
     double temp = getTemperatureInRoom(*roomIter, measured);
     if (measured && schedule->getDesiredTemperature() > temp) {
       wantHeating = 1;

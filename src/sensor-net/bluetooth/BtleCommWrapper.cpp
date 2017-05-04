@@ -117,6 +117,7 @@ bool BtleCommWrapper::readLineFromBuffer(string& result) {
   }
   if (size > 0) {
     result.append((const char*) startAddress, size);
+    printf(">>%s\n", result.c_str());
     notificationBuffer.erase(notificationBuffer.begin(), it);
   }
 
@@ -134,9 +135,7 @@ string BtleCommWrapper::readLine(int timeoutInMs) {
   string result = "";
   try{
     while (isConnected() && readDone == false) {
-      printf(">>\n");
       btle.read_and_process_next();
-      printf("<<\n");
       if (Helper::currentTimestamp() - startTime > timeoutInMs) {
         printf("readLine timeout\n");
         break;

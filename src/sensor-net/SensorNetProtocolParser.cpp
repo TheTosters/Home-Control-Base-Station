@@ -35,6 +35,12 @@ Number SensorNetProtocolParser::sendSimpleCommand(shared_ptr<string> command, Nu
     builder.addArgument(arg);
   }
   shared_ptr<string> response = link->sendCommand(builder.buildCommand());
+  if (*response == "") {
+    if (isError != nullptr) {
+      *isError = true;
+    }
+    return Number((int)0);
+  }
   shared_ptr<RemoteCommand> retCmd = inParser->parse(response);
   if (isError != nullptr) {
     *isError = (*retCmd == REMOTE_CMD_ERROR);
