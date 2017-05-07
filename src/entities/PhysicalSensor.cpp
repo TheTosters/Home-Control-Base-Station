@@ -10,6 +10,10 @@
 #include "entities/PhysicalSensor.hpp"
 #include "misc/ConversionHelper.hpp"
 
+const unordered_set<PhysicalSensorType, hash<int>> KNOWN_PHYSICAL_SENSOR_TYPES = {
+    PhysicalSensorType_TEMPERATURE, PhysicalSensorType_POWER_SOURCE_LEVEL
+};
+
 PhysicalSensorMetaData::PhysicalSensorMetaData()
 : softwareVersion(""),
   powerMode(PhysicalSensorPowerSaveMode_1),
