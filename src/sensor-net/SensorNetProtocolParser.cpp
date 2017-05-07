@@ -60,11 +60,7 @@ void SensorNetProtocolParser::requestMeasurement(MeasurementMap& result, int cou
   time_t now = time(nullptr);
   SensorValueType sensorType;
 
-  for(int mesType = PhysicalSensorType_BEGIN; mesType < PhysicalSensorType_END; mesType ++) {
-
-    if (link->getDevice()->isType((PhysicalSensorType)mesType) == false) {
-      continue;
-    }
+  for(PhysicalSensorType mesType : link->getDevice()->getType() ) {
 
     RemoteCommandBuilder* builder;
     switch(mesType) {
@@ -141,20 +137,15 @@ shared_ptr<RemoteCommand> SensorNetProtocolParser::executeSimpleCommand(const st
 void SensorNetProtocolParser::handleSensorCapabilities( shared_ptr<PhysicalSensor> sensor,
     shared_ptr<RemoteCommand> command) {
 
-  //expected values as sequence
-  for(unsigned int t = 0; t < command->getArgumentsCount(); t++) {
-    PhysicalSensorType type = PhysicalSensorType_BEGIN;
-    switch(command->argumentAsInt(t)) {
-      case 1:
-        type = PhysicalSensorType_TEMPERATURE;
-        break;
-
-      default:
-        break;
+  uint64_t capFlags = command->argumentAsUInt(0);
+  for(auto &cap : KNOWN_PHYSICAL_SENSOR_TYPES) {
+    if (capFlags & cap == cap) {
+      sensor->addType(cap);
+      capFlags &= ~cap;
     }
-    if (type != PhysicalSensorType_BEGIN) {
-      sensor->addType(type);
-    }
+  }
+  if (capFlags != 0) {
+    logger->warn("Unknown sensor capabilities flags {}", capFlags);
   }
 }
 

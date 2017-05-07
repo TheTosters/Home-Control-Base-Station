@@ -15,15 +15,15 @@
 #include <inttypes.h>
 #include "entities/Entity.hpp"
 #include "entities/SensorValue.hpp"
+#include <unordered_set>
 
 using namespace std;
 
 enum PhysicalSensorType {
-  PhysicalSensorType_BEGIN,
-  PhysicalSensorType_TEMPERATURE,
+  PhysicalSensorType_TEMPERATURE = 1U << 0,
+  PhysicalSensorType_POWER_SOURCE_LEVEL = 1U << 8,
   PhysicalSensorType_HUMIDITY,
   PhysicalSensorType_POWER_CONSUMPTION,
-  PhysicalSensorType_END
 };
 
 enum PhysicalSensorPowerSaveMode {
@@ -33,6 +33,8 @@ enum PhysicalSensorPowerSaveMode {
 enum PhysicalSensorPowerSaveActivity {
   PhysicalSensorPowerSaveActivity_1
 };
+
+extern const unordered_set<PhysicalSensorType, hash<int>> KNOWN_PHYSICAL_SENSOR_TYPES;
 
 class PhysicalSensorMetaData {
   public:
