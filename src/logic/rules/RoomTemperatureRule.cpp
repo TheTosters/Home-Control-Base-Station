@@ -63,10 +63,17 @@ double RoomTemperatureRule::getTemperatureInRoom(shared_ptr<Room> room, bool& me
     if (phySensor->isType(PhysicalSensorType_TEMPERATURE) == false) {
       continue;
     }
-    result += get<1>( *(phySensor->getLastMeasurement(PhysicalSensorType_TEMPERATURE)) );
+
+    auto tmp = phySensor->getLastMeasurement(PhysicalSensorType_TEMPERATURE);
+    if (tmp == nullptr) {
+      continue;
+    }
+    result += get<1>( *tmp );
     resultCount++;
   }
   
+  measured = resultCount > 1;
+
   return resultCount > 1 ? result / resultCount : result;
 }
 
