@@ -128,9 +128,12 @@ MeasurementList SensorNetProtocolParser::parseValueWithTimestamp(RemoteCommand& 
   return result;
 }
 
-shared_ptr<RemoteCommand> SensorNetProtocolParser::executeSimpleCommand(const string& cmd) {
+shared_ptr<RemoteCommand> SensorNetProtocolParser::executeSimpleCommand(const string& cmd, bool* emptyResponse) {
   RemoteCommandBuilder builder(cmd);
   shared_ptr<string> response = link->sendCommand(builder.buildCommand());
+  if (emptyResponse != nullptr) {
+    *emptyResponse = (response == nullptr) || ((*response).length() == 0);
+  }
   return inParser->parse(response);
 }
 
@@ -139,7 +142,7 @@ void SensorNetProtocolParser::handleSensorCapabilities( shared_ptr<PhysicalSenso
 
   uint64_t capFlags = command->argumentAsUInt(0);
   for(auto &cap : KNOWN_PHYSICAL_SENSOR_TYPES) {
-    if (capFlags & cap == cap) {
+    if ( (capFlags & cap) == cap) {
       sensor->addType(cap);
       capFlags &= ~cap;
     }
@@ -164,60 +167,100 @@ bool SensorNetProtocolParser::verifyCommand(shared_ptr<RemoteCommand> command, c
       (command->getArgumentsCount() > 0);
 }
 
-bool SensorNetProtocolParser::requestSensorSpec() {
+bool SensorNetProtocolParser::requestSensorSpec(int& startingStep, bool& shouldRetry) {
   shared_ptr<PhysicalSensor> sensor = link->getDevice();
   //parameters: REMOTE_CMD_GET_SYSTEM_CAPABILITIES and REMOTE_CMD_GET_SOFTWARE_VERSION are mandatory!
 
-  shared_ptr<RemoteCommand> command = executeSimpleCommand(REMOTE_CMD_GET_SOFTWARE_VERSION);
-  if (verifyCommand(command, REMOTE_CMD_GET_SOFTWARE_VERSION, RemoteCommandArgumentType_STRING) ) {
-    sensor->getMetadata()->softwareVersion = *(command->stringArgument());
+  shared_ptr<RemoteCommand> command;
 
-  } else {
-    return false;
+  //got empty line no error no nothing, probably communication problem
+  shouldRetry = false;
+  bool tmp = false;
+
+  if (startingStep < 1) {
+    command = executeSimpleCommand(REMOTE_CMD_GET_SOFTWARE_VERSION, &tmp);
+    shouldRetry |= tmp;
+    if (verifyCommand(command, REMOTE_CMD_GET_SOFTWARE_VERSION, RemoteCommandArgumentType_STRING)) {
+      sensor->getMetadata()->softwareVersion = *(command->stringArgument());
+      startingStep = 1;
+
+    } else {
+      return false;
+    }
   }
 
-  command = executeSimpleCommand(REMOTE_CMD_GET_SYSTEM_CAPABILITIES);
-  if (verifyCommand(command, REMOTE_CMD_GET_SYSTEM_CAPABILITIES, RemoteCommandArgumentType_DIGIT_SEQUENCE) ) {
-    //typy sensorow obslugiwanych w
-    handleSensorCapabilities(sensor, command);
-
-  } else {
-    return false;
+  if (startingStep < 2) {
+    command = executeSimpleCommand(REMOTE_CMD_GET_SYSTEM_CAPABILITIES, &tmp);
+    shouldRetry |= tmp;
+    if (verifyCommand(command, REMOTE_CMD_GET_SYSTEM_CAPABILITIES, RemoteCommandArgumentType_DIGIT_SEQUENCE)) {
+      handleSensorCapabilities(sensor, command);
+      startingStep = 2;
+    } else {
+      return false;
+    }
   }
 
-  command = executeSimpleCommand(REMOTE_CMD_CONFIGURE_TEMPERATURE_RESOLUTION);
-  if (verifyCommand(command, REMOTE_CMD_CONFIGURE_TEMPERATURE_RESOLUTION, RemoteCommandArgumentType_DIGIT) ) {
-    sensor->getMetadata()->temperatureResolution = command->argumentAsInt();
+  if (startingStep < 3) {
+    command = executeSimpleCommand(REMOTE_CMD_CONFIGURE_TEMPERATURE_RESOLUTION, &tmp);
+    shouldRetry |= tmp;
+    startingStep =  tmp ? startingStep : 4;
+    if (verifyCommand(command, REMOTE_CMD_CONFIGURE_TEMPERATURE_RESOLUTION, RemoteCommandArgumentType_DIGIT)) {
+      sensor->getMetadata()->temperatureResolution = command->argumentAsInt();
+    }
   }
 
-  command = executeSimpleCommand(REMOTE_CMD_CONFIGURE_TEMPERATURE_PERIOD);
-  if (verifyCommand(command, REMOTE_CMD_CONFIGURE_TEMPERATURE_PERIOD, RemoteCommandArgumentType_DIGIT) ) {
-    sensor->getMetadata()->temperaturePeriod = command->argumentAsInt();
+  if (startingStep < 4) {
+    command = executeSimpleCommand(REMOTE_CMD_CONFIGURE_TEMPERATURE_PERIOD, &tmp);
+    shouldRetry |= tmp;
+    startingStep =  tmp ? startingStep : 5;
+    if (verifyCommand(command, REMOTE_CMD_CONFIGURE_TEMPERATURE_PERIOD, RemoteCommandArgumentType_DIGIT)) {
+      sensor->getMetadata()->temperaturePeriod = command->argumentAsInt();
+    }
   }
 
-  command = executeSimpleCommand(REMOTE_CMD_CONFIGURE_POWER_PERIOD);
-  if (verifyCommand(command, REMOTE_CMD_CONFIGURE_POWER_PERIOD, RemoteCommandArgumentType_DIGIT) ) {
-    sensor->getMetadata()->powerPeroid = command->argumentAsInt();
+  if (startingStep < 5) {
+    command = executeSimpleCommand(REMOTE_CMD_CONFIGURE_POWER_PERIOD, &tmp);
+    shouldRetry |= tmp;
+    startingStep = tmp ? startingStep : 6;
+    if (verifyCommand(command, REMOTE_CMD_CONFIGURE_POWER_PERIOD, RemoteCommandArgumentType_DIGIT)) {
+      sensor->getMetadata()->powerPeroid = command->argumentAsInt();
+    }
   }
 
-  command = executeSimpleCommand(REMOTE_CMD_CONFIGURE_SYSTEM_TIME);
-  if (verifyCommand(command, REMOTE_CMD_CONFIGURE_SYSTEM_TIME, RemoteCommandArgumentType_DIGIT) ) {
-    sensor->getMetadata()->nodeSystemTime = command->argumentAsUInt();
+  if (startingStep < 6) {
+    command = executeSimpleCommand(REMOTE_CMD_CONFIGURE_SYSTEM_TIME, &tmp);
+    shouldRetry |= tmp;
+    startingStep = tmp ? startingStep : 7;
+    if (verifyCommand(command, REMOTE_CMD_CONFIGURE_SYSTEM_TIME, RemoteCommandArgumentType_DIGIT)) {
+      sensor->getMetadata()->nodeSystemTime = command->argumentAsUInt();
+    }
   }
 
-  command = executeSimpleCommand(REMOTE_CMD_CONFIGURE_NODE_NAME);
-  if (verifyCommand(command, REMOTE_CMD_CONFIGURE_NODE_NAME, RemoteCommandArgumentType_STRING) ) {
-    sensor->setName( *(command->stringArgument()) );
+  if (startingStep < 7) {
+    command = executeSimpleCommand(REMOTE_CMD_CONFIGURE_NODE_NAME, &tmp);
+    shouldRetry |= tmp;
+    startingStep = tmp ? startingStep : 8;
+    if (verifyCommand(command, REMOTE_CMD_CONFIGURE_NODE_NAME, RemoteCommandArgumentType_STRING)) {
+      sensor->setName(*(command->stringArgument()));
+    }
   }
 
-  command = executeSimpleCommand(REMOTE_CMD_CONFIGURE_SAVING_MODE);
-  if (verifyCommand(command, REMOTE_CMD_CONFIGURE_SAVING_MODE, RemoteCommandArgumentType_DIGIT) ) {
-    sensor->getMetadata()->powerMode = static_cast<PhysicalSensorPowerSaveMode>(command->argumentAsInt());
+  if (startingStep < 8) {
+    command = executeSimpleCommand(REMOTE_CMD_CONFIGURE_SAVING_MODE, &tmp);
+    shouldRetry |= tmp;
+    startingStep = tmp ? startingStep : 9;
+    if (verifyCommand(command, REMOTE_CMD_CONFIGURE_SAVING_MODE, RemoteCommandArgumentType_DIGIT)) {
+      sensor->getMetadata()->powerMode = static_cast<PhysicalSensorPowerSaveMode>(command->argumentAsInt());
+    }
   }
 
-  command = executeSimpleCommand(REMOTE_CMD_CONFIGURE_SAVING_ACTIVITY);
-  if (verifyCommand(command, REMOTE_CMD_CONFIGURE_SAVING_ACTIVITY, RemoteCommandArgumentType_DIGIT) ) {
-    sensor->getMetadata()->powerActivity = static_cast<PhysicalSensorPowerSaveActivity>(command->argumentAsInt());
+  if (startingStep < 9) {
+    command = executeSimpleCommand(REMOTE_CMD_CONFIGURE_SAVING_ACTIVITY, &tmp);
+    shouldRetry |= tmp;
+    startingStep = tmp ? startingStep : 10;
+    if (verifyCommand(command, REMOTE_CMD_CONFIGURE_SAVING_ACTIVITY, RemoteCommandArgumentType_DIGIT)) {
+      sensor->getMetadata()->powerActivity = static_cast<PhysicalSensorPowerSaveActivity>(command->argumentAsInt());
+    }
   }
 
   return true;

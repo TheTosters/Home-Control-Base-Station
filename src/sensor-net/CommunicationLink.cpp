@@ -47,11 +47,8 @@ shared_ptr<string> CommunicationLink::sendCommand(string cmd, bool* success) {
   if (btleWrapper != nullptr) {
     logger->debug("Sending {} to {}", cmd.c_str(), device->getAddress().c_str());
     if (btleWrapper->send(cmd, BTLE_TIMEOUT) == true) {
-      string result = btleWrapper->readLine(BTLE_TIMEOUT);
+      string result = btleWrapper->readLine(BTLE_TIMEOUT, success);
       logger->debug("response {}", result.c_str());
-      if (success != nullptr) {
-        *success = true;
-      }
       return make_shared<string>(result);
     }
   }

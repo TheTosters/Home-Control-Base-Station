@@ -27,7 +27,7 @@ class BtleCommWrapper {
     bool isConnected();
     void disconnect();
     bool send(const string& data, int timeoutInMs = 6000);
-    string readLine(int timeoutInMs = 6000);
+    string readLine(int timeoutInMs = 6000, bool* error = nullptr);
   private:
     BLEGATTStateMachine btle;
     Characteristic* charToUse;

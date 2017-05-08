@@ -124,20 +124,26 @@ bool BtleCommWrapper::readLineFromBuffer(string& result) {
   return true;
 }
 
-string BtleCommWrapper::readLine(int timeoutInMs) {
+string BtleCommWrapper::readLine(int timeoutInMs, bool* error) {
   if (isConnected() == false) {
     printf("readLine canceled, not connected\n");
+    if (error != nullptr) {
+      *error = true;
+    }
     return "";
   }
 
   const long long startTime = Helper::currentTimestamp();
-
+  readDone = false;
   string result = "";
   try{
     while (isConnected() && readDone == false) {
       btle.read_and_process_next();
       if (Helper::currentTimestamp() - startTime > timeoutInMs) {
         printf("readLine timeout\n");
+        if (error != nullptr) {
+          *error = true;
+        }
         break;
       }
 
@@ -149,6 +155,14 @@ string BtleCommWrapper::readLine(int timeoutInMs) {
     }
   } catch (...) {
     printf("exception at read\n");
+    if (error != nullptr) {
+      *error = true;
+    }
+    return "";
+  }
+
+  if (error != nullptr) {
+    *error = false;
   }
   return result;
 }

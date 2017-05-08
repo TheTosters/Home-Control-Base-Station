@@ -80,6 +80,6 @@ class SensorNetManager : public HciWrapperListener {
     virtual void onScanStart() override;
     virtual void onScanStop() override;
     virtual void onNewDeviceFound(const BTLEDevice& device) override;
-    bool probeSensor(shared_ptr<PhysicalSensor> sensor);
+    bool probeSensor(shared_ptr<PhysicalSensor> sensor, int& startingStep, bool& shouldRetry);
 };
 #endif /* SensorNetManager_hpp */
