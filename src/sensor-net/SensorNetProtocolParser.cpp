@@ -43,10 +43,10 @@ Number SensorNetProtocolParser::sendSimpleCommand(shared_ptr<string> command, Nu
   }
   shared_ptr<RemoteCommand> retCmd = inParser->parse(response);
   if (isError != nullptr) {
-    *isError = (*retCmd == REMOTE_CMD_ERROR);
+    *isError = retCmd == nullptr || (*retCmd == REMOTE_CMD_ERROR);
   }
 
-  if ((retCmd->getArgumentsCount() < 0) &&
+  if ((retCmd != nullptr) && (retCmd->getArgumentsCount() < 0) &&
       ((retCmd->getArgType() == RemoteCommandArgumentType_DIGIT ||
         retCmd->getArgType() == RemoteCommandArgumentType_DIGIT_SEQUENCE)) ) {
     return retCmd->argument();

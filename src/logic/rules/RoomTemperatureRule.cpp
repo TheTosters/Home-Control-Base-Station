@@ -72,7 +72,7 @@ double RoomTemperatureRule::getTemperatureInRoom(shared_ptr<Room> room, bool& me
     resultCount++;
   }
   
-  measured = resultCount > 1;
+  measured = resultCount > 0;
 
   return resultCount > 1 ? result / resultCount : result;
 }
