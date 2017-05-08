@@ -11,7 +11,7 @@
 #include <sstream>
 #include "bluetooth/BtleCommWrapper.h"
 
-static const int BTLE_TIMEOUT = 3000;
+static const int BTLE_TIMEOUT = 6000;
 
 CommunicationLink::CommunicationLink(CommunicationLinkType _type, shared_ptr<PhysicalSensor> _device,
     shared_ptr<spdlog::logger> logger)
@@ -47,11 +47,8 @@ shared_ptr<string> CommunicationLink::sendCommand(string cmd, bool* success) {
   if (btleWrapper != nullptr) {
     logger->debug("Sending {} to {}", cmd.c_str(), device->getAddress().c_str());
     if (btleWrapper->send(cmd, BTLE_TIMEOUT) == true) {
-      string result = btleWrapper->readLine(BTLE_TIMEOUT);
+      string result = btleWrapper->readLine(BTLE_TIMEOUT, success);
       logger->debug("response {}", result.c_str());
-      if (success != nullptr) {
-        *success = true;
-      }
       return make_shared<string>(result);
     }
   }

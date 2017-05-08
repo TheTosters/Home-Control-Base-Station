@@ -11,13 +11,15 @@
 #include "SharedStatesConsts.h"
 #include "entities/Entities.hpp"
 
-RoomTemperatureRule::RoomTemperatureRule(shared_ptr<Logic> _logic)
-: logic(_logic) {
+static const string DEFAULT_SCHEDULE_NAME = "all";
+
+RoomTemperatureRule::RoomTemperatureRule(shared_ptr<Logic> logic, string stoveStateName)
+: logic(logic), stoveStateName(stoveStateName) {
   
 }
 
 void RoomTemperatureRule::execute() {
-  int wantHeating = (*logic->getSharedState())[STATE_WANT_HEATING];
+  int wantHeating = (*logic->getSharedState())[stoveStateName];
   if (wantHeating != 0) {
     return;
   }
@@ -28,18 +30,22 @@ void RoomTemperatureRule::execute() {
     string name = (*roomIter)->getName();
     shared_ptr<Schedule> schedule = (*heatingPlan)[name];
     if (schedule == nullptr) {
-      continue;
+      //fall back to "universal rules" if defined
+      schedule = (*heatingPlan)[DEFAULT_SCHEDULE_NAME];
+      if (schedule == nullptr) {
+        continue;
+      }
     }
     
-    bool measured;
+    bool measured = false;
     double temp = getTemperatureInRoom(*roomIter, measured);
-    if (measured && schedule->getDesiredTemperature() > temp) {
+    if (measured && schedule->getDesiredTemperature() < temp) {
       wantHeating = 1;
       break;
     }
   }
   
-  (*logic->getSharedState())[STATE_WANT_HEATING] = wantHeating;
+  (*logic->getSharedState())[stoveStateName] = wantHeating;
 }
 
 double RoomTemperatureRule::getTemperatureInRoom(shared_ptr<Room> room, bool& measured) {
@@ -57,9 +63,20 @@ double RoomTemperatureRule::getTemperatureInRoom(shared_ptr<Room> room, bool& me
     if (phySensor->isType(PhysicalSensorType_TEMPERATURE) == false) {
       continue;
     }
-    result += get<1>( *(phySensor->getLastMeasurement(PhysicalSensorType_TEMPERATURE)) );
+
+    auto tmp = phySensor->getLastMeasurement(PhysicalSensorType_TEMPERATURE);
+    if (tmp == nullptr) {
+      continue;
+    }
+    result += get<1>( *tmp );
     resultCount++;
   }
   
+  measured = resultCount > 0;
+
   return resultCount > 1 ? result / resultCount : result;
+}
+
+void RoomTemperatureRule::setStoveStateName(const string& name) {
+  stoveStateName = name;
 }

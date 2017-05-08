@@ -9,13 +9,7 @@
 #include <algorithm>
 #include <sys/time.h>
 #include "unistd.h"
-
-long long current_timestamp() {
-    struct timeval te;
-    gettimeofday(&te, NULL); // get current time
-    long long milliseconds = te.tv_sec*1000LL + te.tv_usec/1000; // caculate milliseconds
-    return milliseconds;
-}
+#include <misc/Helper.h>
 
 BtleCommWrapper::BtleCommWrapper()
 : charToUse(nullptr), connected(false), readDone(false), writeDone(false) {
@@ -50,12 +44,12 @@ void BtleCommWrapper::installCallbacks() {
 bool BtleCommWrapper::connectTo(const string& address, int timeoutInMs) {
   installCallbacks();
   notificationBuffer.clear();
-  const long long startTime = current_timestamp();
+  const long long startTime = Helper::currentTimestamp();
   try {
     btle.connect_blocking(address);
     while (connected && charToUse == nullptr) {
       btle.read_and_process_next();
-      if (current_timestamp() - startTime > timeoutInMs) {
+      if (Helper::currentTimestamp() - startTime > timeoutInMs) {
         printf("Connection timeout\n");
         break;
       }
@@ -81,13 +75,13 @@ bool BtleCommWrapper::send(const string& data, int timeoutInMs) {
     return false;
   }
   writeDone = false;
-  const long long startTime = current_timestamp();
+  const long long startTime = Helper::currentTimestamp();
   try {
     charToUse->write_request((const uint8_t*) data.c_str(), data.length());
     while (isConnected() && writeDone == false) {
       //btle.write_and_process_next();
       btle.read_and_process_next();
-      if (current_timestamp() - startTime > timeoutInMs) {
+      if (Helper::currentTimestamp() - startTime > timeoutInMs) {
         printf("Connection timeout\n");
         break;
       }
@@ -123,28 +117,33 @@ bool BtleCommWrapper::readLineFromBuffer(string& result) {
   }
   if (size > 0) {
     result.append((const char*) startAddress, size);
+    printf(">>%s\n", result.c_str());
     notificationBuffer.erase(notificationBuffer.begin(), it);
   }
 
   return true;
 }
 
-string BtleCommWrapper::readLine(int timeoutInMs) {
+string BtleCommWrapper::readLine(int timeoutInMs, bool* error) {
   if (isConnected() == false) {
     printf("readLine canceled, not connected\n");
+    if (error != nullptr) {
+      *error = true;
+    }
     return "";
   }
 
-  const long long startTime = current_timestamp();
-
+  const long long startTime = Helper::currentTimestamp();
+  readDone = false;
   string result = "";
   try{
     while (isConnected() && readDone == false) {
-      printf(">>\n");
       btle.read_and_process_next();
-      printf("<<\n");
-      if (current_timestamp() - startTime > timeoutInMs) {
+      if (Helper::currentTimestamp() - startTime > timeoutInMs) {
         printf("readLine timeout\n");
+        if (error != nullptr) {
+          *error = true;
+        }
         break;
       }
 
@@ -156,6 +155,14 @@ string BtleCommWrapper::readLine(int timeoutInMs) {
     }
   } catch (...) {
     printf("exception at read\n");
+    if (error != nullptr) {
+      *error = true;
+    }
+    return "";
+  }
+
+  if (error != nullptr) {
+    *error = false;
   }
   return result;
 }

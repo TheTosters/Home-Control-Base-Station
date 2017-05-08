@@ -1,0 +1,24 @@
+[
+    {
+        "ruleId" : 0,
+        "name" : "Inicjacja wektora sharedState",
+        "type" : "sharedStateInit",
+        "resetStates": [
+            {"stove" : 0}
+        ]
+    },
+    {
+        "ruleId" : 10,
+        "name" : "Plan ogrzewania pokoi",
+        "type" : "roomTempSchedule",
+        "sharedState" : "stove"
+    },
+    {
+        "ruleId" : 20,
+        "name" : "kontrola pieca",
+        "type" : "stateToRelay",
+        "sharedState" : "stove",
+        "relayId" : 9001,
+        "duration" : 300
+    }
+]

@@ -19,6 +19,7 @@
 #include "misc/LogHelper.hpp"
 #include "bluetooth/HciWrapper.hpp"
 #include "sensor-net/SensorDataListener.hpp"
+#include <misc/SimpleActionListener.hpp>
 
 using namespace std;
 using namespace nlohmann;
@@ -44,6 +45,8 @@ class SensorNetManager : public HciWrapperListener {
     virtual ~SensorNetManager();
 
     void fetchMeasurements(shared_ptr<PhysicalSensor> sensor, SensorDataListener* listener, int count = 1);
+    int sendRelayState(shared_ptr<PhysicalSensor> sensor, int relayIndex, bool turnedOn, int duration,
+        shared_ptr<SimpleActionListener> listener);
 
     void setSensorsConfigFile(const string& filename);
     void saveConfiguration();
@@ -77,6 +80,6 @@ class SensorNetManager : public HciWrapperListener {
     virtual void onScanStart() override;
     virtual void onScanStop() override;
     virtual void onNewDeviceFound(const BTLEDevice& device) override;
-    bool probeSensor(shared_ptr<PhysicalSensor> sensor);
+    bool probeSensor(shared_ptr<PhysicalSensor> sensor, int& startingStep, bool& shouldRetry);
 };
 #endif /* SensorNetManager_hpp */

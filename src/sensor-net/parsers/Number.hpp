@@ -2,19 +2,26 @@
 #define _Number_hpp_
 
 #include <stdint.h>
+#include <vector>
+#include <memory>
+
+typedef enum {
+  DoubleType, IntType
+} ValType;
 
 //taken from http://stackoverflow.com/a/8058976/2444937 and modified
 class Number {
     private:
-        enum ValType {
-            DoubleType, IntType
-        } curType;
+        ValType curType;
         union {
                 double doubleVal;
                 uint64_t intVal;
         };
     public:
         Number(uint64_t n) :
+            curType(IntType), intVal(n) {
+        }
+        Number(int n) :
             curType(IntType), intVal(n) {
         }
         Number(float n) :
@@ -30,7 +37,9 @@ class Number {
                 intVal = n.intVal;
             }
         }
-
+        ValType getType() {
+          return curType;
+        }
         int64_t asInt64() {
             return curType == DoubleType ? static_cast<int64_t>(doubleVal) : static_cast<int64_t>(intVal);
         }
@@ -51,5 +60,7 @@ class Number {
             return curType == DoubleType ? static_cast<float>(doubleVal) : static_cast<float>(intVal);
         }
 };
+
+typedef std::shared_ptr<std::vector<Number>> NumbersList;
 
 #endif

@@ -14,6 +14,7 @@
 #include "SensorNetProtocolParser.hpp"
 #include "CommunicationLink.hpp"
 #include "sensor-net/DataAcquisitor.hpp"
+#include <sensor-net/parsers/RemoteCommandBuilder.hpp>
 
 const string FILE_NAME = "sensors-default.json";
 
@@ -227,12 +228,12 @@ void SensorNetManager::finalizeScanningThread() {
   }
 }
 
-bool SensorNetManager::probeSensor(shared_ptr<PhysicalSensor> sensor) {
+bool SensorNetManager::probeSensor(shared_ptr<PhysicalSensor> sensor, int& startingStep, bool& shouldRetry) {
   try {
     CommunicationLink link(cltBluetooth, sensor, logger);
     if (link.isConnected()) {
       SensorNetProtocolParser parser(&link);
-      if (parser.requestSensorSpec() == true) {
+      if (parser.requestSensorSpec(startingStep, shouldRetry) == true) {
         unique_lock<mutex> lock(managerMutex);
         scannedSensors->push_back(sensor);
         return true;
@@ -277,10 +278,17 @@ void SensorNetManager::resolverThreadMain() {
     nextScanId ++;
 
     const int attemptCount = 5;
+    //result = true -> minimal data about sensor needed to add it to logic obtained
     bool result = false;
-    for(int t = 0; (result == false) && (t < attemptCount); t++) {
-      logger->info("Probe {}\{}", t, attemptCount);
-      result = probeSensor(sensor);
+    //shouldRetry = true, should try to probe sensor again, it looks like not all info is fetched and there is chance
+    //to succeed in next probe
+    bool shouldRetry = false;
+    //used to store progress of probing, because communication is not reliable it's no point to repeat already probed
+    //informations, just proceed to next steps.
+    int lastProbingStep = 0;
+    for(int t = 0; (result == false || shouldRetry) && (t < attemptCount); t++) {
+      logger->info("Probe {}/{} (start from step:{} should retry:{})", t, attemptCount, lastProbingStep, shouldRetry);
+      result = probeSensor(sensor, lastProbingStep, shouldRetry);
     }
     if (result == false) {
       logger->warn("Unable to resolve device {}.", sensor->getAddress());
@@ -297,4 +305,13 @@ void SensorNetManager::resolverThreadMain() {
     resolverThread = nullptr;
   }
   logger->info("Resolver thread done.");
+}
+
+int SensorNetManager::sendRelayState(shared_ptr<PhysicalSensor> sensor, int relayIndex, bool turnedOn,
+    int duration, shared_ptr<SimpleActionListener> listener) {
+  NumbersList args = make_shared<vector<Number>>();
+  args->push_back(Number(relayIndex));
+  args->push_back(Number(turnedOn ? 1 : 0));
+  args->push_back(Number(duration));
+  return acquisitor->sendSimpleCommand(sensor, make_shared<string>(REMOTE_CMD_CHANGE_OUTPUT_GPIO), args, listener);
 }

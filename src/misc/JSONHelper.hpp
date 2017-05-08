@@ -27,8 +27,9 @@ json measurementsToJSON(PhysicalSensorList const& list);
 
 shared_ptr<Point> pointFromJSON(string const& data);
 shared_ptr<Sensor> sensorFromJSON(string const& data);
+shared_ptr<Sensor> sensorFromJSON(json const& data);
 shared_ptr<Room> roomFromJSON(string const& data);
-shared_ptr<vector<shared_ptr<Room>>> roomListFromJSON(string const& data);
+RoomsList roomListFromJSON(string const& data);
 shared_ptr<PhysicalSensor> physicalSensorFromJSON(json const& data);
 PhysicalSensorList physicalSensorsFromJSON(string const& data);
 

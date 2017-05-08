@@ -21,6 +21,8 @@
 static const string KEY_HEATING_CONFIG_FILE = "heatingPlan";
 static const string KEY_HOME_PLAN_CONFIG_FILE = "homePlan";
 static const string KEY_SENSORS_CONFIG_FILE = "sensors";
+static const string KEY_RELAYS_CONFIG_FILE = "relays";
+static const string KEY_RULES_CONFIG_FILE = "rules";
 static const string KEY_STORAGE_DB_FILE = "dbFile";
 static const string KEY_USE_DB = "useDb";
 
@@ -32,6 +34,16 @@ static const string KEY_LOGGING_LEVEL = "level";
 static const string KEY_LOGGING_CONSOLE = "console";
 static const string KEY_LOGGING_FILE = "file";
 static const string KEY_LOGGING_FORMAT = "format";
+
+
+static const string KEY_RULE_ENABLED = "enabled";
+static const string KEY_RULE_NAME = "name";
+static const string KEY_RULE_ID = "ruleId";
+static const string KEY_RULE_TYPE = "type";
+static const string KEY_RULE_SHARE_STATE = "sharedState";
+static const string KEY_RULE_RELAY_ID = "relayId";
+static const string KEY_RULE_DURATION = "duration";
+static const string KEY_RULE_RESET_STATES = "resetStates";
 
 MasterBuilder::MasterBuilder(string const& configFile)
 : wasBuilded(false) {
@@ -47,7 +59,8 @@ MasterBuilder::MasterBuilder(string const& configFile)
   masterConfig = json::parse(buffer.str());
   
   vector<string> expected = {KEY_HEATING_CONFIG_FILE, KEY_HOME_PLAN_CONFIG_FILE,
-    KEY_SENSORS_CONFIG_FILE, KEY_STORAGE_DB_FILE};
+    KEY_SENSORS_CONFIG_FILE, KEY_STORAGE_DB_FILE, KEY_RELAYS_CONFIG_FILE, KEY_RULES_CONFIG_FILE};
+
   string missing;
   if (checkIfKeysExists(masterConfig, expected, &missing) == false){
     fprintf(stderr, "Config is wrong. Lack of mandatory node '%s' in file: %s \n",
@@ -164,6 +177,73 @@ void MasterBuilder::buildSensors() {
   spdlog::get(MISC_LOGGER_NAME)->info("Building Sensors Net DONE.");
 }
 
+void MasterBuilder::buildRelays() {
+  relaysStatesMachine = make_shared<RelaysStatesMachine>(spdlog::get(LOGIC_LOGGER_NAME), sensorNetManager);
+
+  string configFile = masterConfig[KEY_RELAYS_CONFIG_FILE];
+  relaysStatesMachine->setConfigFile(configFile);
+  spdlog::get(MISC_LOGGER_NAME)->info("Building relays Net...");
+  spdlog::get(MISC_LOGGER_NAME)->info("  Config:{}", configFile);
+
+  int count = 0;
+  std::ifstream inputFileStream(configFile);
+  if (inputFileStream.good() == false) {
+    throw invalid_argument("Can't open config:" + configFile);
+  }
+
+  std::stringstream buffer;
+  buffer << inputFileStream.rdbuf();
+  json inJson = json::parse(buffer);
+
+  if (inJson.is_array() == false) {
+    throw invalid_argument("Expected JSON array in:" + configFile);
+  }
+  for (auto iter = inJson.begin(); iter != inJson.end(); iter++) {
+    count++;
+    buildSingleRelay(*iter);
+  }
+
+  spdlog::get(MISC_LOGGER_NAME)->info("  Relays count:{}", count);
+  spdlog::get(MISC_LOGGER_NAME)->info("Building Relays Net DONE.");
+}
+
+void MasterBuilder::buildSingleRelay(json const& data) {
+  long id = getOptionalJSONLong(data, "id");
+  if (id < 0) {
+    spdlog::get(MISC_LOGGER_NAME)->error("Missing mandatory field 'id' in {}", data.dump());
+    return;
+  }
+
+  long sensorId = getOptionalJSONLong(data, "sensorId");
+  if (sensorId < 0) {
+    spdlog::get(MISC_LOGGER_NAME)->error("Missing mandatory field 'sensorId' in {}", data.dump());
+    return;
+  }
+
+  long sensorIndex = getOptionalJSONLong(data, "sensorIndex");
+  if (sensorIndex < 0) {
+    spdlog::get(MISC_LOGGER_NAME)->error("Missing mandatory field 'sensorIndex' in {}", data.dump());
+    return;
+  }
+
+  bool defaultState = false;
+  getOptionalJSONBool(data, "defaultState", defaultState);
+
+  shared_ptr<string> name = getOptionalJSONString(data, "name");
+  if (name == nullptr) {
+    spdlog::get(MISC_LOGGER_NAME)->error("Missing mandatory field 'name' in {}", data.dump());
+    return;
+  }
+
+  shared_ptr<PhysicalSensor> sensor = sensorNetManager->getSensorById(sensorId);
+  if (sensor == nullptr) {
+    spdlog::get(MISC_LOGGER_NAME)->error("Can't find physical sensor with id:{}, error at:{}", sensorId, data.dump());
+    return;
+  }
+
+  relaysStatesMachine->addRelay(id, *name, sensor, sensorIndex, defaultState);
+}
+
 void MasterBuilder::buildHeatingPlan() {
   
   string configFile = masterConfig[KEY_HEATING_CONFIG_FILE];
@@ -257,27 +337,173 @@ void MasterBuilder::parseRoomHeating(json const& definition) {
 }
 
 void MasterBuilder::buildLogicRules() {
-  //NOTE: Order DOES matter, change with caution!
-  
-  //this should be first rule, probably always
-  shared_ptr<SetupSharedStateRule> setupRule = make_shared<SetupSharedStateRule>(logic->getSharedState());
-  setupRule->setValue(STATE_WANT_HEATING, 0);
-  logic->getRules()->push_back( setupRule );
-  
-  //this need to be before StoveControlRule
-  logic->getRules()->push_back( make_shared<RoomTemperatureRule>(logic) );
-  
-  //this is probably one of last rules, must be after all rules which control sove behavior
-  logic->getRules()->push_back( make_shared<StoveControlRule>(logic->getSharedState()) );
+
+  string configFile = masterConfig[KEY_RULES_CONFIG_FILE];
+  logic->setRulesConfigFile(configFile);
+  spdlog::get(MISC_LOGGER_NAME)->info("Building rules...");
+  spdlog::get(MISC_LOGGER_NAME)->info("  Config:{}", configFile);
+
+  std::ifstream inputFileStream(configFile);
+  if (inputFileStream.good() == false) {
+    throw invalid_argument("Can't open config:" + configFile);
+  }
+
+  std::stringstream buffer;
+  buffer << inputFileStream.rdbuf();
+
+  json inJson = json::parse(buffer);
+  if (inJson.is_array() == false) {
+    throw invalid_argument("Expected JSON array in:" + configFile);
+  }
+
+  for (auto iter = inJson.begin(); iter != inJson.end(); iter++) {
+    buildSingleRule(*iter);
+  }
+
+  spdlog::get(MISC_LOGGER_NAME)->info("  Rules count:{}", logic->getRules()->size());
+  spdlog::get(MISC_LOGGER_NAME)->info("Building rules DONE.");
 }
+
+void MasterBuilder::buildSingleRule(json const& definition) {
+  //NOTE: Order DOES matter, change with caution!
+  shared_ptr<string> type = getOptionalJSONString(definition, KEY_RULE_TYPE);
+  shared_ptr<LogicRule> rule;
+  if (*type == "stateToRelay") {
+    string attrib;
+    if (checkIfKeysExists(definition, {KEY_RULE_SHARE_STATE, KEY_RULE_RELAY_ID}, &attrib) == false) {
+      spdlog::get(MISC_LOGGER_NAME)->error("Lack of mandatory '{}' attribute, in {}, rule ignored.",
+          attrib, definition.dump());
+      return;
+    }
+    shared_ptr<string> state = getOptionalJSONString(definition, KEY_RULE_SHARE_STATE);
+    int relayId = getOptionalJSONLong(definition, KEY_RULE_RELAY_ID);
+    int duration = getOptionalJSONLong(definition, KEY_RULE_DURATION);
+    rule = make_shared<TransferStateToRelayRule>(logic->getSharedState(), relaysStatesMachine, *state, relayId,
+        duration);
+
+  } else if (*type == "roomTempSchedule") {
+    shared_ptr<string> stateName = getOptionalJSONString(definition, KEY_RULE_SHARE_STATE);
+    if (stateName == nullptr) {
+      spdlog::get(MISC_LOGGER_NAME)->error("Lack of mandatory '{}' attribute, in {}, rule ignored.",
+          KEY_RULE_SHARE_STATE, definition.dump());
+      return;
+    }
+    rule = make_shared<RoomTemperatureRule>(logic, *stateName );
+
+  } else if (*type == "sharedStateInit") {
+    string keyName;
+    if (checkIfKeysExists(definition, {KEY_RULE_RESET_STATES}, &keyName) == false) {
+      spdlog::get(MISC_LOGGER_NAME)->error("Lack of '{}' attribute makes this rule pointless {}.", keyName,
+                    definition.dump());
+      return;
+    }
+    shared_ptr<SetupSharedStateRule> setupRule = make_shared<SetupSharedStateRule>(logic->getSharedState());
+    rule = setupRule;
+    json states = definition[KEY_RULE_RESET_STATES];
+    for (auto values = states.begin(); values != states.end(); ++values) {
+      auto singleVal = (*values).begin();
+      if (singleVal.value().is_number_integer()) {
+        setupRule->setValue(singleVal.key(), singleVal.value());
+      } else {
+        spdlog::get(MISC_LOGGER_NAME)->error("Ignored non integer value for key{} in {}.", singleVal.value().dump(),
+            definition.dump());
+      }
+    }
+
+  } else {
+    spdlog::get(MISC_LOGGER_NAME)->error("Unknown rule type {}, ignored.", *type);
+    return;
+  }
+  
+  //common things
+  bool enabled = true;
+  getOptionalJSONBool(definition, KEY_RULE_ENABLED, enabled);
+  rule->setEnabled(enabled);
+
+  int ruleId = (int)getOptionalJSONLong(definition, KEY_RULE_ID);
+  if (ruleId == 0) {
+    spdlog::get(MISC_LOGGER_NAME)->warn("Lack of '{}' attribute, not required but recommended in {}.", KEY_RULE_ID,
+        definition.dump());
+  }
+  rule->setRuleId(ruleId);
+  
+  shared_ptr<string> ruleName = getOptionalJSONString(definition, KEY_RULE_NAME);
+  if (ruleName == nullptr) {
+    spdlog::get(MISC_LOGGER_NAME)->warn("Lack of '{}' attribute, not required but recommended in {}.", KEY_RULE_NAME,
+        definition.dump());
+  }
+  rule->setName(ruleName);
+
+  logic->getRules()->push_back( rule );
+}
+
+void MasterBuilder::buildRooms() {
+  string configFile = masterConfig[KEY_HOME_PLAN_CONFIG_FILE];
+  spdlog::get(MISC_LOGGER_NAME)->info("Building Home Plan...");
+  spdlog::get(MISC_LOGGER_NAME)->info("  Config file:{}", configFile);
+
+  std::ifstream inputFileStream(configFile);
+  if (inputFileStream.good() == false) {
+    throw invalid_argument("Can't open config:" + configFile);
+  }
+
+  std::stringstream buffer;
+  buffer << inputFileStream.rdbuf();
+
+  RoomsList list = roomListFromJSON(buffer.str());
+  logic->getRooms()->insert(logic->getRooms()->end(), list->begin(), list->end());
+
+  spdlog::get(MISC_LOGGER_NAME)->info("  Rooms count:{}", logic->getRooms()->size());
+  spdlog::get(MISC_LOGGER_NAME)->info("Building Home Plan DONE.");
+}
+
+//void MasterBuilder::buildSingleRoom(json const& data) {
+//  long id = getOptionalJSONLong(data, "id");
+//  if (id < 0) {
+//    spdlog::get(MISC_LOGGER_NAME)->error("Missing mandatory field 'id' in {}", data.dump());
+//    return;
+//  }
+//
+//  long floor = getOptionalJSONLong(data, "floor");
+//  if (floor < 0) {
+//    spdlog::get(MISC_LOGGER_NAME)->error("Missing mandatory field 'floor' in {}", data.dump());
+//    return;
+//  }
+//
+//  shared_ptr<string> name = getOptionalJSONString(data, "name");
+//  if (name == nullptr) {
+//    spdlog::get(MISC_LOGGER_NAME)->error("Missing mandatory field 'name' in {}", data.dump());
+//    return;
+//  }
+//
+//  shared_ptr<Room> room = make_shared<Room>(id, *name);
+//  room->setFloor(floor);
+//  logic->getRooms()->push_back(room);
+//  spdlog::get(MISC_LOGGER_NAME)->info("  Adding room id:{} name:{} floor:{}", id, *name, floor);
+//
+//  //sensors are optional, some rooms don't need to have it
+//  if (data.find("sensors") != data.end()) {
+//    json sensorsJson = data["sensors"];
+//    if (sensorsJson.is_array() == false) {
+//      for (auto iter = sensorsJson.begin(); iter != sensorsJson.end(); iter++) {
+//          buildSingleLogicalSensor(*iter);
+//      }
+//
+//    } else {
+//      spdlog::get(MISC_LOGGER_NAME)->error("Expected array in field 'sensors' in {}", data.dump());
+//    }
+//  }
+//}
 
 void MasterBuilder::buildLogic() {
   spdlog::get(MISC_LOGGER_NAME)->info("Building logic...");
   buildStorage();
   buildSensors();
+  buildRelays();
   
-  logic = make_shared<Logic>(storage, sensorNetManager);
+  logic = make_shared<Logic>(storage, sensorNetManager, relaysStatesMachine);
   
+  buildRooms();
   buildHeatingPlan();
   spdlog::get(MISC_LOGGER_NAME)->info("Building logic DONE.");
   
