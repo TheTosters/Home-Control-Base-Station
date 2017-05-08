@@ -146,6 +146,6 @@ double Schedule::getDesiredTemperature() {
   if (item == NULL) {
     return UNKNOWN_TEMPERATURE;
   }
-  
+
   return item->getTemperatureIdentifier()->getTemperature();
 }

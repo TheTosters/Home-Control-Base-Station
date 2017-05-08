@@ -39,7 +39,7 @@ void RoomTemperatureRule::execute() {
     
     bool measured = false;
     double temp = getTemperatureInRoom(*roomIter, measured);
-    if (measured && schedule->getDesiredTemperature() > temp) {
+    if (measured && schedule->getDesiredTemperature() < temp) {
       wantHeating = 1;
       break;
     }
