@@ -97,7 +97,7 @@ json toJSON(PhysicalSensorList const& list) {
   for(auto iter = list->begin(); iter != list->end(); iter++) {
     
     json types = json::array();
-    vector<PhysicalSensorType>& tmp = (*iter)->getType();
+    vector<PhysicalSensorType> tmp = (*iter)->getType();
     for(auto iter2 = tmp.begin(); iter2 != tmp.end(); iter2++) {
       types += *iter2;
     }

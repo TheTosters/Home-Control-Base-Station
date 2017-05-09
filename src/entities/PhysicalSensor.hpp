@@ -16,6 +16,7 @@
 #include "entities/Entity.hpp"
 #include "entities/SensorValue.hpp"
 #include <unordered_set>
+#include <mutex>
 
 using namespace std;
 
@@ -56,8 +57,11 @@ class PhysicalSensorMetaData {
  * It's not this same as Sensor, which is more like logical representation of Physical sensor in rooms.
  * This object should have all properties needed to communicate with physical device, such as encryption keys etc.
  * NOTE: Id is retrieved from physical device (same as address) it is possible to have collisions, this is
- * communication/logic layer resposibility to not allow such situation. Since this object id is used in SensorValue
+ * communication/logic layer responsibility to not allow such situation. Since this object id is used in SensorValue
  * this can bring total mess in db. Be warned.
+ * WARNING: This object is SEMI THREAD SAFE it has it's own recursive mutex which are used for fields set/get but it's
+ * possible to get live collection which is not guarded, int this case outer logic is responsible for data safety
+ * (consider usage of lock()/unlock() methods of this object)!
  */
 class PhysicalSensor : public Entity {
   public:
@@ -65,13 +69,13 @@ class PhysicalSensor : public Entity {
     virtual ~PhysicalSensor();
   
     void    setName(string const& name);
-    string& getName();
+    string  getName();
   
     void    setAddress(string const& address);
-    string& getAddress();
+    string  getAddress();
   
     void    addType(PhysicalSensorType type);
-    vector<PhysicalSensorType>& getType();
+    vector<PhysicalSensorType> getType();
   
     void    setLastFetchTime(time_t value);
     time_t  getLastFetchTime();
@@ -80,11 +84,16 @@ class PhysicalSensor : public Entity {
     time_t  getDesiredFetchDelay();
   
     void    setLastMeasurements(MeasurementMap data);
+
+    //warning: returns live inner collection!
     MeasurementList& getLastMeasurements();
   
     bool    isType(PhysicalSensorType type);
     shared_ptr<Measurement> getLastMeasurement(PhysicalSensorType type);
     PhysicalSensorMetaData* getMetadata();
+
+    void lock();
+    void unlock();
   protected:
     string              name;
     string              address;    //it can be MAC, Bluetooth address, or other protocol dependent
@@ -102,6 +111,8 @@ class PhysicalSensor : public Entity {
 
     PhysicalSensorMetaData* metaData;
   
+    recursive_mutex     sensorMutex;
+
     void updateLastMeasurement(SensorValueType valType, double value, time_t time);
 };
 

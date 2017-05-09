@@ -107,8 +107,10 @@ void Logic::executeMeasurements() {
 void Logic::onSensorData(shared_ptr<PhysicalSensor> sensor, MeasurementMap measurements) {
   logger->debug("New measurements for sensor {}({})", sensor->getName(), sensor->getAddress());
   if (measurements != nullptr) {
+    sensor->lock();
     sensor->setLastFetchTime(time(nullptr));
     sensor->setLastMeasurements(measurements);
+    sensor->unlock();
     storeMeasurements(sensor->getId(), measurements);
   }
 }

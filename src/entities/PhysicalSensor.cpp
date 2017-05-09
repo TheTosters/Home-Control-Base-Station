@@ -39,51 +39,63 @@ PhysicalSensor::~PhysicalSensor() {
 }
 
 PhysicalSensorMetaData* PhysicalSensor::getMetadata() {
+  lock_guard<recursive_mutex> lock(sensorMutex);
   return metaData;
 }
 
 void PhysicalSensor::setName(string const& name) {
+  lock_guard<recursive_mutex> lock(sensorMutex);
   this->name = name;
 }
 
-string& PhysicalSensor::getName() {
+string PhysicalSensor::getName() {
+  lock_guard<recursive_mutex> lock(sensorMutex);
   return name;
 }
 
 void PhysicalSensor::setAddress(string const& address) {
+  lock_guard<recursive_mutex> lock(sensorMutex);
   this->address = address;
 }
 
-string& PhysicalSensor::getAddress() {
+string PhysicalSensor::getAddress() {
+  lock_guard<recursive_mutex> lock(sensorMutex);
   return address;
 }
 
 void PhysicalSensor::addType(PhysicalSensorType type) {
+  lock_guard<recursive_mutex> lock(sensorMutex);
   this->types.push_back(type);
 }
 
-vector<PhysicalSensorType>& PhysicalSensor::getType() {
+vector<PhysicalSensorType> PhysicalSensor::getType() {
+  lock_guard<recursive_mutex> lock(sensorMutex);
   return types;
 }
 
 void PhysicalSensor::setLastFetchTime(time_t value) {
+  lock_guard<recursive_mutex> lock(sensorMutex);
   lastFetchTime = value;
 }
 
 time_t PhysicalSensor::getLastFetchTime() {
+  lock_guard<recursive_mutex> lock(sensorMutex);
   return lastFetchTime;
 }
 
 void PhysicalSensor::setDesiredFetchDelay(time_t value) {
+  lock_guard<recursive_mutex> lock(sensorMutex);
   desiredFetchDelay = value;
 }
 
 time_t PhysicalSensor::getDesiredFetchDelay() {
+  lock_guard<recursive_mutex> lock(sensorMutex);
   return desiredFetchDelay;
 }
 
 void PhysicalSensor::setLastMeasurements(MeasurementMap data) {
   //store values only if timestamp is newer or equal then currently stored
+  lock_guard<recursive_mutex> lock(sensorMutex);
   for(auto iter = data->begin(); iter != data->end(); iter++) {
     MeasurementList valuesList = iter->second;
     
@@ -131,11 +143,12 @@ MeasurementList& PhysicalSensor::getLastMeasurements() {
 }
 
 bool PhysicalSensor::isType(PhysicalSensorType type) {
+  lock_guard<recursive_mutex> lock(sensorMutex);
   return find(types.begin(), types.end(), type) != types.end();
 }
 
 shared_ptr<Measurement> PhysicalSensor::getLastMeasurement(PhysicalSensorType type) {
-
+  lock_guard<recursive_mutex> lock(sensorMutex);
   for(auto msrPtr : *lastMeasurements) {
     SensorValueType valType = get<0>( *(msrPtr) );
     if (toPhysicalSensorType(valType) == type) {
@@ -143,4 +156,12 @@ shared_ptr<Measurement> PhysicalSensor::getLastMeasurement(PhysicalSensorType ty
     }
   }
   return nullptr;
+}
+
+void PhysicalSensor::lock() {
+  sensorMutex.lock();
+}
+
+void PhysicalSensor::unlock() {
+  sensorMutex.unlock();
 }
